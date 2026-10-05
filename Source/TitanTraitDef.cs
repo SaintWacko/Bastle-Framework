@@ -1,0 +1,181 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using RimWorld;
+using Verse;
+
+namespace TitanFramework
+{
+    /// <summary>
+    /// What makes a trait "seen in action". A trait can list several; any one of them
+    /// reveals it, but only while the player can actually see the creature
+    /// (TitanUtility.PlayerCanObserve). Code can always reveal a trait directly
+    /// with TitanTrait.Discover(), which is what Manual is for: a trait with only
+    /// Manual is revealed by its own traitClass, or by the content mod (study, autopsy).
+    /// </summary>
+    public enum TitanDiscoveryTrigger
+    {
+        Manual,
+        /// <summary>The creature uses an attack granted by one of this trait's hediffs.</summary>
+        UsesGrantedVerb,
+        /// <summary>The creature casts one of this trait's abilities.</summary>
+        UsesGrantedAbility,
+        /// <summary>The creature uses any verb at all (attacks, casts).</summary>
+        Attacks,
+        /// <summary>The creature takes damage.</summary>
+        TakesDamage,
+        /// <summary>The creature dies.</summary>
+        Dies,
+    }
+
+    /// <summary>A hediff a trait adds to its creature, optionally on a body part.</summary>
+    public class TitanTraitHediff
+    {
+        public HediffDef hediff;
+
+        /// <summary>Body part to attach to. Null = whole body. The first matching
+        /// non-missing part is used; if the creature has none, the hediff is skipped.</summary>
+        public BodyPartDef part;
+
+        public float severity = -1f;
+    }
+
+    public class TitanTraitDef : Def
+    {
+        // ---- the trait instance --------------------------------------------------
+
+        /// <summary>Instance class: subclass TitanTrait for traits with behaviour or state.</summary>
+        public Type traitClass = typeof(TitanTrait);
+
+        // ---- generation ----------------------------------------------------------
+
+        /// <summary>Relative weight when rolling. 0 = never rolled, only added by code.</summary>
+        public float commonality = 1f;
+
+        /// <summary>Budget cost. Negative values are drawbacks that give points back.</summary>
+        public float pointCost = 1f;
+
+        /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
+        public List<string> exclusionTags;
+
+        /// <summary>Free-form tags a content mod can filter rolls on ("Fire", "Deep", "Boss").</summary>
+        public List<string> tags;
+
+        // Which pawns may get it.
+        public bool allowAnimals = true;
+        public bool allowHumanlikes = true;
+        public bool allowMechanoids = true;
+        /// <summary>Anything that is none of the above (Anomaly entities, modded races).</summary>
+        public bool allowOther = true;
+        public bool requiresFlesh;
+        public float minBodySize = 0f;
+        public float maxBodySize = 9999f;
+        public List<ThingDef> allowedRaces;
+        public List<ThingDef> disallowedRaces;
+
+        // ---- discovery and naming -----------------------------------------------
+
+        /// <summary>Starts identified (e.g. Flaming): shown in the name and tooltip from the start.</summary>
+        public bool visible;
+
+        public List<TitanDiscoveryTrigger> discoverWhen;
+
+        /// <summary>Show a message when the player discovers this trait.</summary>
+        public bool discoveryMessage = true;
+
+        /// <summary>Word placed before the creature's kind once known ("venomous").</summary>
+        [MustTranslate] public string namePrefix;
+
+        /// <summary>Words placed after the creature's kind once known ("of the deep").</summary>
+        [MustTranslate] public string nameSuffix;
+
+        /// <summary>Order among prefixes/suffixes. Lower is further from the kind label.</summary>
+        public int nameOrder;
+
+        // ---- inheritance ---------------------------------------------------------
+
+        public bool heritable = true;
+
+        /// <summary>Chance per carrying parent that a newborn inherits the trait.
+        /// With both parents carrying it, the chances compound.</summary>
+        public float inheritChance = 0.5f;
+
+        // ---- effects -------------------------------------------------------------
+
+        /// <summary>Merged with every other trait on the creature into the titan hediff's
+        /// single stage. See Hediff_Titan.BuildStage for which fields merge.</summary>
+        public HediffStage stage;
+
+        /// <summary>Hediffs added alongside the trait (attacks via HediffComp_VerbGiver,
+        /// anything a vanilla or modded HediffComp can do). Removed with the trait.</summary>
+        public List<TitanTraitHediff> hediffs;
+
+        /// <summary>Abilities granted while the trait is present.</summary>
+        public List<AbilityDef> abilities;
+
+        // ---- cached --------------------------------------------------------------
+
+        [Unsaved] private bool? ticksCached;
+
+        /// <summary>True when traitClass overrides TickInterval. The titan hediff only
+        /// iterates its traits on tick when at least one of them ticks.</summary>
+        public bool Ticks
+        {
+            get
+            {
+                if (ticksCached == null)
+                {
+                    var m = traitClass.GetMethod(nameof(TitanTrait.TickInterval));
+                    ticksCached = m != null && m.DeclaringType != typeof(TitanTrait);
+                }
+                return ticksCached.Value;
+            }
+        }
+
+        public bool DiscoveredBy(TitanDiscoveryTrigger trigger)
+            => discoverWhen != null && discoverWhen.Contains(trigger);
+
+        public bool ConflictsWith(TitanTraitDef other)
+        {
+            if (other == this) return true;
+            if (exclusionTags == null || other.exclusionTags == null) return false;
+            for (int i = 0; i < exclusionTags.Count; i++)
+                if (other.exclusionTags.Contains(exclusionTags[i])) return true;
+            return false;
+        }
+
+        /// <summary>Race and body filters only; conflicts with existing traits are
+        /// checked by TitanUtility.CanAddTrait.</summary>
+        public virtual bool AllowedOn(Pawn pawn)
+        {
+            var race = pawn.RaceProps;
+            if (race.Humanlike) { if (!allowHumanlikes) return false; }
+            else if (race.IsMechanoid) { if (!allowMechanoids) return false; }
+            else if (race.Animal) { if (!allowAnimals) return false; }
+            else if (!allowOther) return false;
+
+            if (requiresFlesh && !race.IsFlesh) return false;
+            if (race.baseBodySize < minBodySize || race.baseBodySize > maxBodySize) return false;
+            if (allowedRaces != null && !allowedRaces.Contains(pawn.def)) return false;
+            if (disallowedRaces != null && disallowedRaces.Contains(pawn.def)) return false;
+            return true;
+        }
+
+        public override IEnumerable<string> ConfigErrors()
+        {
+            foreach (var e in base.ConfigErrors()) yield return e;
+            if (traitClass == null || !typeof(TitanTrait).IsAssignableFrom(traitClass))
+                yield return $"traitClass {traitClass} is not a TitanTrait";
+            if (commonality < 0f) yield return "commonality is negative";
+            if (hediffs != null)
+                foreach (var h in hediffs)
+                {
+                    if (h.hediff == null) { yield return "hediffs entry with no hediff"; continue; }
+                    if (!visible && (h.hediff.stages.NullOrEmpty() || h.hediff.stages.Any(s => s.becomeVisible)))
+                        yield return $"hediff {h.hediff.defName} will show in the health tab before the trait is discovered. Give it a stage with <becomeVisible>false</becomeVisible>; discovery makes it visible.";
+                }
+            if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(TitanTrait))
+                yield return "not visible and has no discoverWhen: only code can ever reveal it (add <li>Manual</li> to discoverWhen to silence this)";
+        }
+    }
+}

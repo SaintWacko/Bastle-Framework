@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModMetaData>
+  <name>Titan Framework</name>
+  <packageId>saintwacko.TitanFramework</packageId>
+  <author>saintwacko</author>
+  <description>A framework for creatures with randomly rolled traits. Traits change stats, add attacks and abilities, and stay hidden until the creature shows them, at which point they appear in its name. Creatures can also be made of a material, such as a steel wolf or a jade bear, taking their armor, damage, color and butcher products from it. Works on any pawn. Content mods supply the traits.</description>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+      <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+  </loadAfter>
+</ModMetaData>

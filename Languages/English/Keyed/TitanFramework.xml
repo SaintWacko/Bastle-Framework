@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <TF_UnknownTrait>???</TF_UnknownTrait>
+  <TF_UnknownTraitDesc>An unknown trait. It will reveal itself in time.</TF_UnknownTraitDesc>
+
+  <!-- {0}: the creature's label before the discovery. {1}: the trait's label. -->
+  <TF_TraitDiscovered>{0} has revealed a hidden trait: {1}.</TF_TraitDiscovered>
+
+  <!-- Shown after the hediff label in the health tab. {0}: known count. {1}: unknown count. -->
+  <TF_HediffBrackets>{0} known</TF_HediffBrackets>
+  <TF_HediffBracketsUnknown>{0} known, {1} unknown</TF_HediffBracketsUnknown>
+
+</LanguageData>

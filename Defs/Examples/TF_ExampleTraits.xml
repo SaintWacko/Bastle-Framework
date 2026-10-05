@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- EXAMPLE TRAITS for testing the framework. Move these to the dungeon mod (or
+       delete them) before the framework is published: anything here gets rolled
+       by every mod that calls TitanUtility.RollTraits without a validator. -->
+
+  <!-- Visible: identified from the start, and in the name from the start. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_Flaming</defName>
+    <label>flaming</label>
+    <description>Its body burns without being consumed. Fire barely hurts it and it shrugs off the cold.</description>
+    <visible>true</visible>
+    <namePrefix>flaming</namePrefix>
+    <pointCost>2</pointCost>
+    <exclusionTags><li>TF_Element</li></exclusionTags>
+    <tags><li>Fire</li></tags>
+    <stage>
+      <statOffsets>
+        <ComfyTemperatureMin>-40</ComfyTemperatureMin>
+      </statOffsets>
+      <damageFactors>
+        <Flame>0.2</Flame>
+        <Burn>0.2</Burn>
+      </damageFactors>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Hidden attack: revealed the first time it bites with the venomous fangs. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_Venomous</defName>
+    <label>venomous</label>
+    <description>Its bite carries a poison that builds up in the victim's body.</description>
+    <namePrefix>venomous</namePrefix>
+    <pointCost>2</pointCost>
+    <requiresFlesh>true</requiresFlesh>
+    <discoverWhen>
+      <li>UsesGrantedVerb</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <hediffs>
+      <li><hediff>TF_Example_VenomFangs</hediff></li>
+    </hediffs>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Hidden defence: revealed when it takes a hit. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_Ironhide</defName>
+    <label>ironhide</label>
+    <description>Its hide turns blades and dulls blows.</description>
+    <namePrefix>ironhide</namePrefix>
+    <nameOrder>10</nameOrder>
+    <pointCost>2</pointCost>
+    <exclusionTags><li>TF_Toughness</li></exclusionTags>
+    <discoverWhen><li>TakesDamage</li></discoverWhen>
+    <stage>
+      <statOffsets>
+        <ArmorRating_Sharp>0.4</ArmorRating_Sharp>
+        <ArmorRating_Blunt>0.25</ArmorRating_Blunt>
+      </statOffsets>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Hidden passive with a suffix. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_OfTheDeep</defName>
+    <label>of the deep</label>
+    <description>It regrows lost flesh with unnatural speed.</description>
+    <nameSuffix>of the deep</nameSuffix>
+    <pointCost>3</pointCost>
+    <discoverWhen><li>TakesDamage</li></discoverWhen>
+    <stage>
+      <regeneration>60</regeneration>
+      <naturalHealingFactor>2</naturalHealingFactor>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Drawback: negative cost gives budget back. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_Brittle</defName>
+    <label>brittle</label>
+    <description>Something about it is fragile. It takes more damage from every hit.</description>
+    <namePrefix>brittle</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-1</pointCost>
+    <commonality>0.5</commonality>
+    <exclusionTags><li>TF_Toughness</li></exclusionTags>
+    <discoverWhen><li>TakesDamage</li></discoverWhen>
+    <stage>
+      <statFactors>
+        <IncomingDamageFactor>1.3</IncomingDamageFactor>
+      </statFactors>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <HediffDef>
+    <defName>TF_Example_VenomFangs</defName>
+    <label>venomous fangs</label>
+    <description>Fangs that inject a building poison.</description>
+    <hediffClass>HediffWithComps</hediffClass>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <stages>
+      <li><becomeVisible>false</becomeVisible></li>
+    </stages>
+    <comps>
+      <li Class="HediffCompProperties_VerbGiver">
+        <tools>
+          <li>
+            <label>venomous fangs</label>
+            <capacities><li>ToxicBite</li></capacities>
+            <power>10</power>
+            <cooldownTime>2</cooldownTime>
+            <chanceFactor>2</chanceFactor>
+          </li>
+        </tools>
+      </li>
+    </comps>
+  </HediffDef>
+
+</Defs>
