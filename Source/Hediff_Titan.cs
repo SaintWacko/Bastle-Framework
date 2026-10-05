@@ -29,6 +29,12 @@ namespace TitanFramework
         [Unsaved] private string suffixCache;
         [Unsaved] private bool nameDirty = true;
 
+        // Visuals. Overlays live in the pawn's render tree (DynamicPawnRenderNodeSetup_Titan);
+        // effecters are ticked by MapComponent_TitanVisuals while the pawn is on its map.
+        [Unsaved] private List<EffecterDef> activeEffecterDefs;
+        [Unsaved] private readonly List<Effecter> liveEffecters = new List<Effecter>();
+        [Unsaved] private Map trackedMap;
+
         public List<TitanTrait> TraitsForReading => traits;
 
         public TitanTrait GetTrait(TitanTraitDef def)
@@ -53,7 +59,7 @@ namespace TitanFramework
             traits.Add(trait);
             ApplyEffects(trait);
             trait.PostAdded();
-            TraitsChanged();
+            TraitsChanged(def);
             return trait;
         }
 
@@ -63,7 +69,7 @@ namespace TitanFramework
             trait.PreRemoved();
             traits.Remove(trait);
             RemoveEffects(trait);
-            TraitsChanged();
+            TraitsChanged(trait.def);
         }
 
         private void ApplyEffects(TitanTrait trait)
@@ -133,8 +139,56 @@ namespace TitanFramework
             return false;
         }
 
-        private void TraitsChanged()
+        // ---- visuals -------------------------------------------------------------
+
+        public bool HasActiveEffecters
         {
+            get
+            {
+                if (activeEffecterDefs == null)
+                {
+                    activeEffecterDefs = new List<EffecterDef>();
+                    foreach (var t in traits)
+                        if (t.VisualsActive && t.def.effecters != null)
+                            foreach (var e in t.def.effecters)
+                                if (!activeEffecterDefs.Contains(e)) activeEffecterDefs.Add(e);
+                }
+                return activeEffecterDefs.Count > 0;
+            }
+        }
+
+        /// <summary>Call when which visuals should show may have changed.</summary>
+        public void VisualsChanged(TitanTraitDef cause = null)
+        {
+            activeEffecterDefs = null;
+            CleanupEffecters();
+            // The render tree is only rebuilt when overlays could have changed:
+            // rebuilding it is not free, and discovery of a stat-only trait
+            // shouldn't pay for it.
+            if ((cause == null || !cause.overlays.NullOrEmpty()) && pawn?.Drawer?.renderer != null)
+                pawn.Drawer.renderer.SetAllGraphicsDirty();
+        }
+
+        internal void EffectersTick()
+        {
+            if (!HasActiveEffecters) return;
+            if (liveEffecters.Count == 0)
+                foreach (var def in activeEffecterDefs)
+                    liveEffecters.Add(def.SpawnAttached(pawn, pawn.Map));
+            for (int i = 0; i < liveEffecters.Count; i++)
+                liveEffecters[i].EffectTick(pawn, pawn);
+        }
+
+        internal void CleanupEffecters()
+        {
+            for (int i = 0; i < liveEffecters.Count; i++) liveEffecters[i].Cleanup();
+            liveEffecters.Clear();
+            trackedMap = null;
+        }
+
+        private void TraitsChanged(TitanTraitDef changed)
+        {
+            if (changed.HasVisuals) VisualsChanged(changed);
             var oldStage = cachedStage;
             stageDirty = true;
             nameDirty = true;
@@ -156,6 +210,7 @@ namespace TitanFramework
         internal void Notify_TraitDiscovered(TitanTrait trait)
         {
             nameDirty = true;
+            if (trait.def.HasVisuals) VisualsChanged(trait.def);
             if (trait.def.hediffs == null) return;
             foreach (var th in trait.def.hediffs)
                 foreach (var h in pawn.health.hediffSet.hediffs.ToList())
@@ -368,14 +423,23 @@ namespace TitanFramework
             }
             base.PostRemoved();
             TitanUtility.Unregister(pawn);
+            VisualsChanged();
         }
 
         public override void TickInterval(int delta)
         {
             base.TickInterval(delta);
-            if (!anyTicking) return;
-            for (int i = traits.Count - 1; i >= 0; i--)
-                if (traits[i].def.Ticks) traits[i].TickInterval(delta);
+            if (anyTicking)
+            {
+                for (int i = traits.Count - 1; i >= 0; i--)
+                    if (traits[i].def.Ticks) traits[i].TickInterval(delta);
+            }
+            // Hand effecters to the map component, which ticks them every tick.
+            if (pawn.Spawned && trackedMap != pawn.Map && HasActiveEffecters)
+            {
+                pawn.Map.GetComponent<MapComponent_TitanVisuals>()?.Track(this);
+                trackedMap = pawn.Map;
+            }
         }
 
         public override void Notify_PawnPostApplyDamage(DamageInfo dinfo, float totalDamageDealt)

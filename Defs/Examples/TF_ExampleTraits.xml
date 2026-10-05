@@ -15,6 +15,19 @@
     <pointCost>2</pointCost>
     <exclusionTags><li>TF_Element</li></exclusionTags>
     <tags><li>Fire</li></tags>
+    <!-- A pulsing orange rim glow behind the body, and embers/smoke while on screen. -->
+    <overlays>
+      <li>
+        <color>(1.0, 0.45, 0.1, 0.85)</color>
+        <scale>1.15</scale>
+        <layer>-1</layer>
+        <pulseSpeed>1.3</pulseSpeed>
+        <pulseMin>0.5</pulseMin>
+      </li>
+    </overlays>
+    <effecters>
+      <li>TF_Effecter_Embers</li>
+    </effecters>
     <stage>
       <statOffsets>
         <ComfyTemperatureMin>-40</ComfyTemperatureMin>
@@ -41,6 +54,15 @@
     <hediffs>
       <li><hediff>TF_Example_VenomFangs</hediff></li>
     </hediffs>
+    <!-- Hidden trait with visuals: the sickly tint only appears once it is discovered.
+         Set showVisualsWhenHidden to true to show it from the start. -->
+    <overlays>
+      <li>
+        <color>(0.4, 1.0, 0.3, 0.35)</color>
+        <scale>1.0</scale>
+        <layer>1</layer>
+      </li>
+    </overlays>
   </TitanFramework.TitanTraitDef>
 
   <!-- Hidden defence: revealed when it takes a hit. -->
@@ -92,6 +114,46 @@
       </statFactors>
     </stage>
   </TitanFramework.TitanTraitDef>
+
+  <!-- Rising embers, a faint glow and the odd wisp of smoke. Built from vanilla flecks and motes. -->
+  <EffecterDef>
+    <defName>TF_Effecter_Embers</defName>
+    <children>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>FireGlow</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.04</chancePerTick>
+        <scale>0.7~1.1</scale>
+        <positionRadius>0.25</positionRadius>
+        <color>(1.0, 0.6, 0.2, 0.6)</color>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <moteDef>Mote_SparkThrown</moteDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.08</chancePerTick>
+        <scale>0.15~0.3</scale>
+        <airTime>0.3~0.6</airTime>
+        <angle>-30~30</angle>
+        <speed>0.6~1.4</speed>
+        <rotationRate>-120~120</rotationRate>
+        <positionRadius>0.35</positionRadius>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>Smoke</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.015</chancePerTick>
+        <scale>0.5~0.9</scale>
+        <speed>0.2~0.4</speed>
+        <angle>-20~20</angle>
+        <rotationRate>-10~10</rotationRate>
+        <positionRadius>0.3</positionRadius>
+        <color>(0.4, 0.4, 0.4, 0.5)</color>
+      </li>
+    </children>
+  </EffecterDef>
 
   <HediffDef>
     <defName>TF_Example_VenomFangs</defName>

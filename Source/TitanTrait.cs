@@ -19,6 +19,9 @@ namespace TitanFramework
 
         public Pawn Pawn => titan?.pawn;
 
+        /// <summary>Whether this trait's overlays and effecters should show right now.</summary>
+        public virtual bool VisualsActive => def.HasVisuals && (discovered || def.showVisualsWhenHidden);
+
         public virtual string Label => discovered ? def.LabelCap.ToString() : "TF_UnknownTrait".Translate().ToString();
 
         public virtual string Description => discovered ? def.description : "TF_UnknownTraitDesc".Translate().ToString();

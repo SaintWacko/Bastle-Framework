@@ -113,6 +113,20 @@ namespace TitanFramework
         /// <summary>Abilities granted while the trait is present.</summary>
         public List<AbilityDef> abilities;
 
+        // ---- visuals -------------------------------------------------------------
+
+        /// <summary>Glow overlays drawn from the creature's own body texture.</summary>
+        public List<TitanOverlay> overlays;
+
+        /// <summary>Particle effecters kept running on the creature (embers, smoke).</summary>
+        public List<EffecterDef> effecters;
+
+        /// <summary>Show overlays and effecters before the trait is discovered. They
+        /// give the trait away, so this is off by default.</summary>
+        public bool showVisualsWhenHidden;
+
+        public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty();
+
         // ---- cached --------------------------------------------------------------
 
         [Unsaved] private bool? ticksCached;
