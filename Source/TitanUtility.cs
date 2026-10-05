@@ -33,8 +33,16 @@ namespace TitanFramework
 
         public static Hediff_Titan GetTitan(Pawn pawn)
         {
-            if (pawn == null) return null;
-            return registry.TryGetValue(pawn, out var t) ? t : null;
+            if (pawn == null || !registry.TryGetValue(pawn, out var t)) return null;
+            // Pawn_HealthTracker.Reset (pawn generation retries) clears the hediff set
+            // without calling PostRemoved, which can leave a stale entry behind. The
+            // check only runs for registered titans, so ordinary pawns never pay it.
+            if (!pawn.health.hediffSet.hediffs.Contains(t))
+            {
+                Unregister(pawn);
+                return null;
+            }
+            return t;
         }
 
         public static bool IsTitan(Pawn pawn) => GetTitan(pawn) != null;
@@ -42,13 +50,6 @@ namespace TitanFramework
         public static Hediff_Titan GetOrMakeTitan(Pawn pawn)
         {
             var titan = GetTitan(pawn);
-            // Pawn_HealthTracker.Reset (pawn generation retries) swaps the hediff set
-            // without calling PostRemoved, which can leave a stale entry behind.
-            if (titan != null && !pawn.health.hediffSet.hediffs.Contains(titan))
-            {
-                Unregister(pawn);
-                titan = null;
-            }
             if (titan != null) return titan;
             titan = (Hediff_Titan)HediffMaker.MakeHediff(TitanDefOf.TF_Titan, pawn);
             pawn.health.AddHediff(titan);

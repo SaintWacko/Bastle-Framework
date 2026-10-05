@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "buildId": 3,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-05T19:55:17.565Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "The fixes since build 2: TraitsChanged needs/work refresh, OtherTraitHasHediff, inheritance discovered state, CompHatcher gender check, stale registry check",
+  "diffSource": "since build 2 (2026-10-05T19:48:47Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 1,
+    "note": 3
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "TraitsChanged refreshes needs without the !pawn.Dead guard vanilla always uses",
+      "detail": "Vanilla calls AddOrRemoveNeedsAsAppropriate on hediff add and remove only when !pawn.Dead (Hediff.PostRemoved, HediffSet.AddDirect). Hediff_Titan.TraitsChanged calls it whenever needsChanged, so a trait added to or removed from a corpse (e.g. by a content mod reacting to death or resurrection) refreshes a dead pawn's needs. Add `&& !pawn.Dead` to the needsChanged condition.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Assembly-CSharp/Verse/Hediff.cs:612"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Stale-registry check is only in GetOrMakeTitan; GetTitan callers still see the stale titan",
+      "detail": "Pawn_HealthTracker.Reset calls HediffSet.Clear, which clears the list without PostRemoved, so the registry keeps the old Hediff_Titan. GetOrMakeTitan now detects this, but GetTitan (used by the BestKindLabel postfix, CanAddTrait, AddTrait's force check, RemoveTrait, IsTitan, DiscoverAll) does not. After a generation retry, the regenerated pawn's kind label can carry stale prefixes, stale traits can block CanAddTrait, and RemoveTrait would run RemoveEffects against the new hediff set. Doing the Contains check in GetTitan costs a list scan on the label hot path, so the trade-off is the author's call.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanUtility.cs:34"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "ApplyEffects skips a shared hediff even when the other trait's copy is gone",
+      "detail": "OtherTraitHasHediff checks only whether another trait's def lists the hediff, not whether the pawn still has it. If the other trait's copy was healed, removed by surgery, or skipped because the part was missing, the new trait adds nothing. The skip itself is right: base Hediff.TryMergeWith sums severity.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:78"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "oldStage comes from an [Unsaved] cache, so the first change after load can miss a needs removal",
+      "detail": "cachedStage is null after load until CurStage is first read. If a trait whose stage enabled or disabled needs is removed before then, oldStage is null, needsChanged is false, and the needs are not refreshed. Vanilla reads CurStage almost immediately, so this is unlikely in practice.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:138"
+      }
+    }
+  ],
+  "checked": [
+    "every [HarmonyPatch] in Source/Patches.cs binds, 6 of 6 (verify_patches)",
+    "no corpus mod patches CompHatcher.Hatch, Hediff_Pregnant.DoBirthSpawn, PawnUtility.TrySpawnHatchedOrBornPawn or GenLabel.BestKindLabel, so there is no shared-method conflict",
+    "CompHatcher.Hatch prefix gender check matches vanilla's otherParent condition (hatcheeParent == null || genders differ)",
+    "Hatch/DoBirthSpawn finalizers return void and do not swallow exceptions",
+    "TitanTraitDef.Ticks GetMethod(TickInterval, int) matches the only TitanTrait.TickInterval(int) declaration",
+    "RemoveEffects with OtherTraitHasHediff behaves like the old traits.Any check (trait is already off the list in RemoveTraitInternal and PostRemoved)",
+    "Pawn.Notify_DisabledWorkTypesChanged is null-safe on workSettings and skills, so it is safe during pawn generation",
+    "CurStage never returns null (BuildStage always builds a stage), so newStage dereferences are safe",
+    "InheritTraits discovered flag now carried from either parent",
+    "AddTrait null guard on pawn.health and def",
+    "new BuildStage merged fields compile (Roslyn clean) and use correct identity values (factors multiply from 1, flags OR)",
+    "pyxis_mod_errors could not run: no Pyxis token configured"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/Patches.cs",
+    "Source/TitanTraitDef.cs",
+    "Source/TitanUtility.cs",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "63dd520ef7a44258a94a96a8c57481d96314e0de",
+  "partial": false
+}

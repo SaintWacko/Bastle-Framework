@@ -148,7 +148,7 @@ namespace TitanFramework
             var newStage = CurStage;
             bool needsChanged = !(oldStage?.enablesNeeds).NullOrEmpty() || !(oldStage?.disablesNeeds).NullOrEmpty()
                 || !newStage.enablesNeeds.NullOrEmpty() || !newStage.disablesNeeds.NullOrEmpty();
-            if (needsChanged) pawn.needs?.AddOrRemoveNeedsAsAppropriate();
+            if (needsChanged && !pawn.Dead) pawn.needs?.AddOrRemoveNeedsAsAppropriate();
             if ((oldStage?.disabledWorkTags ?? WorkTags.None) != newStage.disabledWorkTags)
                 pawn.Notify_DisabledWorkTypesChanged();
         }
