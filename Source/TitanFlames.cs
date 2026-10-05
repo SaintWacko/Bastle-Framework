@@ -126,6 +126,7 @@ namespace TitanFramework
         {
             base.PostDraw(node, parms, mesh, matrix);
             if (!(node is PawnRenderNode_TitanFlames n) || n.Flames == null) return;
+            if (parms.flags.FlagSet(PawnRenderFlags.Invisible)) return;
             var f = n.Flames;
             var mats = f.Materials;
             if (mats.Count == 0) return;
@@ -146,7 +147,7 @@ namespace TitanFramework
 
                 // Each flame flickers on its own clock, with the slight wobble vanilla fire has.
                 int frameIndex = (ticks + (seed & 0xFFFF)) / Mathf.Max(1, f.ticksPerFrame);
-                var mat = mats[Mathf.Abs(frameIndex ^ seed) % mats.Count];
+                var mat = mats[((frameIndex ^ seed) & 0x7fffffff) % mats.Count];
                 Vector3 wobble = GenRadial.RadialPattern[frameIndex % GenRadial.RadialPattern.Length].ToVector3()
                                  / GenRadial.MaxRadialPatternRadius * 0.03f;
 
@@ -155,8 +156,8 @@ namespace TitanFramework
                 Vector3 pos = matrix.MultiplyPoint3x4(local) + wobble;
                 pos.y += 0.002f * (i + 1);
 
-                Graphics.DrawMesh(MeshPool.plane10,
-                    Matrix4x4.TRS(pos, Quaternion.identity, new Vector3(s, 1f, s)), mat, 0);
+                GenDraw.DrawMeshNowOrLater(MeshPool.plane10,
+                    Matrix4x4.TRS(pos, Quaternion.identity, new Vector3(s, 1f, s)), mat, parms.DrawNow);
             }
         }
     }

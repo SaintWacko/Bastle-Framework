@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "buildId": 11,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-05T22:21:46.961Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "TitanFlames: null-material draw request + PostDraw drawing with the computed matrix; material loading via GetAllInFolder; effecter body-size scaling; MayRequire li in EffecterDef children",
+  "diffSource": "since build 8 (2026-10-05T22:03:56Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 2,
+    "note": 3
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Flames are drawn on invisible pawns",
+      "detail": "Vanilla swaps every render-node material for an invisible one when parms.flags has PawnRenderFlags.Invisible (outside portraits). PostDraw in PawnRenderNodeWorker_TitanFlames draws its own materials and never checks that flag, so a psychically invisible titan still shows its flames. In PostDraw (Source/TitanFlames.cs:128), return early when parms.flags.FlagSet(PawnRenderFlags.Invisible), or pass each material through InvisibilityMatPool.GetInvisibleMat.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Verse/PawnRenderNodeWorker.cs:148"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "Flame draw call ignores parms.DrawNow",
+      "detail": "PawnRenderTree.Draw uses GenDraw.DrawMeshNowOrLater(mesh, matrix, mat, parms.DrawNow). TitanFlames.cs:158 always calls Graphics.DrawMesh, which queues for the world camera. PawnRenderer sets Cache|DrawNow on one path, and the guard at TitanFlames.cs:121 only skips Portrait and Statue. Use GenDraw.DrawMeshNowOrLater(MeshPool.plane10, trs, mat, parms.DrawNow), or also return when parms.flags has Cache. I did not confirm that path runs without the Portrait flag.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Verse/PawnRenderer.cs:360"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Mathf.Abs(int) can throw on int.MinValue",
+      "detail": "Mathf.Abs(frameIndex ^ seed) throws OverflowException if the XOR is exactly int.MinValue. It is very unlikely, but `(frameIndex ^ seed) & 0x7fffffff` removes the risk.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanFlames.cs:149"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Flame node's mesh size ignores female and alternate body graphics",
+      "detail": "PawnRenderNode_TitanFlames.MeshSetFor reads CurKindLifeStage.bodyGraphicData only. The overlay node's SourceGraphic also handles femaleGraphicData and alternate graphics, so the two can disagree on creatures whose variants differ in drawSize.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanFlames.cs:108"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "scaleEffectersWithBodySize defaults on and the first trait listing an effecter decides",
+      "detail": "Existing content that uses effecters will now spread and grow with sqrt(body size) without opting in. EffecterScaled checks all traits, including ones whose visuals aren't active, and returns the first match, so two traits sharing an effecter with different flags resolve by trait order.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:195"
+      }
+    }
+  ],
+  "checked": [
+    "PawnRenderTree.Draw skips the draw for a null-material request but still calls Worker.PostDraw with preDrawnComputedMatrix (Verse/PawnRenderTree.cs:170-197)",
+    "PawnRenderTree.ParallelPreDraw computes the matrix for every request through TryGetMatrix and only calls GetFinalizedMaterial when CheckMaterialEveryDrawRequest is set",
+    "PawnGraphicDrawRequest(node) constructor defaults mesh and material to null; base PostDraw only runs TryAnimationPostDraw",
+    "PawnRenderNode.AppendRequests runs CanDrawNow first; rotDrawMode Fresh limits flames to fresh bodies",
+    "ContentFinder<Texture2D>.GetAllInFolder is main-thread guarded; Materials is only touched from PostDraw (main thread); Things/Special/Fire is the folder vanilla's CompFireOverlay uses",
+    "PawnRenderNode constructor calls MeshSetFor, so meshWidth and meshHeight are set before the first draw",
+    "HumanlikeMeshPoolUtility.HumanlikeBodyWidthForPawn exists and returns the body mesh size used for the overlay meshHeight change",
+    "EffecterDef.SpawnAttached(Thing, Map, float scale) sets Effecter.scale; SubEffecter_Sprayer multiplies position offset, positionRadius and mote/fleck scale by it",
+    "MayRequire on a non-def li is honoured by DirectXmlToObject.ListFromXml (Verse/DirectXmlToObject.cs:297-309)",
+    "FireSpew_A FleckDef exists in Biotech",
+    "SubEffecterDef declares chancePerTick, positionRadius, color, angle, speed and scale, so the new li's fields load",
+    "No Harmony patches in the changed C#; no corpus mod with source patches PawnRenderTree (13 of 1029 assemblies searched)",
+    "pyxis_mod_errors could not run: no Pyxis token is configured (Settings → Integrations)"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanFlames.cs",
+    "Source/TitanTraitDef.cs",
+    "Source/TitanVisuals.cs",
+    "Defs/Examples/TF_ExampleTraits.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "f9ab517afee8b9ea0586d178672db95804894979",
+  "partial": false
+}
