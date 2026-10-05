@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "buildId": 8,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-05T22:05:37.729Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "OffsetFor bottom-alignment in PawnRenderNodeWorker_TitanOverlay and meshHeight set from MeshSetFor during the base constructor",
+  "diffSource": "since build 5 (2026-10-05T21:45:09Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 2,
+    "note": 2
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Humanlike meshHeight uses bodySizeFactor; the body mesh is sized by HumanlikeBodyWidthForPawn",
+      "detail": "In PawnRenderNode_TitanOverlay.MeshSetFor the humanlike branch sets meshHeight = 1.5f * CurLifeStage.bodySizeFactor. GetHumanlikeBodySetForPawn builds a square mesh of HumanlikeBodyWidthForPawn(pawn): CurLifeStage.bodyWidth under Biotech, else 1.5. Real vs computed height: teen 1.5 vs 1.2, child 1.125 vs 0.525, baby 0.95 vs 0.3. So OffsetFor shifts the overlay too little on non-adults and a scaled glow shows below their feet. Change that one line to meshHeight = HumanlikeMeshPoolUtility.HumanlikeBodyWidthForPawn(pawn). Or read the height from the returned set's mesh bounds, which would also follow any mod that changes the body mesh size.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Assembly-CSharp/Verse/HumanlikeMeshPoolUtility.cs:7-30"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "Changing the TitanOverlay defaults for layer and scale changes how existing defs render",
+      "detail": "layer went from -1 to 1 and scale from 1.1 to 1. Any def from another mod that left these fields out used to get a halo-sized rim glow behind the body. It now gets a same-size tint drawn over the body. The example def sets both fields explicitly, so it hides the change. If other mods are meant to build on this framework, say so in the changelog or keep the old defaults.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanVisuals.cs:19-23"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "The pulse now runs on TicksGame, so it speeds up with game speed",
+      "detail": "seconds = TicksGame/60 freezes when paused, as intended, but the glow also pulses about 3x faster at speed 3 and faster still at ultrafast. If you want it to freeze on pause but keep a steady rate, drive it from an unscaled clock that only advances while the game isn't paused.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanVisuals.cs:185-186"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "The comments on construction order describe Java rather than C#",
+      "detail": "In C#, a derived class's field initialisers run before the base constructor, not after. A 'meshHeight = 0' initialiser would therefore run first and would not wipe the value MeshSetFor sets. Only an assignment in the derived constructor body would. The code is correct; the comments on meshHeight and on PawnRenderNodeProperties_TitanOverlay give the wrong reason, which could mislead whoever edits this next.",
+      "evidence": {
+        "kind": "opinion",
+        "ref": "Source/TitanVisuals.cs:145-146"
+      }
+    }
+  ],
+  "checked": [
+    "PawnRenderNode constructor sets props before calling MeshSetFor, so TProps is safe there and meshHeight is set before first use (PawnRenderNode.cs:171-184)",
+    "No other vanilla code calls MeshSetFor on this node class after construction (search of Assembly-CSharp)",
+    "OffsetFor bottom-alignment maths: ComputeMatrix does translate, then pivot, rotate, scale, so +(scale-1)*h/2 keeps the bottom edge fixed, in the parent body's frame (PawnRenderTree.cs:247-270)",
+    "Head overlays are correctly left out of the shift; base.OffsetFor is still called, so drawData, debug and animation offsets are kept",
+    "The animal meshHeight from g.drawSize.y matches PawnRenderNode_AnimalPart.MeshSetFor",
+    "The SourceGraphic alternate-graphic branch matches PawnRenderNode_AnimalPart.GraphicFor (TryGetAlternate, then ag.GetGraphic(bodyGraphicData.Graphic))",
+    "baseLayer offset from body 0 and head 50 matches the vanilla PawnRenderTreeDefs layers",
+    "Effecter refresh: SubEffecterDef.lifespanMaxTicks defaults to 999999 and the Chance sub-effecters stop at TicksGame+lifespan, so respawning every 600000 ticks is sound; CleanupEffecters clears the li…",
+    "No Harmony patches in the changed C#, so verify_patches and precedents don't apply",
+    "No other readable mod source patches HumanlikeMeshPoolUtility (mod_source; only 13 of 1029 assemblies have source held)",
+    "Example traits XML: field names match TitanOverlay (color, scale, layer, pulseSpeed, pulseMin)"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanVisuals.cs",
+    "Defs/Examples/TF_ExampleTraits.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "f64f32cb07ed8c5232f4b262ce60c2b6c1902d33",
+  "partial": false
+}

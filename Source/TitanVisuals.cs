@@ -142,8 +142,8 @@ namespace TitanFramework
             return source.GetColoredVersion(Overlay.Shader, Overlay.color, Overlay.color);
         }
 
-        /// <summary>Height of the mesh in cells. Set from MeshSetFor, which the base
-        /// constructor calls; no initialiser, so the value survives construction.</summary>
+        /// <summary>Height of the mesh in cells, used to keep a scaled overlay's bottom
+        /// on the creature's feet. Set from MeshSetFor, which the base constructor calls.</summary>
         public float meshHeight;
 
         public override GraphicMeshSet MeshSetFor(Pawn pawn)
@@ -152,7 +152,7 @@ namespace TitanFramework
             {
                 var set = TProps.head ? HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn(pawn)
                                       : HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn(pawn);
-                meshHeight = 1.5f * (pawn.ageTracker?.CurLifeStage?.bodySizeFactor ?? 1f);
+                meshHeight = TProps.head ? 1.5f : HumanlikeMeshPoolUtility.HumanlikeBodyWidthForPawn(pawn);
                 return set;
             }
             var g = SourceGraphic(pawn, false);
