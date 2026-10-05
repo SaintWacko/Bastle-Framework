@@ -51,8 +51,14 @@ namespace TitanFramework
     [HarmonyPatch(typeof(CompHatcher), nameof(CompHatcher.Hatch))]
     public static class Patch_CompHatcher_Hatch
     {
+        // Mirrors Hatch: otherParent only counts as a parent when the genders differ.
         public static void Prefix(CompHatcher __instance)
-            => BirthContext.Set(__instance.hatcheeParent, __instance.otherParent);
+        {
+            var mother = __instance.hatcheeParent;
+            var other = __instance.otherParent;
+            if (other != null && mother != null && mother.gender == other.gender) other = null;
+            BirthContext.Set(mother, other);
+        }
 
         public static void Finalizer() => BirthContext.Clear();
     }

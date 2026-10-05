@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "buildId": 2,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-05T19:52:48.234Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "Hediff_Titan stage merging, trait add/remove of extra hediffs and abilities, discovery visibility, the BestKindLabel postfix and the birth-context inheritance patches",
+  "diffSource": "since the oldest restore point still kept (2026-10-05T18:40:58Z); older ones were pruned, so the chat's first changes may be missing",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 5,
+    "note": 8
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Adding or removing a trait on an existing titan doesn't update the pawn's needs or the cached list of disabled work",
+      "detail": "TraitsChanged only calls pawn.health.Notify_HediffChanged(this). That clears the hediff cache and calls CheckForStateChange. CheckForStateChange only refreshes disabled work when the NEW stage has disabledWorkTags (Pawn_HealthTracker.cs:499). Vanilla only calls AddOrRemoveNeedsAsAppropriate when a hediff is added or removed (HediffSet.cs:373, Hediff.cs:615), never when it changes. Two things go wrong. First, a trait with enablesNeeds or disablesNeeds that is added to a pawn that is already a titan doesn't change its needs. Second, removing the last trait that disabled work leaves that work disabled until some other hediff change happens. Fix: in TraitsChanged, call pawn.needs?.AddOrRemoveNeedsAsAppropriate() and pawn.Notify_DisabledWorkTypesChanged() when the old or new stage has needs or work tags.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:129"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "Two traits that list the same hediff stack its severity, and removing one leaves it doubled",
+      "detail": "ApplyEffects always creates and adds a new hediff, even when a trait already on the pawn lists the same hediff and part. AddHediff merges it into the existing one through Hediff.TryMergeWith, which adds the severities together (Hediff.cs:654). So the second trait doubles the severity that was set. Later, RemoveEffects skips the removal because another trait still lists that hediff, so the doubled severity stays. Fix: in ApplyEffects, before calling MakeHediff, run the same 'another trait already has it' check that RemoveEffects uses, and skip the add when it matches.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:82"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "BuildStage silently drops several HediffStage fields that its doc comment doesn't list",
+      "detail": "The comment lists MTBs, thought/mood fields, severity-scaled lists and labels as not merged. The code also drops blocksMentalBreaks, blocksInspirations, socialFightChanceFactor, opinionOfOthersFactor, severityGainFactor, preventVacuumBurns, removeRoamMtb, lifeThreatening and partEfficiencyOffset (all fields of HediffStage, HediffStage.cs:6-153). A trait author who sets any of these gets no effect and no warning. Cheapest fix: merge the bool flags with |= next to blocksSleeping, and multiply the two social factors as the code already does for fertilityFactor. Otherwise, list them in the comment.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:199"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "InheritTraits marks every inherited trait discovered, even when the parent's copy is still hidden",
+      "detail": "TitanUtility.cs:153 calls AddTrait(child, kv.Key, discovered: true) unconditionally. The comment says 'the player already knows the parents', but a parent's trait can still be undiscovered. The newborn then shows the hidden trait's prefix/suffix and tooltip, which gives away what its parent has. Change at that line: while counting carriers in Count(), also record whether any carrying parent's TitanTrait has discovered == true, and pass that instead of the literal true.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanUtility.cs:153"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "GetTitan trusts the weak-table entry without checking the hediff is still on the pawn",
+      "detail": "Pawn_HealthTracker.Reset() replaces the whole HediffSet without calling PostRemoved, so Unregister never runs. Vanilla calls it during pawn generation retries (PawnGenerator.cs:1282). After that the registry still points at a detached Hediff_Titan. GetOrMakeTitan returns it, AddTraitInternal mutates a hediff the pawn no longer has (its stage never applies, though its extra hediffs and abilities are still added), and the titan hediff is never re-added. Change at TitanUtility.cs:37 (or only in GetOrMakeTitan, to keep the label hot path cheap): treat an entry as missing unless pawn.health.hediffSet.hediffs.Contains(t), and Unregister it when that check fails.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Assembly-CSharp/Verse/Pawn_HealthTracker.cs:178"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "RemoveEffects can remove a hediff the pawn had before it became a titan",
+      "detail": "It removes the first hediff with a matching def and part, whatever its source. If the pawn already had that hediff before the trait was added (and the trait's copy merged into it), removing the trait deletes the original too.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:110"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Hidden traits' numbers are still visible outside the tooltip",
+      "detail": "TipStringExtra hides undiscovered traits' stats. But the merged CurStage is what vanilla stat explanations and capacity tooltips read, and they list it under the titan hediff's label. So a hidden trait's offsets can be seen there. This is my opinion from how vanilla consumes CurStage. I didn't trace a specific StatWorker line.",
+      "evidence": {
+        "kind": "opinion",
+        "ref": "Source/Hediff_Titan.cs BuildStage"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Hatch passes otherParent as a parent for inheritance even when vanilla doesn't count it as one",
+      "detail": "CompHatcher.Hatch only adds otherParent as a Parent relation when hatcheeParent is null or the two have different genders. The prefix passes otherParent to BirthContext without that check, so a same-gender otherParent can pass traits to a hatchling it isn't related to.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Patches.cs:54"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Ticks looks up TickInterval by name only",
+      "detail": "traitClass.GetMethod(nameof(TitanTrait.TickInterval)) throws AmbiguousMatchException if a content mod's TitanTrait subclass adds an overload. RecalcTicking calls Ticks during AddTraitInternal and on load. Passing the argument types, GetMethod(name, new[] { typeof(int) }), makes it exact.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanTraitDef.cs:128"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Hidden traits' stat effects still show in stat explanations under 'titan traits'",
+      "detail": "StatWorker's explanation lists every hediff's CurStage statOffsets/statFactors under the hediff's label and never checks Visible. So the merged stage shows, for example, TF_Example_Ironhide's +ArmorRating_Sharp on the info card before the trait is discovered. Moving the numbers into a trait hediff does not help, because that path does not check Visible either. The 'stays hidden' wording in the TitanTraitDef docs and About description should say this, or a later patch on the explanation should hide it.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Assembly-CSharp/RimWorld/StatWorker.cs:508"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Adding or removing traits from inside a trait's verb hook changes the hediff list while vanilla is looping over it",
+      "detail": "Pawn_HealthTracker.Notify_UsedVerb loops over hediffSet.hediffs with foreach and calls Hediff_Titan.Notify_PawnUsedVerb inside it. If a TitanTrait's Notify_PawnUsedVerb or PostDiscovered (reached through UsesGrantedVerb/Attacks discovery) calls TitanUtility.AddTrait/RemoveTrait, that adds or removes hediffs mid-loop and throws InvalidOperationException. Worth a sentence on TitanUtility.AddTrait/RemoveTrait telling content mods not to call them from those hooks.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Assembly-CSharp/Verse/Pawn_HealthTracker.cs:298"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Example traits ship rollable",
+      "detail": "All five examples use the default commonality (0.5 to 1), so any mod calling RollTraits without a validator gets them. The file's own comment already says this. Set <commonality>0</commonality> on each, or move the file out, before publishing.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Defs/Examples/TF_ExampleTraits.xml:4"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "AddTrait(force: true) with a null pawn throws",
+      "detail": "The force path skips CanAddTrait, which is where the null check lives, so a null pawn reaches GetOrMakeTitan and throws a NullReferenceException at pawn.health. Add a pawn/def null guard at the top of AddTrait.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanUtility.cs:68"
+      }
+    }
+  ],
+  "checked": [
+    "all 6 Harmony targets bind (verify_patches); the BestKindLabel argument types pick exactly 1 of 3 overloads",
+    "no other mod in the corpus patches GenLabel.BestKindLabel, Hediff_Pregnant.DoBirthSpawn, CompHatcher.Hatch or PawnUtility.TrySpawnHatchedOrBornPawn",
+    "prefixes return void (lint prefix-returns-void); finalizers have no __exception, so the original exception is rethrown and BirthContext is always cleared",
+    "parameter names mother/father match the static DoBirthSpawn(Pawn mother, Pawn father) signature; TrySpawnHatchedOrBornPawn's first parameter is named pawn",
+    "the inheritance prefix runs before the newborn spawns, and both DoBirthSpawn and Hatch call TrySpawnHatchedOrBornPawn once per offspring",
+    "the BestKindLabel postfix is a null-safe ConditionalWeakTable lookup (TitanUtility.GetTitan) that can't throw for ordinary pawns",
+    "stat offsets and factors are merged into one entry per stat, which is correct because vanilla reads only the first entry for a stat; capMods concatenation is fine; damageFactors default list is handl…",
+    "naturalHealingFactor and regeneration -1 sentinels are handled correctly",
+    "merged hediffGivers and mentalStateGivers still run, because base.TickInterval reads CurStage (Hediff.cs:456-467)",
+    "PostRemoved clears traits before RemoveEffects, so all extra hediffs and abilities are stripped, and base.PostRemoved still sees the cached stage when updating needs",
+    "ExposeData saves traits with LookMode.Deep, drops traits with a null def and reconnects each trait to its titan at PostLoadInit",
+    "discovery: SetVisible applied when the hediff is added and again on discovery; the name cache is marked stale on discovery; oldLabel is captured before the label changes",
+    "Notify_PawnUsedVerb and Notify_PawnPostApplyDamage don't change the hediff list while vanilla is looping over it (Notify_TraitDiscovered iterates a copy)",
+    "DebugActions.cs, Mod.cs and the csproj (net472, Harmony runtime excluded) have nothing to flag",
+    "verify_patches: all 6 targets in Patches.cs bind (BestKindLabel postfix picks one of 3 overloads; DoBirthSpawn, CompHatcher.Hatch, TrySpawnHatchedOrBornPawn)",
+    "Hediff_Pregnant.DoBirthSpawn(Pawn mother, Pawn father) matches the prefix parameter names; it calls TrySpawnHatchedOrBornPawn per litter member before parent relations are added, so the BirthContext …",
+    "Registry re-registration on load: HediffSet sets hediff.pawn in ResolvingCrossRefs (HediffSet.cs:248), so pawn is set when Hediff_Titan's PostLoadInit calls Register",
+    "Dies discovery: Pawn.Kill calls hediffSet.Notify_PawnDied after the corpse is placed, so PlayerCanObserve's corpse branch can see it",
+    "Notify_PawnUsedVerb is delivered to all hediffs (Pawn_HealthTracker.Notify_UsedVerb), so UsesGrantedVerb via HediffComp DirectOwner is reachable",
+    "EnsureAbilityTracker on animals: Pawn.ExposeData deep-saves abilities unconditionally (Pawn.cs:4650) and nothing removes the tracker for non-humanlikes; GainAbility is idempotent",
+    "Hediff.SetVisible exists and per-instance visibility is how vanilla does it; ConfigErrors' becomeVisible check matches what TF_Example_VenomFangs does",
+    "HediffStage fields used in example XML exist: damageFactors parses <Flame>0.2</Flame> via DamageFactor.LoadDataFromXmlCustom, regeneration, naturalHealingFactor; StatDef IncomingDamageFactor and Tool…",
+    "TitanDefOf uses the standard [DefOf] + EnsureInitializedInCtor pattern and TF_Titan is defined in Defs/HediffDefs/TF_Hediffs.xml (defof-in-mod-ctor lint not triggered)",
+    "RollTraits terminates: CanAddTrait rejects duplicates via ConflictsWith(this), so drawbacks cannot loop forever",
+    "About.xml: packageId set, Harmony dependency and loadAfter present, 1.6 supported",
+    "Keyed strings: TF_TraitDiscovered/TF_HediffBrackets/TF_HediffBracketsUnknown argument counts match their Translate calls",
+    "Roslyn: no errors or warnings in TitanTraitDef.cs or TitanUtility.cs",
+    "pyxis_mod_errors: could not run (no Pyxis token configured), so no community error evidence was consulted"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/DebugActions.cs",
+    "Source/Hediff_Titan.cs",
+    "Source/Mod.cs",
+    "Source/Patches.cs",
+    "Source/TitanTrait.cs",
+    "Source/TitanTraitDef.cs",
+    "Source/TitanUtility.cs",
+    "About/About.xml",
+    "Defs/Examples/TF_ExampleTraits.xml",
+    "Defs/HediffDefs/TF_Hediffs.xml",
+    "Languages/English/Keyed/TitanFramework.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb",
+    "Source/TitanFramework.csproj"
+  ],
+  "parts": 2,
+  "buildCommit": "8559f82cf7a68b63ecffc4228aebb3d6b0c0d8d2",
+  "partial": false
+}

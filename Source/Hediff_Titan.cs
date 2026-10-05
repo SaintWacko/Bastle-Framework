@@ -73,6 +73,9 @@ namespace TitanFramework
             {
                 foreach (var th in def.hediffs)
                 {
+                    // Another trait already added this hediff: adding it again would
+                    // merge into it and stack the severity.
+                    if (OtherTraitHasHediff(trait, th)) continue;
                     BodyPartRecord part = null;
                     if (th.part != null)
                     {
@@ -103,8 +106,7 @@ namespace TitanFramework
                 foreach (var th in def.hediffs)
                 {
                     // Another trait may add the same hediff; leave it if so.
-                    if (traits.Any(t => t.def.hediffs != null && t.def.hediffs.Any(o => o.hediff == th.hediff && o.part == th.part)))
-                        continue;
+                    if (OtherTraitHasHediff(trait, th)) continue;
                     var existing = pawn.health.hediffSet.hediffs.FirstOrDefault(
                         x => x.def == th.hediff && (th.part == null || x.Part?.def == th.part));
                     if (existing != null) pawn.health.RemoveHediff(existing);
@@ -120,13 +122,35 @@ namespace TitanFramework
             }
         }
 
+        private bool OtherTraitHasHediff(TitanTrait self, TitanTraitHediff th)
+        {
+            foreach (var t in traits)
+            {
+                if (t == self || t.def.hediffs == null) continue;
+                foreach (var o in t.def.hediffs)
+                    if (o.hediff == th.hediff && o.part == th.part) return true;
+            }
+            return false;
+        }
+
         private void TraitsChanged()
         {
+            var oldStage = cachedStage;
             stageDirty = true;
             nameDirty = true;
             RecalcTicking();
-            if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
-                pawn.health.Notify_HediffChanged(this);
+            if (pawn?.health?.hediffSet == null || !pawn.health.hediffSet.hediffs.Contains(this)) return;
+            pawn.health.Notify_HediffChanged(this);
+
+            // Vanilla only refreshes needs and disabled work when a hediff is added or
+            // removed, not when its stage changes in place, so do it here when either
+            // the old or the new stage touches them.
+            var newStage = CurStage;
+            bool needsChanged = !(oldStage?.enablesNeeds).NullOrEmpty() || !(oldStage?.disablesNeeds).NullOrEmpty()
+                || !newStage.enablesNeeds.NullOrEmpty() || !newStage.disablesNeeds.NullOrEmpty();
+            if (needsChanged) pawn.needs?.AddOrRemoveNeedsAsAppropriate();
+            if ((oldStage?.disabledWorkTags ?? WorkTags.None) != newStage.disabledWorkTags)
+                pawn.Notify_DisabledWorkTypesChanged();
         }
 
         internal void Notify_TraitDiscovered(TitanTrait trait)
@@ -169,7 +193,11 @@ namespace TitanFramework
         /// Stat offsets/factors are merged per stat because vanilla reads only the
         /// first entry for a given stat from a stage's list.
         /// Not merged (use a trait hediff instead): death/vomit/mental break MTBs,
-        /// thought and mood fields, severity-scaled stat lists, label/tooltip fields.
+        /// forgetMemoryThoughtMtbDays, pctConditionalThoughtsNullified,
+        /// pctAllThoughtNullification, overrideMoodBase, allowedMentalBreakIntensities,
+        /// lifeThreatening, tale, severity-scaled stat lists and the *EffectMultiplier
+        /// stats, part-only fields (partEfficiencyOffset, partIgnoreMissingHP,
+        /// destroyPart), and label/tooltip fields.
         /// </summary>
         protected virtual HediffStage BuildStage()
         {
@@ -195,7 +223,14 @@ namespace TitanFramework
                 s.restFallFactorOffset += t.restFallFactorOffset;
                 s.fertilityFactor *= t.fertilityFactor;
                 s.foodPoisoningChanceFactor *= t.foodPoisoningChanceFactor;
+                s.socialFightChanceFactor *= t.socialFightChanceFactor;
+                s.opinionOfOthersFactor *= t.opinionOfOthersFactor;
+                s.severityGainFactor *= t.severityGainFactor;
                 s.blocksSleeping |= t.blocksSleeping;
+                s.blocksMentalBreaks |= t.blocksMentalBreaks;
+                s.blocksInspirations |= t.blocksInspirations;
+                s.preventVacuumBurns |= t.preventVacuumBurns;
+                s.removeRoamMtb |= t.removeRoamMtb;
                 s.disabledWorkTags |= t.disabledWorkTags;
 
                 Union(ref s.makeImmuneTo, t.makeImmuneTo);

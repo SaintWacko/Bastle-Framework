@@ -42,6 +42,13 @@ namespace TitanFramework
         public static Hediff_Titan GetOrMakeTitan(Pawn pawn)
         {
             var titan = GetTitan(pawn);
+            // Pawn_HealthTracker.Reset (pawn generation retries) swaps the hediff set
+            // without calling PostRemoved, which can leave a stale entry behind.
+            if (titan != null && !pawn.health.hediffSet.hediffs.Contains(titan))
+            {
+                Unregister(pawn);
+                titan = null;
+            }
             if (titan != null) return titan;
             titan = (Hediff_Titan)HediffMaker.MakeHediff(TitanDefOf.TF_Titan, pawn);
             pawn.health.AddHediff(titan);
@@ -61,9 +68,14 @@ namespace TitanFramework
 
         /// <summary>Adds a trait, making the pawn a titan if needed. discovered=true
         /// starts it identified; visible traits are always identified.
-        /// Returns null if the trait cannot be added.</summary>
+        /// Returns null if the trait cannot be added.
+        /// Do not call this (or RemoveTrait) from a TitanTrait's Notify_PawnUsedVerb,
+        /// Notify_PawnPostApplyDamage or PostDiscovered: vanilla is iterating the
+        /// pawn's hediffs at that point and adding or removing one throws. Queue the
+        /// change and apply it from TickInterval instead.</summary>
         public static TitanTrait AddTrait(Pawn pawn, TitanTraitDef def, bool discovered = false, bool force = false)
         {
+            if (pawn?.health == null || def == null) return null;
             if (!force && !CanAddTrait(pawn, def)) return null;
             if (force && GetTitan(pawn)?.HasTrait(def) == true) return null;
             return GetOrMakeTitan(pawn).AddTraitInternal(def, discovered);
@@ -121,8 +133,8 @@ namespace TitanFramework
 
         /// <summary>
         /// Gives a newborn traits from its parents. Each heritable trait carried by a
-        /// parent passes with that trait's inheritChance per carrying parent. Inherited
-        /// traits start discovered: the player already knows the parents.
+        /// parent passes with that trait's inheritChance per carrying parent. An
+        /// inherited trait starts discovered if it was discovered on either parent.
         /// </summary>
         public static void InheritTraits(Pawn child, Pawn mother, Pawn father)
         {
@@ -131,6 +143,7 @@ namespace TitanFramework
             if (child == null || (m == null && f == null)) return;
 
             var carriers = new Dictionary<TitanTraitDef, int>();
+            var known = new HashSet<TitanTraitDef>();
             void Count(Hediff_Titan t)
             {
                 if (t == null) return;
@@ -139,6 +152,7 @@ namespace TitanFramework
                     if (!tr.def.heritable) continue;
                     carriers.TryGetValue(tr.def, out int n);
                     carriers[tr.def] = n + 1;
+                    if (tr.discovered) known.Add(tr.def);
                 }
             }
             Count(m);
@@ -150,7 +164,7 @@ namespace TitanFramework
             {
                 float chance = 1f - Mathf.Pow(1f - Mathf.Clamp01(kv.Key.inheritChance), kv.Value);
                 if (Rand.Chance(chance))
-                    AddTrait(child, kv.Key, discovered: true);
+                    AddTrait(child, kv.Key, discovered: known.Contains(kv.Key));
             }
         }
 

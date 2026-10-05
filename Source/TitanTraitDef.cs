@@ -125,7 +125,7 @@ namespace TitanFramework
             {
                 if (ticksCached == null)
                 {
-                    var m = traitClass.GetMethod(nameof(TitanTrait.TickInterval));
+                    var m = traitClass.GetMethod(nameof(TitanTrait.TickInterval), new[] { typeof(int) });
                     ticksCached = m != null && m.DeclaringType != typeof(TitanTrait);
                 }
                 return ticksCached.Value;
