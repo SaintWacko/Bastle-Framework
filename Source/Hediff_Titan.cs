@@ -83,7 +83,7 @@ namespace TitanFramework
                     if (th.severity > 0f) h.Severity = th.severity;
                     // A hediff whose stage has becomeVisible=false stays out of the
                     // health tab until this flag is set, which discovery does.
-                    if (trait.discovered) h.visible = true;
+                    if (trait.discovered) h.SetVisible();
                     pawn.health.AddHediff(h, part);
                 }
             }
@@ -134,9 +134,12 @@ namespace TitanFramework
             nameDirty = true;
             if (trait.def.hediffs == null) return;
             foreach (var th in trait.def.hediffs)
-                foreach (var h in pawn.health.hediffSet.hediffs)
+                foreach (var h in pawn.health.hediffSet.hediffs.ToList())
                     if (h.def == th.hediff && (th.part == null || h.Part?.def == th.part))
-                        h.visible = true;
+                    {
+                        h.SetVisible();
+                        pawn.health.Notify_HediffChanged(h);
+                    }
         }
 
         private void RecalcTicking()
