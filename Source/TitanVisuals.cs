@@ -57,7 +57,9 @@ namespace TitanFramework
                 parentTagDef = parent,
                 pawnType = PawnRenderNodeProperties.RenderNodePawnType.Any,
                 rotDrawMode = RotDrawMode.Fresh,
-                baseLayer = layer,
+                // LayerFor reads baseLayer as an absolute value, so offset from the
+                // vanilla layer of the node it decorates (body 0, head 50).
+                baseLayer = (parent == PawnRenderNodeTagDefOf.Head ? 50f : 0f) + layer,
                 drawSize = new Vector2(scale, scale),
             };
             p.EnsureInitialized();
@@ -121,6 +123,9 @@ namespace TitanFramework
             }
             var stage = pawn.ageTracker?.CurKindLifeStage;
             if (stage == null) return null;
+            // Mirrors PawnRenderNode_AnimalPart.GraphicFor so the glow matches the body.
+            if (stage.bodyGraphicData != null && pawn.TryGetAlternate(out var ag, out _))
+                return ag.GetGraphic(stage.bodyGraphicData.Graphic);
             var data = pawn.gender == Gender.Female && stage.femaleGraphicData != null ? stage.femaleGraphicData : stage.bodyGraphicData;
             return data?.Graphic;
         }
@@ -152,7 +157,9 @@ namespace TitanFramework
 
             // Per-pawn phase so a pack of flaming wolves doesn't pulse in lockstep.
             float phase = (parms.pawn.thingIDNumber % 97) * 0.37f;
-            float wave = (Mathf.Sin((Time.realtimeSinceStartup * overlay.pulseSpeed + phase) * Mathf.PI * 2f) + 1f) * 0.5f;
+            // Game time, so the pulse freezes with the game when paused.
+            float seconds = Find.TickManager.TicksGame / 60f;
+            float wave = (Mathf.Sin((seconds * overlay.pulseSpeed + phase) * Mathf.PI * 2f) + 1f) * 0.5f;
             Color c = parms.tint * material.color;
             c.a *= Mathf.Lerp(overlay.pulseMin, 1f, wave);
             block.SetColor(ShaderPropertyIDs.Color, c);

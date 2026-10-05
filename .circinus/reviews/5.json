@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "buildId": 5,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-05T21:50:17.397Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "The new visuals: DynamicPawnRenderNodeSetup_Titan, PawnRenderNode_TitanOverlay mesh/graphic sourcing, pulsing MaterialPropertyBlock, effecter lifecycle between Hediff_Titan and MapComponent_TitanVisuals, render-tree dirtying on discovery",
+  "diffSource": "since build 3 (2026-10-05T19:53:23Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 3,
+    "note": 2
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Embers stop for good about 16.6 game days after the effecter is spawned",
+      "detail": "SubEffecter_SprayerChance stops spawning once TicksGame passes its creation tick + def.lifespanMaxTicks, which defaults to 999999 (about 16.6 days). Hediff_Titan.EffectersTick only spawns new effecters when liveEffecters is empty, which needs a CleanupEffecters call (despawn, trait change, reload). A titan that stays spawned longer than that silently loses its particles. Fix in EffectersTick: record the tick the effecters were spawned and call CleanupEffecters() once a period shorter than the lifespan has passed, so the next tick spawns fresh ones. Or set <lifespanMaxTicks> high in TF_Effecter_Embers and say in the docs that authors must do the same.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Assembly-CSharp/Verse/SubEffecterDef.cs:20"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "Head overlay uses an absolute layer, so it draws under the body and apparel and the head covers it",
+      "detail": "PawnRenderNodeWorker.LayerFor returns props.baseLayer as is, not relative to the parent node. The vanilla Head node is at baseLayer 50 and apparel at 2-40. TitanOverlay.MakeProps sets baseLayer = layer (-1 or 1) for the head props too. The rim glow (-1) draws behind the body and the tint (1, the venom example) draws under the head, so neither shows on the head. In MakeProps, use baseLayer = (head ? 50f : 0f) + layer, the parent's vanilla layer plus the offset, which matches the 'relative to the body' doc comment.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Defs/Core/PawnRenderTreeDefs/PawnRenderTreeDefs.xml:83"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "Animal overlay ignores alternate graphics, so the glow outline can differ from the body under it",
+      "detail": "Vanilla's animal body node checks pawn.TryGetAlternate(out ag, out _) and draws ag.GetGraphic(stage.bodyGraphicData.Graphic). PawnRenderNode_TitanOverlay.SourceGraphic always reads bodyGraphicData or femaleGraphicData, so on an animal with an alternate graphic the overlay uses a different texture and mesh size from the body. Add the same TryGetAlternate branch to SourceGraphic.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Assembly-CSharp/Verse/PawnRenderNode_AnimalPart.cs:27"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Humanlike body overlay always uses the plain naked body path",
+      "detail": "PawnRenderNode_Body.GraphicFor uses mutant bodyTypeGraphicPaths and creepjoiner form paths when they exist. SourceGraphic always uses bodyType.bodyNakedGraphicPath, so a mutant or creepjoiner with its own body texture gets a glow in the wrong shape. Only Fresh is drawn (rotDrawMode = Fresh), so the dessicated path does not matter.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Assembly-CSharp/Verse/PawnRenderNode_Body.cs:24"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Pulse runs on real time, so it keeps pulsing while the game is paused",
+      "detail": "PawnRenderNodeWorker_TitanOverlay uses Time.realtimeSinceStartup. That may be what you want. I did not check the corpus for a vanilla precedent either way, so this is opinion.",
+      "evidence": {
+        "kind": "opinion",
+        "ref": "Source/TitanVisuals.cs PawnRenderNodeWorker_TitanOverlay.GetMaterialPropertyBlock"
+      }
+    }
+  ],
+  "checked": [
+    "PawnRenderTree.InitializeDynamicNodeTypes instantiates every non-abstract DynamicPawnRenderNodeSetup subclass, so DynamicPawnRenderNodeSetup_Titan is picked up without Harmony (PawnRenderTree.cs:115-…",
+    "Returning a null parent from GetDynamicNodes is fine: AddChild looks the parent up by props.parentTagDef and falls back to rootNode (PawnRenderTree.AddChild)",
+    "PawnRenderNode ctor assigns props before calling MeshSetFor, so TProps in MeshSetFor is safe (PawnRenderNode.cs:171-184)",
+    "PawnRenderNodeProperties.EnsureInitialized only resolves workerClass and subworkers, so calling it on the hand-built props is correct",
+    "Pulse worker: base.GetMaterialPropertyBlock returns null only when there is no graphic, and Draw only calls it when material != null; setting ShaderPropertyIDs.Color after base matches the vanilla No…",
+    "PawnDrawParms.Statue exists; the HumanlikeMeshPoolUtility body/head set signatures and HeadTypeDef.GetGraphic(Pawn, Color) match their call sites",
+    "PawnRenderer.SetAllGraphicsDirty is deferred through LongEventHandler and only acts on a resolved tree, so calling it from VisualsChanged during generation or removal is safe",
+    "EffecterDef.SpawnAttached(Thing, Map, float) exists and triggers on spawn; EffectTick(pawn, pawn) converts implicitly to TargetInfo",
+    "Effecter lifecycle across despawn and map change: the map component cleans up and resets trackedMap, and Track ignores duplicates, so a pawn that respawns is tracked again; PostRemoved cleans up thro…",
+    "TF_Effecter_Embers: FireGlow and Smoke flecks and Mote_SparkThrown exist in Core; chancePerTick, spawnLocType=OnSource, positionRadius, angle, speed, rotationRate, scale, airTime and color are all re…",
+    "No Harmony patches in the changed C#, so verify_patches and precedents did not apply",
+    "pyxis_mod_errors could not run: no Pyxis token configured"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanTrait.cs",
+    "Source/TitanTraitDef.cs",
+    "Source/TitanUtility.cs",
+    "Source/TitanVisuals.cs",
+    "Defs/Examples/TF_ExampleTraits.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "25a44f8ad19121b16ebdc64e6ad9f9db368652e0",
+  "partial": false
+}

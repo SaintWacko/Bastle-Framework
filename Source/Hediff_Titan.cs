@@ -34,6 +34,11 @@ namespace TitanFramework
         [Unsaved] private List<EffecterDef> activeEffecterDefs;
         [Unsaved] private readonly List<Effecter> liveEffecters = new List<Effecter>();
         [Unsaved] private Map trackedMap;
+        [Unsaved] private int effectersSpawnedTick = -1;
+
+        // Sub-effecters stop spawning after their def's lifespanMaxTicks (default
+        // 999999, about 16 days), so live effecters are respawned well before that.
+        private const int EffecterRefreshTicks = 600000;
 
         public List<TitanTrait> TraitsForReading => traits;
 
@@ -172,9 +177,15 @@ namespace TitanFramework
         internal void EffectersTick()
         {
             if (!HasActiveEffecters) return;
+            int now = Find.TickManager.TicksGame;
+            if (liveEffecters.Count > 0 && now - effectersSpawnedTick > EffecterRefreshTicks)
+                CleanupEffecters();
             if (liveEffecters.Count == 0)
+            {
                 foreach (var def in activeEffecterDefs)
                     liveEffecters.Add(def.SpawnAttached(pawn, pawn.Map));
+                effectersSpawnedTick = now;
+            }
             for (int i = 0; i < liveEffecters.Count; i++)
                 liveEffecters[i].EffectTick(pawn, pawn);
         }
