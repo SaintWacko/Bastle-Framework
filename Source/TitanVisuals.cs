@@ -16,11 +16,11 @@ namespace TitanFramework
         public Color color = new Color(1f, 0.55f, 0.15f, 0.6f);
 
         /// <summary>Size relative to the body. Above 1 makes a halo around the silhouette.</summary>
-        public float scale = 1.1f;
+        public float scale = 1f;
 
         /// <summary>Draw layer relative to the body. Negative draws behind it (a rim glow),
         /// positive draws over it (a tint).</summary>
-        public float layer = -1f;
+        public float layer = 1f;
 
         /// <summary>Pulses per second. 0 = steady.</summary>
         public float pulseSpeed;
