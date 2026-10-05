@@ -19,6 +19,13 @@
       "reason": "game-closed",
       "errorClasses": 1,
       "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c"
+    },
+    {
+      "startedAt": 1791237650925,
+      "endedAt": 1791237734709,
+      "reason": "game-closed",
+      "errorClasses": 1,
+      "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c"
     }
   ]
 }

@@ -22,6 +22,10 @@ namespace TitanFramework
         /// positive draws over it (a tint).</summary>
         public float layer = 1f;
 
+        /// <summary>When scale is above 1, shift the overlay up so its bottom edge stays
+        /// on the creature's feet and the extra size shows above and to the sides.</summary>
+        public bool alignBottom = true;
+
         /// <summary>Pulses per second. 0 = steady.</summary>
         public float pulseSpeed;
 
@@ -109,6 +113,7 @@ namespace TitanFramework
 
         private PawnRenderNodeProperties_TitanOverlay TProps => (PawnRenderNodeProperties_TitanOverlay)props;
         public TitanOverlay Overlay => TProps.overlay;
+        public bool TProps_IsHead => TProps.head;
 
         /// <summary>The texture the overlay copies: the same one the body or head node
         /// draws. Read from the pawn rather than the body node, whose graphic may not
@@ -137,18 +142,37 @@ namespace TitanFramework
             return source.GetColoredVersion(Overlay.Shader, Overlay.color, Overlay.color);
         }
 
+        /// <summary>Height of the mesh in cells. Set from MeshSetFor, which the base
+        /// constructor calls; no initialiser, so the value survives construction.</summary>
+        public float meshHeight;
+
         public override GraphicMeshSet MeshSetFor(Pawn pawn)
         {
             if (pawn.RaceProps.Humanlike)
-                return TProps.head ? HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn(pawn)
-                                   : HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn(pawn);
+            {
+                var set = TProps.head ? HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn(pawn)
+                                      : HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn(pawn);
+                meshHeight = 1.5f * (pawn.ageTracker?.CurLifeStage?.bodySizeFactor ?? 1f);
+                return set;
+            }
             var g = SourceGraphic(pawn, false);
-            return g == null ? null : MeshPool.GetMeshSetForSize(g.drawSize.x, g.drawSize.y);
+            if (g == null) return null;
+            meshHeight = g.drawSize.y;
+            return MeshPool.GetMeshSetForSize(g.drawSize.x, g.drawSize.y);
         }
     }
 
     public class PawnRenderNodeWorker_TitanOverlay : PawnRenderNodeWorker
     {
+        public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
+        {
+            var offset = base.OffsetFor(node, parms, out pivot);
+            if (node is PawnRenderNode_TitanOverlay t && t.Overlay != null && t.Overlay.alignBottom
+                && t.Overlay.scale > 1f && !t.TProps_IsHead)
+                offset.z += (t.Overlay.scale - 1f) * t.meshHeight * 0.5f;
+            return offset;
+        }
+
         public override MaterialPropertyBlock GetMaterialPropertyBlock(PawnRenderNode node, Material material, PawnDrawParms parms)
         {
             var block = base.GetMaterialPropertyBlock(node, material, parms);
