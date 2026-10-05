@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace TitanFramework
@@ -170,7 +171,7 @@ namespace TitanFramework
             // The render tree is only rebuilt when overlays could have changed:
             // rebuilding it is not free, and discovery of a stat-only trait
             // shouldn't pay for it.
-            if ((cause == null || !cause.overlays.NullOrEmpty()) && pawn?.Drawer?.renderer != null)
+            if ((cause == null || cause.HasRenderVisuals) && pawn?.Drawer?.renderer != null)
                 pawn.Drawer.renderer.SetAllGraphicsDirty();
         }
 
@@ -182,12 +183,21 @@ namespace TitanFramework
                 CleanupEffecters();
             if (liveEffecters.Count == 0)
             {
+                float scale = Mathf.Clamp(Mathf.Sqrt(pawn.BodySize), 0.5f, 2.5f);
                 foreach (var def in activeEffecterDefs)
-                    liveEffecters.Add(def.SpawnAttached(pawn, pawn.Map));
+                    liveEffecters.Add(def.SpawnAttached(pawn, pawn.Map, EffecterScaled(def) ? scale : 1f));
                 effectersSpawnedTick = now;
             }
             for (int i = 0; i < liveEffecters.Count; i++)
                 liveEffecters[i].EffectTick(pawn, pawn);
+        }
+
+        private bool EffecterScaled(EffecterDef def)
+        {
+            foreach (var t in traits)
+                if (t.def.effecters != null && t.def.effecters.Contains(def))
+                    return t.def.scaleEffectersWithBodySize;
+            return true;
         }
 
         internal void CleanupEffecters()

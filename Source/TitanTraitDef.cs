@@ -125,7 +125,15 @@ namespace TitanFramework
         /// give the trait away, so this is off by default.</summary>
         public bool showVisualsWhenHidden;
 
-        public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty();
+        /// <summary>Flickering fire sprites drawn on the creature's body.</summary>
+        public List<TitanFlames> flames;
+
+        /// <summary>Scale effecters (spread and particle size) with the square root of
+        /// body size, so a bear's embers cover a bear and a rat's cover a rat.</summary>
+        public bool scaleEffectersWithBodySize = true;
+
+        public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty() || !flames.NullOrEmpty();
+        public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty();
 
         // ---- cached --------------------------------------------------------------
 

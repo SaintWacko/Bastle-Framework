@@ -15,16 +15,24 @@
     <pointCost>2</pointCost>
     <exclusionTags><li>TF_Element</li></exclusionTags>
     <tags><li>Fire</li></tags>
-    <!-- A pulsing orange glow drawn over the body, and embers/smoke while on screen. -->
+    <!-- A faint warm tint, a few flickering vanilla fire sprites on the body, and
+         flame licks, embers and smoke rising off it. -->
     <overlays>
       <li>
-        <color>(1.0, 0.4, 0.05, 0.7)</color>
-        <scale>1.15</scale>
+        <color>(1.0, 0.4, 0.05, 0.35)</color>
+        <scale>1.0</scale>
         <layer>1</layer>
         <pulseSpeed>1.3</pulseSpeed>
         <pulseMin>0.5</pulseMin>
       </li>
     </overlays>
+    <flames>
+      <li>
+        <count>3</count>
+        <size>0.3~0.45</size>
+        <color>(1.0, 0.9, 0.8, 0.8)</color>
+      </li>
+    </flames>
     <effecters>
       <li>TF_Effecter_Embers</li>
     </effecters>
@@ -119,6 +127,18 @@
   <EffecterDef>
     <defName>TF_Effecter_Embers</defName>
     <children>
+      <!-- Animated flame licks rising off the body (Biotech's fire-spew art; skipped without Biotech). -->
+      <li MayRequire="Ludeon.RimWorld.Biotech">
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>FireSpew_A</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.12</chancePerTick>
+        <scale>0.35~0.55</scale>
+        <angle>-12~12</angle>
+        <speed>0.4~0.8</speed>
+        <positionRadius>0.35</positionRadius>
+        <color>(1.0, 0.85, 0.7, 0.75)</color>
+      </li>
       <li>
         <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
         <fleckDef>FireGlow</fleckDef>

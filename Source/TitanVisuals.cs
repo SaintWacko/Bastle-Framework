@@ -26,6 +26,10 @@ namespace TitanFramework
         /// on the creature's feet and the extra size shows above and to the sides.</summary>
         public bool alignBottom = true;
 
+        /// <summary>Where the creature's feet sit below the mesh centre, as a fraction of
+        /// mesh height. Sprites don't fill their mesh, so this is less than 0.5.</summary>
+        public float feetDepth = 0.25f;
+
         /// <summary>Pulses per second. 0 = steady.</summary>
         public float pulseSpeed;
 
@@ -95,7 +99,11 @@ namespace TitanFramework
             if (titan == null) yield break;
             foreach (var trait in titan.TraitsForReading)
             {
-                if (!trait.VisualsActive || trait.def.overlays == null) continue;
+                if (!trait.VisualsActive) continue;
+                if (trait.def.flames != null)
+                    foreach (var flames in trait.def.flames)
+                        yield return (new PawnRenderNode_TitanFlames(pawn, flames.Props, tree), null);
+                if (trait.def.overlays == null) continue;
                 foreach (var overlay in trait.def.overlays)
                 {
                     yield return (new PawnRenderNode_TitanOverlay(pawn, overlay.PropsFor(false), tree), null);
@@ -169,7 +177,7 @@ namespace TitanFramework
             var offset = base.OffsetFor(node, parms, out pivot);
             if (node is PawnRenderNode_TitanOverlay t && t.Overlay != null && t.Overlay.alignBottom
                 && t.Overlay.scale > 1f && !t.TProps_IsHead)
-                offset.z += (t.Overlay.scale - 1f) * t.meshHeight * 0.5f;
+                offset.z += (t.Overlay.scale - 1f) * t.meshHeight * t.Overlay.feetDepth;
             return offset;
         }
 
