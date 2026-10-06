@@ -154,7 +154,7 @@ namespace TitanFramework
             var f = GetTitan(father);
             if (child == null || (m == null && f == null)) return;
 
-            // Material first, so flesh-only traits are then refused on a construct.
+            // Material first, so disallowConstructs traits are then refused on a construct.
             // From whichever parent has one; a coin flip when both do.
             ThingDef mm = m?.Material, fm = f?.Material;
             ThingDef mat = mm != null && fm != null ? (Rand.Bool ? mm : fm) : mm ?? fm;

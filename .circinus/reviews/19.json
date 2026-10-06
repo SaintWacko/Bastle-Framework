@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "buildId": 19,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-06T03:07:21.117Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "requiresFlesh / disallowConstructs split: every use covered, Venomous flag removed",
+  "diffSource": "since build 17 (2026-10-06T02:55:37Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 1,
+    "note": 2
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Material-grant loop in SetMaterialInternal ignores disallowConstructs",
+      "detail": "The removal loop at Hediff_Titan.cs:87-89 strips a disallowConstructs trait whenever stuff != null, even if the new material grants it. The add loop at Hediff_Titan.cs:93-95 then re-adds it with fromMaterial: true, because it only checks HasTrait and ConflictsWith. A material extension that lists a disallowConstructs trait therefore gets that trait on a construct anyway, removed and re-added (discovered reset to false) on every material change. Add `!def.disallowConstructs` to the add-loop condition at line 94, so the material path honours the flag the same way CanAddTrait does at TitanUtility.cs:75.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:94"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Stale comment still says flesh-only traits are refused on a construct",
+      "detail": "InheritTraits sets the material first so that construct-disallowed traits get refused. After the split that is disallowConstructs, not requiresFlesh (which is now a race-only filter in AllowedOn). Reword the comment to match.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanUtility.cs:157"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "\"Of the deep\" example may want disallowConstructs",
+      "detail": "Its description is 'regrows lost flesh' and it grants regeneration and naturalHealingFactor. The new doc comment frames disallowConstructs as being for traits that work through flesh-like things. Whether stone should regenerate is a design call; this is opinion only.",
+      "evidence": {
+        "kind": "opinion",
+        "ref": "Defs/Examples/TF_ExampleTraits.xml:88"
+      }
+    }
+  ],
+  "checked": [
+    "every remaining read of requiresFlesh: only TitanTraitDef.cs:184 (race.IsFlesh in AllowedOn), unchanged by this build",
+    "every read of disallowConstructs: CanAddTrait (TitanUtility.cs:75) and the SetMaterialInternal strip (Hediff_Titan.cs:88), i.e. both former construct uses of requiresFlesh moved over",
+    "no XML in this mod or the indexed corpus sets requiresFlesh or disallowConstructs, so no def or downstream mod relies on the old construct meaning",
+    "TF_Example_Venomous no longer carries requiresFlesh; it now allows mechanoids, non-flesh races and constructs, consistent with the venom acting on the victim",
+    "RollTraits and InheritTraits both go through CanAddTrait/AddTrait, so they pick up disallowConstructs",
+    "AddTraitInternal now sets fromMaterial before ApplyEffects/PostAdded/TraitsChanged; none of them reads it, and it is still scribed (TitanTrait.cs:82)",
+    "the changed C# declares no Harmony patch, so verify_patches/precedents are not applicable",
+    "lint rules prefix-returns-void, defof-in-mod-ctor, patch-success-always: not touched by this diff",
+    "pyxis_mod_errors could not run: no Pyxis token configured"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanTraitDef.cs",
+    "Source/TitanUtility.cs",
+    "Defs/Examples/TF_ExampleTraits.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "05ede6c088a087c32b56e0b07eb9db729ff830ae",
+  "partial": false
+}

@@ -91,7 +91,7 @@ namespace TitanFramework
             // trait it has excludes it.
             if (newTraits != null)
                 foreach (var def in newTraits)
-                    if (!HasTrait(def) && !traits.Any(t => t.def.ConflictsWith(def)))
+                    if (!HasTrait(def) && !def.disallowConstructs && !traits.Any(t => t.def.ConflictsWith(def)))
                         AddTraitInternal(def, false, fromMaterial: true);
 
             ApplyStatue(dirty: true);
