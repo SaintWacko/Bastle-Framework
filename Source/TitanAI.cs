@@ -132,7 +132,11 @@ namespace TitanFramework
         private static readonly AccessTools.FieldRef<Ability, List<PreCastAction>> PreCastActions =
             AccessTools.FieldRefAccess<Ability, List<PreCastAction>>("preCastActions");
 
-        static void Postfix(Ability __instance)
+        // Vanilla appends to the list and doesn't clear it when a cast job ends early, so
+        // only the entries this call adds are wrapped (leftovers are already wrapped).
+        static void Prefix(Ability __instance, out int __state) => __state = PreCastActions(__instance)?.Count ?? 0;
+
+        static void Postfix(Ability __instance, int __state)
         {
             var titan = TitanUtility.GetTitan(__instance.pawn);
             if (titan == null || !titan.HasHiddenTraitGranting(__instance.def)) return;
@@ -140,7 +144,7 @@ namespace TitanFramework
             if (list == null) return;
             Pawn pawn = __instance.pawn;
             AbilityDef def = __instance.def;
-            for (int i = 0; i < list.Count; i++)
+            for (int i = __state; i < list.Count; i++)
             {
                 var original = list[i].action;
                 list[i] = new PreCastAction
