@@ -125,7 +125,8 @@ namespace TitanFramework
         {
             // Vanilla starts these jobs against the constant tree and saves the job giver's
             // key in it; with no constant tree a saved job would throw on load.
-            var root = ___pawn.thinker?.ConstantThinkNodeRoot;
+            // ConstantThinkNodeRoot itself throws when the race has no constant tree.
+            var root = ___pawn.thinker?.ConstantThinkTree?.thinkRoot;
             if (__result.IsValid || root == null || TitanUtility.PeekTitan(___pawn) == null) return;
             try
             {

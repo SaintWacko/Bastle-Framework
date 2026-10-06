@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "buildId": 31,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-06T04:59:19.808Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "fixes in Source/TitanAI.cs for the build 30 review (constant tree guard, ThinkResult source node, try/catch, meleeThreat)",
+  "diffSource": "since build 30 (2026-10-06T04:54:26Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 1,
+    "should": 0,
+    "note": 2
+  },
+  "findings": [
+    {
+      "severity": "must",
+      "title": "ConstantThinkNodeRoot throws for every pawn whose race has no constant think tree",
+      "detail": "Source/TitanAI.cs:128 reads `___pawn.thinker?.ConstantThinkNodeRoot`. That property is `ConstantThinkTree.thinkRoot` with no null check (Pawn_Thinker.cs:13), and every pawn has a thinker, so `?.` does not help. When the race has no constant tree it throws a NullReferenceException. This runs every 30 ticks for every pawn, before the titan check and outside the try/catch. Vanilla's own method checks for a null ConstantThinkTree first (Pawn_JobTracker.cs:786), but a postfix still runs after that early return. Core mechanoids only get MechConstant with Biotech (Races_Mechanoid.xml:34), so in a game without Biotech every mechanoid, plus any modded race without the field, throws into TickList's 'Exception ticking' and loses the rest of its tick. Build 31 introduced this. Fix: `var root = ___pawn.thinker?.ConstantThinkTree?.thinkRoot;`.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanAI.cs:128"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Titans of races with no constant tree now never get ability AI",
+      "detail": "Because of the new `root == null` early return, a titan whose race (or a content mod's race) has no thinkTreeConstant never runs JobGiver_TitanAbilities. In build 30 it did. This is deliberate according to the comment, but it changes behaviour that content-mod users may notice.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanAI.cs:129"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "The catch logs once per def and retries quietly, without vanilla's error-recovery job",
+      "detail": "Vanilla's catch in DetermineNextConstantThinkTreeJob calls JobUtility.TryStartErrorRecoverJob. This one logs once per def and then fails silently every 30 ticks. The ErrorOnce key `shortHash ^ 0x7A11` is a small number and could collide with another mod's key, which would only hide one log line.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanAI.cs:140"
+      }
+    }
+  ],
+  "checked": [
+    "Patch_TitanAbilityAI still binds to Pawn_JobTracker.DetermineNextConstantThinkTreeJob (verify_patches 1/1); corpus: no other mod patches it",
+    "ThinkResult(job, root, tag, fromQueue) matches the ThinkResult constructor signature (ThinkResult.cs:27)",
+    "Root node as source: StartJob records ConstantThinkTree as jobGiverThinkTree (Pawn_JobTracker.cs:146) and AssignKeys gives the root a save key (ThinkTreeKeyAssigner.cs:18), so a saved mid-cast job lo…",
+    "Root as source does not block ShouldStartJobFromThinkTree (it only compares source nodes for continuation jobs; CanActNow excludes mid-cast titans)",
+    "Walkable/CanReserve gate matches JobGiver_AIFightEnemy.GetAbilityJob exactly (JobGiver_AIFightEnemy.cs:163)",
+    "meleeThreat hostility exception sits behind the spawned/same-map/dead/downed checks",
+    "Languages/English/Keyed/TitanFramework.xml TF_Settings_AbilityAIHint edit matches the new behaviour and is well-formed",
+    "pyxis_mod_errors could not run: no Pyxis token configured (Settings → Integrations)"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/TitanAI.cs",
+    "Languages/English/Keyed/TitanFramework.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "c20f7e5113baba8bd945b48072eb809453a6603f",
+  "partial": false
+}
