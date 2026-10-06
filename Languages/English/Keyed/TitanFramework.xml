@@ -30,7 +30,7 @@
   <TF_Settings_InheritHint>Multiplies each trait's own chance to pass to offspring.</TF_Settings_InheritHint>
   <TF_Settings_DiscoveryMessages>Message when a trait is discovered</TF_Settings_DiscoveryMessages>
   <TF_Settings_AbilityAI>Titans use trait abilities on their own</TF_Settings_AbilityAI>
-  <TF_Settings_AbilityAIHint>Wild, hostile and tamed titans cast their trait abilities in a fight. Player colonists only cast when you order them to.</TF_Settings_AbilityAIHint>
+  <TF_Settings_AbilityAIHint>Hostile, manhunting and tamed titans cast their trait abilities in a fight, and wild ones when fighting back. Player colonists only cast when you order them to.</TF_Settings_AbilityAIHint>
   <TF_Settings_MaterialsSection>Materials</TF_Settings_MaterialsSection>
   <TF_Settings_Armor>Armor from material</TF_Settings_Armor>
   <TF_Settings_ArmorHint>Share of the stuff's armor value. Steel at this setting: +{0} sharp armor.</TF_Settings_ArmorHint>

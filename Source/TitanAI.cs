@@ -48,6 +48,10 @@ namespace TitanFramework
             if (pawn.abilities == null) return null;
             Thing enemy = CurrentEnemy(pawn);
             if (enemy == null) return null;
+            // Vanilla's GetAbilityJob gate: the caster must be able to stand where it is.
+            if (!pawn.Position.WalkableBy(pawn.Map, pawn)
+                || !pawn.Map.pawnDestinationReservationManager.CanReserve(pawn.Position, pawn, pawn.Drafted))
+                return null;
 
             // 2. Offensive abilities at the enemy.
             for (int i = 0; i < traits.Count; i++)
@@ -107,7 +111,8 @@ namespace TitanFramework
             if (t == null) t = pawn.mindState?.meleeThreat;
             if (t == null || !t.Spawned || t.Map != pawn.Map) return null;
             if (t is Pawn p && (p.Dead || p.Downed)) return null;
-            return t.HostileTo(pawn) ? t : null;
+            // A wild animal hit by a hunter isn't hostile to it, but is fighting back.
+            return t.HostileTo(pawn) || t == pawn.mindState?.meleeThreat ? t : null;
         }
     }
 
@@ -118,9 +123,22 @@ namespace TitanFramework
     {
         static void Postfix(Pawn ___pawn, ref ThinkResult __result)
         {
-            if (__result.IsValid || TitanUtility.PeekTitan(___pawn) == null) return;
-            var r = JobGiver_TitanAbilities.Instance.TryIssueJobPackage(___pawn, default);
-            if (r.IsValid) __result = r;
+            // Vanilla starts these jobs against the constant tree and saves the job giver's
+            // key in it; with no constant tree a saved job would throw on load.
+            var root = ___pawn.thinker?.ConstantThinkNodeRoot;
+            if (__result.IsValid || root == null || TitanUtility.PeekTitan(___pawn) == null) return;
+            try
+            {
+                var r = JobGiver_TitanAbilities.Instance.TryIssueJobPackage(___pawn, default);
+                // Record the tree's root as the source: our node has no save key, so a
+                // titan saved mid-cast would otherwise log a missing think node on load.
+                if (r.IsValid) __result = new ThinkResult(r.Job, root, r.Tag, r.FromQueue);
+            }
+            catch (System.Exception e)
+            {
+                // Vanilla's constant-tree call has its own try/catch; ours runs after it.
+                Log.ErrorOnce($"[Titan Framework] Ability AI threw for {___pawn.def.defName}: {e}", ___pawn.def.shortHash ^ 0x7A11);
+            }
         }
     }
 }
