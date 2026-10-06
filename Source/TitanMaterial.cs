@@ -45,7 +45,7 @@ namespace TitanFramework
     /// What a material does to a creature. Everything is derived from the stuff's own
     /// stats so modded metals and stones work without extra XML.
     /// </summary>
-    public static class TitanMaterialUtility
+    public static partial class TitanMaterialUtility
     {
         /// <summary>Share of the stuff's armour power the creature gets. Steel (0.9 sharp)
         /// gives +45% sharp armour.</summary>
@@ -159,7 +159,10 @@ namespace TitanFramework
             if (stat.parts == null) stat.parts = new List<StatPart>();
             stat.parts.Add(new StatPart_TitanMaterial { parentStat = stat });
         }
+    }
 
+    public static partial class TitanMaterialUtility
+    {
         /// <summary>
         /// The material's effects as a stage, merged into the titan's stage like a trait's.
         /// Construct body: no pain, no bleeding, no meat or leather, immune to toxins and
