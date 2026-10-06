@@ -38,7 +38,7 @@ namespace TitanFramework
             string oldLabel = Pawn?.LabelShort;
             discovered = true;
             titan?.Notify_TraitDiscovered(this);
-            if (notify && def.discoveryMessage && Pawn != null && Pawn.Spawned)
+            if (notify && def.discoveryMessage && TitanFrameworkMod.Settings.discoveryMessages && Pawn != null && Pawn.Spawned)
             {
                 Messages.Message("TF_TraitDiscovered".Translate(oldLabel, def.label),
                     Pawn, MessageTypeDefOf.NeutralEvent, historical: false);

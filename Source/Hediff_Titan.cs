@@ -215,6 +215,7 @@ namespace TitanFramework
         {
             get
             {
+                if (!TitanFrameworkMod.Settings.effectsEnabled) return false;
                 if (activeEffecterDefs == null)
                 {
                     activeEffecterDefs = new List<EffecterDef>();
@@ -233,6 +234,7 @@ namespace TitanFramework
         {
             get
             {
+                if (!TitanFrameworkMod.Settings.lightsEnabled) return null;
                 if (!glowResolved)
                 {
                     glowResolved = true;
@@ -314,6 +316,25 @@ namespace TitanFramework
         }
 
         internal Map TrackedMap => trackedMap;
+
+        /// <summary>The mod settings changed: rebuild everything derived from them. The
+        /// map component drops this titan if it no longer has effecters or a light, and
+        /// TickInterval picks it up again if it gained one.</summary>
+        internal void SettingsChanged()
+        {
+            activeEffecterDefs = null;
+            glowResolved = false;
+            glower?.Remove();
+            glower = null;
+            CleanupEffecters(keepTracked: true);
+            if (material != null)
+            {
+                materialStage = null;
+                stageDirty = true;
+                if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
+                    pawn.health.Notify_HediffChanged(this);
+            }
+        }
 
         internal void CleanupEffecters(bool keepTracked = false)
         {

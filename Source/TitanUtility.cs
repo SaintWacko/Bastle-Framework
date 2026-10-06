@@ -181,7 +181,7 @@ namespace TitanFramework
             // are not always settled in the mother's favour.
             foreach (var kv in carriers.InRandomOrder())
             {
-                float chance = 1f - Mathf.Pow(1f - Mathf.Clamp01(kv.Key.inheritChance), kv.Value);
+                float chance = 1f - Mathf.Pow(1f - Mathf.Clamp01(kv.Key.inheritChance * TitanFrameworkMod.Settings.inheritChanceFactor), kv.Value);
                 if (Rand.Chance(chance))
                     AddTrait(child, kv.Key, discovered: known.Contains(kv.Key));
             }

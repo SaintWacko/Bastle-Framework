@@ -47,13 +47,9 @@ namespace TitanFramework
     /// </summary>
     public static partial class TitanMaterialUtility
     {
-        /// <summary>Share of the stuff's armour power the creature gets. Steel (0.9 sharp)
-        /// gives +45% sharp armour.</summary>
-        public static float ArmorFactor = 0.5f;
-
-        /// <summary>Butchered stuff per point of body size, before the extension factor.
-        /// Small-volume stuffs (gold, silver) give ten times as many units, as vanilla does.</summary>
-        public static float ButcherYieldPerBodySize = 40f;
+        // Tunable numbers (armour share, damage and fire strength, butcher yield) are in
+        // TitanSettings.
+        private static TitanSettings S => TitanFrameworkMod.Settings;
 
         /// <summary>Stuffs at or above this flammability are tagged Flammable (wood).</summary>
         public const float FlammableThreshold = 0.5f;
@@ -111,13 +107,20 @@ namespace TitanFramework
             float sharp = stuff.GetStatValueAbstract(StatDefOf.SharpDamageMultiplier);
             float blunt = stuff.GetStatValueAbstract(StatDefOf.BluntDamageMultiplier);
             float m = (sharp + blunt) * 0.5f;
-            return 1f + (m - 1f) * (Ext(stuff)?.damageFactor ?? 1f);
+            return Mathf.Max(0f, 1f + (m - 1f) * (Ext(stuff)?.damageFactor ?? 1f) * S.materialDamageStrength);
         }
 
+        /// <summary>Fire and burn damage factor. Flammability 0.5 is neutral; wood (1.0)
+        /// takes x1.5 and stone (0) x0.5 at full strength.</summary>
+        public static float FireDamageFactor(ThingDef stuff) =>
+            Mathf.Max(0f, 1f + (Flammability(stuff) - 0.5f) * S.fireWeaknessStrength);
+
+        /// <summary>Butchered stuff: body size x the per-body-size setting x the extension
+        /// factor x efficiency, times the precious multiplier for small-volume stuffs.</summary>
         public static float ButcherAmount(Pawn pawn, ThingDef stuff, float efficiency = 1f)
         {
-            float n = pawn.BodySize * ButcherYieldPerBodySize * (Ext(stuff)?.butcherYieldFactor ?? 1f) * efficiency;
-            return stuff.smallVolume ? n * 10f : n;
+            float n = pawn.BodySize * S.butcherYieldPerBodySize * (Ext(stuff)?.butcherYieldFactor ?? 1f) * efficiency;
+            return stuff.smallVolume ? n * S.smallVolumeMultiplier : n;
         }
 
         public static int ButcherCount(Pawn pawn, ThingDef stuff, float efficiency = 1f) =>
@@ -135,7 +138,7 @@ namespace TitanFramework
             amount = 0f;
             if (!(req.Thing is Pawn pawn)) return 0f;
             stuff = TitanUtility.GetMaterial(pawn);
-            if (stuff == null) return 0f;
+            if (stuff == null || !TitanFrameworkMod.Settings.materialMarketValue) return 0f;
             amount = TitanMaterialUtility.ButcherAmount(pawn, stuff);
             return amount * stuff.BaseMarketValue;
         }
@@ -145,7 +148,7 @@ namespace TitanFramework
         public override string ExplanationPart(StatRequest req)
         {
             float bonus = Bonus(req, out var stuff, out float amount);
-            if (stuff == null) return null;
+            if (stuff == null || bonus <= 0f) return null;
             return "TF_MaterialValue".Translate(Mathf.RoundToInt(amount), stuff.label) + ": +" + bonus.ToStringMoney();
         }
     }
@@ -172,8 +175,11 @@ namespace TitanFramework
         public static HediffStage BuildStage(Pawn pawn, ThingDef stuff)
         {
             var ext = Ext(stuff);
-            float armor = ArmorFactor * (ext?.armorFactor ?? 1f);
+            float armor = S.materialArmorFactor * (ext?.armorFactor ?? 1f);
             float flam = Flammability(stuff);
+            float fire = FireDamageFactor(stuff);
+            // At reduced fire weakness, ignition also drifts back toward a normal creature's.
+            float flamFactor = Mathf.Lerp(1f, Mathf.Clamp(flam, 0f, 2f), Mathf.Min(1f, S.fireWeaknessStrength));
 
             var s = new HediffStage
             {
@@ -193,12 +199,12 @@ namespace TitanFramework
                     new StatModifier { stat = StatDefOf.MeleeDamageFactor, value = DamageMultiplier(stuff) },
                     new StatModifier { stat = StatDefOf.MeatAmount, value = 0f },
                     new StatModifier { stat = StatDefOf.LeatherAmount, value = 0f },
-                    new StatModifier { stat = StatDefOf.Flammability, value = Mathf.Clamp(flam, 0f, 2f) },
+                    new StatModifier { stat = StatDefOf.Flammability, value = flamFactor },
                 },
                 damageFactors = new List<DamageFactor>
                 {
-                    new DamageFactor { damageDef = DamageDefOf.Flame, factor = 0.5f + flam },
-                    new DamageFactor { damageDef = DamageDefOf.Burn, factor = 0.5f + flam },
+                    new DamageFactor { damageDef = DamageDefOf.Flame, factor = fire },
+                    new DamageFactor { damageDef = DamageDefOf.Burn, factor = fire },
                 },
             };
 

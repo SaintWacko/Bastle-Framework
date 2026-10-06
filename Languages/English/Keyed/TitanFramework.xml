@@ -14,4 +14,33 @@
   <TF_MaterialTipTitle>Made of {0}</TF_MaterialTipTitle>
   <TF_MaterialValue>Made of {0} {1}</TF_MaterialValue>
   <TF_MaterialTipDesc>Feels no pain, doesn't bleed or rot, and is immune to toxins. Butchering yields its material.</TF_MaterialTipDesc>
+
+  <!-- Mod settings -->
+  <TF_Settings_LightsSection>Lights and effects</TF_Settings_LightsSection>
+  <TF_Settings_Lights>Glowing traits cast light</TF_Settings_Lights>
+  <TF_Settings_LightsHint>Off: glowing creatures keep their look but light nothing up.</TF_Settings_LightsHint>
+  <TF_Settings_LightFollow>Light follows every</TF_Settings_LightFollow>
+  <TF_Settings_LightFollowValue>{0} tile(s)</TF_Settings_LightFollowValue>
+  <TF_Settings_LightFollowHint>How far a walking creature gets ahead of its light. Higher is cheaper with many glowing creatures; the light still recentres when it stops.</TF_Settings_LightFollowHint>
+  <TF_Settings_LightRadius>Light radius</TF_Settings_LightRadius>
+  <TF_Settings_Effects>Particle effects</TF_Settings_Effects>
+  <TF_Settings_EffectsHint>Embers, smoke and other effecters. Tints and glows always show.</TF_Settings_EffectsHint>
+  <TF_Settings_TraitsSection>Traits</TF_Settings_TraitsSection>
+  <TF_Settings_Inherit>Inheritance chance</TF_Settings_Inherit>
+  <TF_Settings_InheritHint>Multiplies each trait's own chance to pass to offspring.</TF_Settings_InheritHint>
+  <TF_Settings_DiscoveryMessages>Message when a trait is discovered</TF_Settings_DiscoveryMessages>
+  <TF_Settings_MaterialsSection>Materials</TF_Settings_MaterialsSection>
+  <TF_Settings_Armor>Armor from material</TF_Settings_Armor>
+  <TF_Settings_ArmorHint>Share of the stuff's armor value. Steel at this setting: +{0} sharp armor.</TF_Settings_ArmorHint>
+  <TF_Settings_Damage>Melee damage from material</TF_Settings_Damage>
+  <TF_Settings_DamageHint>How strongly the stuff's damage multipliers apply. 0%: every material hits like flesh.</TF_Settings_DamageHint>
+  <TF_Settings_Fire>Fire weakness</TF_Settings_Fire>
+  <TF_Settings_FireHint>How much flammability changes fire damage and ignition. At this setting: wood takes x{0} fire damage, stone x{1}.</TF_Settings_FireHint>
+  <TF_Settings_Butcher>Butchered material per body size</TF_Settings_Butcher>
+  <TF_Settings_ButcherHint>A steel bear (body size 2.4) gives about {0} steel.</TF_Settings_ButcherHint>
+  <TF_Settings_Precious>Precious material multiplier</TF_Settings_Precious>
+  <TF_Settings_PreciousHint>Extra units for small-volume stuffs like gold and silver, as vanilla does.</TF_Settings_PreciousHint>
+  <TF_Settings_MarketValue>Material adds to market value</TF_Settings_MarketValue>
+  <TF_Settings_MarketValueHint>A tamed jade bear counts its jade toward colony wealth (and raid size).</TF_Settings_MarketValueHint>
+  <TF_Settings_Reset>Reset to defaults</TF_Settings_Reset>
 </LanguageData>

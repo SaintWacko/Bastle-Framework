@@ -26,14 +26,12 @@ namespace TitanFramework
     /// The grid snapshots the light's cell on registration, so following the creature means
     /// deregistering and registering again. Each move re-floods this one light (Burst, off
     /// the main thread) and rebuilds the lighting mesh of the few map sections it covers;
-    /// that mesh rebuild is the real cost, so a walking creature moves its light every
-    /// <see cref="FollowCells"/> cells rather than every cell, and catches up when it stops.
+    /// that mesh rebuild is the real cost. The lightFollowCells setting (default 1) lets a
+    /// player make a walking creature move its light only every few cells; it catches up
+    /// when the creature stops.
     /// </summary>
     public class TitanGlower
     {
-        /// <summary>How far a walking creature gets ahead of its light before the light moves.</summary>
-        public static int FollowCells = 2;
-
         private readonly CompGlower comp;
         private Map map;
         private IntVec3 cell = IntVec3.Invalid;
@@ -45,7 +43,7 @@ namespace TitanFramework
                 parent = pawn,
                 props = new CompProperties_Glower
                 {
-                    glowRadius = Mathf.Clamp(glow.radius, 0.5f, 40f),
+                    glowRadius = Mathf.Clamp(glow.radius * TitanFrameworkMod.Settings.lightRadiusFactor, 0.5f, 40f),
                     glowColor = glow.color,
                 },
             };
@@ -57,8 +55,9 @@ namespace TitanFramework
         public void Update(Pawn pawn)
         {
             if (map == pawn.Map && cell == pawn.Position) return;
-            if (map == pawn.Map && pawn.pather != null && pawn.pather.Moving
-                && cell.DistanceToSquared(pawn.Position) < FollowCells * FollowCells)
+            int follow = TitanFrameworkMod.Settings.lightFollowCells;
+            if (follow > 1 && map == pawn.Map && pawn.pather != null && pawn.pather.Moving
+                && cell.DistanceToSquared(pawn.Position) < follow * follow)
                 return;
             Remove();
             map = pawn.Map;

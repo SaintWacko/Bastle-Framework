@@ -1,0 +1,87 @@
+<style>
+  .settings { width: 860px; padding: 14px 18px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .setting { margin: 6px 0 10px; }
+  .setting .rw-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .setting .rw-hint { display: block; margin-top: 2px; font-size: 11px; }
+  .rw-slider { margin-top: 4px; }
+  .check { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px; }
+  .check .rw-label { flex: 1; }
+  .footer { display: flex; justify-content: flex-end; margin-top: 10px; }
+</style>
+
+<div class="rw-window settings rw-vanilla">
+  <div class="rw-title">Titan Framework</div>
+
+  <div class="cols">
+    <div>
+      <div class="rw-section">Lights and effects</div>
+
+      <div class="check"><span class="rw-label">Glowing traits cast light</span><span class="rw-check"><span class="rw-box is-on"></span></span></div>
+      <span class="rw-hint">Off: glowing creatures keep their look but light nothing up.</span>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Light follows every</span><span class="rw-value">1 tile</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:0%"></div></div>
+        <span class="rw-hint">How far a walking creature gets ahead of its light. Higher is cheaper with many glowing creatures; the light still recentres when it stops.</span>
+      </div>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Light radius</span><span class="rw-value">100%</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:43%"></div></div>
+      </div>
+
+      <div class="check"><span class="rw-label">Particle effects</span><span class="rw-check"><span class="rw-box is-on"></span></span></div>
+      <span class="rw-hint">Embers, smoke and other effecters. Tints and glows always show.</span>
+
+      <div class="rw-section" style="margin-top:16px">Traits</div>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Inheritance chance</span><span class="rw-value">100%</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:50%"></div></div>
+        <span class="rw-hint">Multiplies each trait's own chance to pass to offspring.</span>
+      </div>
+
+      <div class="check"><span class="rw-label">Message when a trait is discovered</span><span class="rw-check"><span class="rw-box is-on"></span></span></div>
+    </div>
+
+    <div>
+      <div class="rw-section">Materials</div>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Armour from material</span><span class="rw-value">50%</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:33%"></div></div>
+        <span class="rw-hint">Share of the stuff's armour value. Steel at 50%: +45% sharp armour.</span>
+      </div>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Melee damage from material</span><span class="rw-value">100%</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:50%"></div></div>
+        <span class="rw-hint">How strongly the stuff's damage multipliers apply. 0%: every material hits like flesh.</span>
+      </div>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Fire weakness</span><span class="rw-value">100%</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:50%"></div></div>
+        <span class="rw-hint">How much flammability changes fire damage. At 100%: wood ×1.5, stone ×0.5.</span>
+      </div>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Butchered material per body size</span><span class="rw-value">40</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:20%"></div></div>
+        <span class="rw-hint">A steel bear (body size 2.4) gives about 96 steel.</span>
+      </div>
+
+      <div class="setting">
+        <div class="rw-row"><span class="rw-label">Precious material multiplier</span><span class="rw-value">×10</span></div>
+        <div class="rw-slider"><div class="rw-fill" style="width:47%"></div></div>
+        <span class="rw-hint">Extra units for small-volume stuffs like gold and silver, as vanilla does.</span>
+      </div>
+
+      <div class="check"><span class="rw-label">Material adds to market value</span><span class="rw-check"><span class="rw-box is-on"></span></span></div>
+      <span class="rw-hint">A tamed jade bear counts its jade toward colony wealth (and raid size).</span>
+    </div>
+  </div>
+
+  <div class="footer"><span class="rw-btn">Reset to defaults</span></div>
+</div>
