@@ -113,6 +113,34 @@
     </stage>
   </TitanFramework.TitanTraitDef>
 
+  <!-- Material-granted: never rolled (commonality 0). Uranium creatures get it through
+       the TitanMaterialExtension in Patches/TF_ExampleMaterials.xml. The faint green
+       glow shows even before the trait is identified; the touch reveals it. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_Irradiated</defName>
+    <label>irradiated</label>
+    <description>Its uranium body poisons whatever it strikes.</description>
+    <namePrefix>irradiated</namePrefix>
+    <commonality>0</commonality>
+    <pointCost>0</pointCost>
+    <heritable>false</heritable>
+    <showVisualsWhenHidden>true</showVisualsWhenHidden>
+    <discoverWhen>
+      <li>UsesGrantedVerb</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <overlays>
+      <li>
+        <color>(0.4, 1.0, 0.3, 0.25)</color>
+        <pulseSpeed>0.5</pulseSpeed>
+        <pulseMin>0.3</pulseMin>
+      </li>
+    </overlays>
+    <hediffs>
+      <li><hediff>TF_Example_IrradiatedTouch</hediff></li>
+    </hediffs>
+  </TitanFramework.TitanTraitDef>
+
   <!-- Rising embers, a faint glow and the odd wisp of smoke. Built from vanilla flecks and motes. -->
   <EffecterDef>
     <defName>TF_Effecter_Embers</defName>
@@ -164,6 +192,32 @@
       </li>
     </children>
   </EffecterDef>
+
+  <HediffDef>
+    <defName>TF_Example_IrradiatedTouch</defName>
+    <label>irradiated touch</label>
+    <description>A strike that leaves toxic buildup in the victim.</description>
+    <hediffClass>HediffWithComps</hediffClass>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <stages>
+      <li><becomeVisible>false</becomeVisible></li>
+    </stages>
+    <comps>
+      <li Class="HediffCompProperties_VerbGiver">
+        <tools>
+          <li>
+            <label>irradiated strike</label>
+            <capacities><li>ToxicBite</li></capacities>
+            <power>8</power>
+            <cooldownTime>2</cooldownTime>
+            <chanceFactor>1.5</chanceFactor>
+          </li>
+        </tools>
+      </li>
+    </comps>
+  </HediffDef>
 
   <HediffDef>
     <defName>TF_Example_VenomFangs</defName>
