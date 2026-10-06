@@ -180,7 +180,7 @@ namespace TitanFramework
             if (!HasActiveEffecters) return;
             int now = Find.TickManager.TicksGame;
             if (liveEffecters.Count > 0 && now - effectersSpawnedTick > EffecterRefreshTicks)
-                CleanupEffecters();
+                CleanupEffecters(keepTracked: true);
             if (liveEffecters.Count == 0)
             {
                 float scale = Mathf.Clamp(Mathf.Sqrt(pawn.BodySize), 0.5f, 2.5f);
