@@ -23,6 +23,12 @@ namespace TitanFramework
     {
         private List<TitanTrait> traits = new List<TitanTrait>();
 
+        /// <summary>The stuff this creature is made of, or null for flesh. Set through
+        /// TitanUtility.SetMaterial.</summary>
+        private ThingDef material;
+
+        [Unsaved] private HediffStage materialStage;
+
         [Unsaved] private HediffStage cachedStage;
         [Unsaved] private bool stageDirty = true;
         [Unsaved] private bool anyTicking;
@@ -53,6 +59,60 @@ namespace TitanFramework
         public bool HasTrait(TitanTraitDef def) => GetTrait(def) != null;
 
         public float TotalPointCost => traits.Sum(t => t.def.pointCost);
+
+        public ThingDef Material => material;
+
+        /// <summary>Made of a material: no pain, blood or rot.</summary>
+        public bool IsConstruct => material != null;
+
+        public HediffStage MaterialStage
+        {
+            get
+            {
+                if (material == null) return null;
+                return materialStage ?? (materialStage = TitanMaterialUtility.BuildStage(pawn, material));
+            }
+        }
+
+        internal void SetMaterialInternal(ThingDef stuff)
+        {
+            if (stuff == material) return;
+            var oldTraits = TitanMaterialUtility.Ext(material)?.traits;
+            material = stuff;
+            materialStage = null;
+
+            // Swap the traits that come with the material.
+            if (oldTraits != null)
+                foreach (var def in oldTraits)
+                {
+                    var t = GetTrait(def);
+                    if (t != null && (TitanMaterialUtility.Ext(stuff)?.traits == null || !TitanMaterialUtility.Ext(stuff).traits.Contains(def)))
+                        RemoveTraitInternal(t);
+                }
+            var newTraits = TitanMaterialUtility.Ext(stuff)?.traits;
+            if (newTraits != null)
+                foreach (var def in newTraits)
+                    if (!HasTrait(def)) AddTraitInternal(def, false);
+
+            ApplyStatue(dirty: true);
+            stageDirty = true;
+            nameDirty = true;
+            if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
+                pawn.health.Notify_HediffChanged(this);
+        }
+
+        /// <summary>Draws the creature as a statue of its material: vanilla's own statue
+        /// rendering (CompStatue uses it), which tints every node in the stuff's colour.
+        /// The renderer isn't saved, so this is reapplied when the render tree is set up.</summary>
+        internal void ApplyStatue(bool dirty)
+        {
+            var renderer = pawn?.Drawer?.renderer;
+            if (renderer == null) return;
+            Color? want = material?.stuffProps?.color;
+            if (renderer.StatueColor == want) return;
+            renderer.SetStatue(material);
+            if (dirty) renderer.SetAllGraphicsDirty();
+        }
 
         // ---- trait list mutation (use TitanUtility from outside) ----------------
 
@@ -282,10 +342,13 @@ namespace TitanFramework
             Dictionary<StatDef, float> offsets = null, factors = null;
             Dictionary<DamageDef, float> dmg = null;
 
+            var stages = new List<HediffStage>(traits.Count + 1);
             foreach (var trait in traits)
+                if (trait.def.stage != null) stages.Add(trait.def.stage);
+            if (MaterialStage != null) stages.Add(MaterialStage);
+
+            foreach (var t in stages)
             {
-                var t = trait.def.stage;
-                if (t == null) continue;
 
                 s.painFactor *= t.painFactor;
                 s.painOffset += t.painOffset;
@@ -380,6 +443,8 @@ namespace TitanFramework
             suffixCache = null;
             var known = traits.Where(t => t.discovered).OrderBy(t => t.def.nameOrder).ToList();
             var pre = known.Where(t => !t.def.namePrefix.NullOrEmpty()).Select(t => t.def.namePrefix).ToList();
+            // The material always shows and sits next to the kind: "flaming jade bear".
+            if (material != null) pre.Add(TitanMaterialUtility.Adjective(material));
             // Suffixes read outward from the kind label, so the lowest nameOrder goes last.
             var suf = known.Where(t => !t.def.nameSuffix.NullOrEmpty()).Select(t => t.def.nameSuffix).Reverse().ToList();
             if (pre.Count > 0) prefixCache = string.Join(" ", pre) + " ";
@@ -394,6 +459,7 @@ namespace TitanFramework
             {
                 int unknown = traits.Count(t => !t.discovered);
                 string known = (traits.Count - unknown).ToString();
+                if (traits.Count == 0) return material?.label;
                 return unknown > 0
                     ? "TF_HediffBracketsUnknown".Translate(known, unknown).ToString()
                     : "TF_HediffBrackets".Translate(known).ToString();
@@ -408,6 +474,14 @@ namespace TitanFramework
                 // merged stage's effects, which includes the hidden traits' numbers.
                 // Each discovered trait lists its own stage effects instead.
                 var sb = new StringBuilder();
+                if (material != null)
+                {
+                    sb.AppendLine("TF_MaterialTipTitle".Translate(material.LabelCap).ToString().Colorize(ColoredText.TipSectionTitleColor));
+                    sb.AppendLine("  " + "TF_MaterialTipDesc".Translate());
+                    foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(MaterialStage, this))
+                        if (e.ShouldDisplay())
+                            sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
+                }
                 foreach (var t in traits)
                 {
                     if (sb.Length > 0) sb.AppendLine();
@@ -446,6 +520,12 @@ namespace TitanFramework
             base.PostRemoved();
             TitanUtility.Unregister(pawn);
             VisualsChanged();
+            if (material != null)
+            {
+                material = null;
+                materialStage = null;
+                ApplyStatue(dirty: true);
+            }
         }
 
         public override void TickInterval(int delta)
@@ -509,8 +589,10 @@ namespace TitanFramework
         {
             base.ExposeData();
             Scribe_Collections.Look(ref traits, "traits", LookMode.Deep);
+            Scribe_Defs.Look(ref material, "material");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
+                materialStage = null;
                 traits = traits ?? new List<TitanTrait>();
                 traits.RemoveAll(t => t?.def == null);
                 foreach (var t in traits) t.titan = this;

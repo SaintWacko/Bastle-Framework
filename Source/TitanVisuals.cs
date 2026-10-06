@@ -97,6 +97,9 @@ namespace TitanFramework
         {
             var titan = TitanUtility.GetTitan(pawn);
             if (titan == null) yield break;
+            // The statue flag lives on the renderer, which isn't saved: set it each time
+            // the tree is built, before any node picks its graphic.
+            if (titan.IsConstruct) titan.ApplyStatue(dirty: false);
             foreach (var trait in titan.TraitsForReading)
             {
                 if (!trait.VisualsActive) continue;
@@ -172,6 +175,9 @@ namespace TitanFramework
 
     public class PawnRenderNodeWorker_TitanOverlay : PawnRenderNodeWorker
     {
+        public override bool CanDrawNow(PawnRenderNode node, PawnDrawParms parms) =>
+            base.CanDrawNow(node, parms) && TitanVisualsUtility.IsLiveTitan(parms);
+
         public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
         {
             var offset = base.OffsetFor(node, parms, out pivot);
@@ -185,18 +191,32 @@ namespace TitanFramework
         {
             var block = base.GetMaterialPropertyBlock(node, material, parms);
             var overlay = (node as PawnRenderNode_TitanOverlay)?.Overlay;
-            if (block == null || overlay == null || overlay.pulseSpeed <= 0f || parms.Statue) return block;
-
-            // Per-pawn phase so a pack of flaming wolves doesn't pulse in lockstep.
-            float phase = (parms.pawn.thingIDNumber % 97) * 0.37f;
-            // Game time, so the pulse freezes with the game when paused.
-            float seconds = Find.TickManager.TicksGame / 60f;
-            float wave = (Mathf.Sin((seconds * overlay.pulseSpeed + phase) * Mathf.PI * 2f) + 1f) * 0.5f;
-            Color c = parms.tint * material.color;
-            c.a *= Mathf.Lerp(overlay.pulseMin, 1f, wave);
+            if (block == null || overlay == null) return block;
+            // A vanilla statue (CompStatue) shows no glow. A living material titan is also
+            // drawn as a statue, but its glow keeps its own colour rather than the stuff's,
+            // which base just wrote into the block.
+            Color c = (parms.Statue ? Color.white : parms.tint) * material.color;
+            if (overlay.pulseSpeed > 0f)
+            {
+                // Per-pawn phase so a pack of flaming wolves doesn't pulse in lockstep.
+                float phase = (parms.pawn.thingIDNumber % 97) * 0.37f;
+                // Game time, so the pulse freezes with the game when paused.
+                float seconds = Find.TickManager.TicksGame / 60f;
+                float wave = (Mathf.Sin((seconds * overlay.pulseSpeed + phase) * Mathf.PI * 2f) + 1f) * 0.5f;
+                c.a *= Mathf.Lerp(overlay.pulseMin, 1f, wave);
+            }
             block.SetColor(ShaderPropertyIDs.Color, c);
             return block;
         }
+    }
+
+    internal static class TitanVisualsUtility
+    {
+        /// <summary>Statue rendering is also how vanilla draws sculptures of pawns. Those use
+        /// an unspawned stand-in pawn with no titan material; a material titan is drawn
+        /// with the statue flag too and should keep its trait visuals.</summary>
+        public static bool IsLiveTitan(PawnDrawParms parms) =>
+            !parms.Statue || TitanUtility.GetTitan(parms.pawn)?.IsConstruct == true;
     }
 
     /// <summary>

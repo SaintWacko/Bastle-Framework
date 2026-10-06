@@ -62,6 +62,8 @@ namespace TitanFramework
             if (pawn == null || def == null || !def.AllowedOn(pawn)) return false;
             var titan = GetTitan(pawn);
             if (titan == null) return true;
+            // A creature made of stone has no flesh for a flesh trait to work on.
+            if (def.requiresFlesh && titan.IsConstruct) return false;
             foreach (var t in titan.TraitsForReading)
                 if (t.def.ConflictsWith(def)) return false;
             return true;
@@ -143,6 +145,12 @@ namespace TitanFramework
             var f = GetTitan(father);
             if (child == null || (m == null && f == null)) return;
 
+            // Material first, so flesh-only traits are then refused on a construct.
+            // From whichever parent has one; a coin flip when both do.
+            ThingDef mm = m?.Material, fm = f?.Material;
+            ThingDef mat = mm != null && fm != null ? (Rand.Bool ? mm : fm) : mm ?? fm;
+            if (mat != null) SetMaterial(child, mat);
+
             var carriers = new Dictionary<TitanTraitDef, int>();
             var known = new HashSet<TitanTraitDef>();
             void Count(Hediff_Titan t)
@@ -167,6 +175,40 @@ namespace TitanFramework
                 if (Rand.Chance(chance))
                     AddTrait(child, kv.Key, discovered: known.Contains(kv.Key));
             }
+        }
+
+        // ---- materials -----------------------------------------------------------
+
+        public static ThingDef GetMaterial(Pawn pawn) => GetTitan(pawn)?.Material;
+
+        public static bool IsConstruct(Pawn pawn) => GetTitan(pawn)?.IsConstruct ?? false;
+
+        /// <summary>Makes the creature out of a stuff (any stuff is accepted here; only
+        /// rolling is limited to metal, stone and wood). Pass null to make it flesh again.
+        /// Makes the pawn a titan if needed.</summary>
+        public static bool SetMaterial(Pawn pawn, ThingDef stuff)
+        {
+            if (pawn?.health == null) return false;
+            if (stuff != null && !stuff.IsStuff) return false;
+            if (stuff == null)
+            {
+                GetTitan(pawn)?.SetMaterialInternal(null);
+                return true;
+            }
+            GetOrMakeTitan(pawn).SetMaterialInternal(stuff);
+            return true;
+        }
+
+        /// <summary>Picks a metal, stone or wood stuff weighted by the stuff's commonality
+        /// (and the TitanMaterialExtension's) and applies it. Returns the stuff, or null if
+        /// nothing passed the validator.</summary>
+        /// <param name="validator">Extra filter, e.g. s => !TitanMaterialUtility.IsFlammable(s).</param>
+        public static ThingDef RollMaterial(Pawn pawn, Predicate<ThingDef> validator = null)
+        {
+            var candidates = DefDatabase<ThingDef>.AllDefsListForReading
+                .Where(d => TitanMaterialUtility.IsRollable(d) && (validator == null || validator(d)));
+            if (!candidates.TryRandomElementByWeight(TitanMaterialUtility.RollWeight, out var pick)) return null;
+            return SetMaterial(pawn, pick) ? pick : null;
         }
 
         /// <summary>Discovery only counts when the player could see it happen.</summary>

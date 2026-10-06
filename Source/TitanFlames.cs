@@ -118,7 +118,7 @@ namespace TitanFramework
         {
             // A request with no material is skipped by the tree's draw loop, but PostDraw
             // still runs for it with the node's computed matrix. That is where we draw.
-            if (parms.Portrait || parms.Statue) return;
+            if (parms.Portrait || !TitanVisualsUtility.IsLiveTitan(parms)) return;
             requests.Add(new PawnGraphicDrawRequest(node));
         }
 

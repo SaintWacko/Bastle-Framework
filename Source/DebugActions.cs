@@ -42,6 +42,23 @@ namespace TitanFramework
             return list;
         }
 
+        [DebugAction(Category, "Set material...", actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static List<DebugActionNode> SetMaterial()
+        {
+            var list = new List<DebugActionNode>
+            {
+                new DebugActionNode("(flesh)", DebugActionType.ToolMapForPawns, null, p => TitanUtility.SetMaterial(p, null)),
+                new DebugActionNode("(random)", DebugActionType.ToolMapForPawns, null, p =>
+                    Log.Message($"[Titan Framework] Rolled material for {p}: {TitanUtility.RollMaterial(p)?.defName ?? "none"}")),
+            };
+            foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(TitanMaterialUtility.IsMaterialCandidate).OrderBy(d => d.defName))
+            {
+                var local = def;
+                list.Add(new DebugActionNode(def.defName, DebugActionType.ToolMapForPawns, null, p => TitanUtility.SetMaterial(p, local)));
+            }
+            return list;
+        }
+
         [DebugAction(Category, "Discover all traits", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void DiscoverAll(Pawn p) => TitanUtility.DiscoverAll(p, notify: true);
 
