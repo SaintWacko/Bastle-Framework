@@ -246,7 +246,16 @@ namespace TitanFramework
             {
                 float scale = Mathf.Clamp(Mathf.Sqrt(pawn.BodySize), 0.5f, 2.5f);
                 foreach (var def in activeEffecterDefs)
-                    liveEffecters.Add(def.SpawnAttached(pawn, pawn.Map, EffecterScaled(def) ? scale : 1f));
+                {
+                    var eff = def.SpawnAttached(pawn, pawn.Map, EffecterScaled(def) ? scale : 1f);
+                    // SpawnAttached (offsetMode TrueCenterCompensated, the default) stores
+                    // DrawPos minus the cell centre as a fixed offset. The sprayer already
+                    // spawns at the live DrawPos, so for a pawn caught mid-step that
+                    // offset is counted twice and the effect trails up to a cell off
+                    // to one side until the effecter is rebuilt.
+                    eff.offset = Vector3.zero;
+                    liveEffecters.Add(eff);
+                }
                 effectersSpawnedTick = now;
             }
             for (int i = 0; i < liveEffecters.Count; i++)
