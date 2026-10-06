@@ -200,11 +200,12 @@ namespace TitanFramework
             return true;
         }
 
-        internal void CleanupEffecters()
+        internal void CleanupEffecters(bool keepTracked = false)
         {
+            if (liveEffecters.Count == 0) { if (!keepTracked) trackedMap = null; return; }
             for (int i = 0; i < liveEffecters.Count; i++) liveEffecters[i].Cleanup();
             liveEffecters.Clear();
-            trackedMap = null;
+            if (!keepTracked) trackedMap = null;
         }
 
         private void TraitsChanged(TitanTraitDef changed)

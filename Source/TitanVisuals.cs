@@ -229,7 +229,15 @@ namespace TitanFramework
                     continue;
                 }
                 // Nobody can see it: let the particles stop rather than spawn unseen.
-                if (map != Find.CurrentMap || p.Position.Fogged(map)) continue;
+                // Drop the effecters too, so they are rebuilt fresh when the titan is
+                // visible again. A titan drafted into a fogged doorway once kept its
+                // particles off-centre until the trait was reapplied (which rebuilds
+                // them); rebuilding on resume does the same thing automatically.
+                if (map != Find.CurrentMap || p.Position.Fogged(map))
+                {
+                    t.CleanupEffecters(keepTracked: true);
+                    continue;
+                }
                 t.EffectersTick();
             }
         }

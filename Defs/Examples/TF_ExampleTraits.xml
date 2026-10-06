@@ -62,15 +62,6 @@
     <hediffs>
       <li><hediff>TF_Example_VenomFangs</hediff></li>
     </hediffs>
-    <!-- Hidden trait with visuals: the sickly tint only appears once it is discovered.
-         Set showVisualsWhenHidden to true to show it from the start. -->
-    <overlays>
-      <li>
-        <color>(0.4, 1.0, 0.3, 0.35)</color>
-        <scale>1.0</scale>
-        <layer>1</layer>
-      </li>
-    </overlays>
   </TitanFramework.TitanTraitDef>
 
   <!-- Hidden defence: revealed when it takes a hit. -->
