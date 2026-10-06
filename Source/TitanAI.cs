@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -113,6 +114,45 @@ namespace TitanFramework
             if (t is Pawn p && (p.Dead || p.Downed)) return null;
             // A wild animal hit by a hunter isn't hostile to it, but is fighting back.
             return t.HostileTo(pawn) || t == pawn.mindState?.meleeThreat ? t : null;
+        }
+    }
+
+    /// <summary>
+    /// Reveals a trait when its ability's visible lead-in effect starts. Some abilities
+    /// (fire spew) play their effect as a pre-cast action a few ticks before the ability
+    /// resolves, and vanilla cancels the cast if the target becomes invalid in that
+    /// window: the player sees flames but the ability never fires, so the usual
+    /// Notify_PawnUsedVerb discovery never runs. Each pre-cast action is wrapped so the
+    /// reveal happens on the same tick the effect appears. Abilities with no lead-in
+    /// are still revealed on use through Notify_PawnUsedVerb.
+    /// </summary>
+    [HarmonyPatch(typeof(Ability), nameof(Ability.Notify_StartedCasting))]
+    internal static class Patch_AbilityStartedCasting
+    {
+        private static readonly AccessTools.FieldRef<Ability, List<PreCastAction>> PreCastActions =
+            AccessTools.FieldRefAccess<Ability, List<PreCastAction>>("preCastActions");
+
+        static void Postfix(Ability __instance)
+        {
+            var titan = TitanUtility.GetTitan(__instance.pawn);
+            if (titan == null || !titan.HasHiddenTraitGranting(__instance.def)) return;
+            var list = PreCastActions(__instance);
+            if (list == null) return;
+            Pawn pawn = __instance.pawn;
+            AbilityDef def = __instance.def;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var original = list[i].action;
+                list[i] = new PreCastAction
+                {
+                    ticksAwayFromCast = list[i].ticksAwayFromCast,
+                    action = (a, b) =>
+                    {
+                        original?.Invoke(a, b);
+                        TitanUtility.GetTitan(pawn)?.Notify_AbilityEffectStarted(def);
+                    },
+                };
+            }
         }
     }
 

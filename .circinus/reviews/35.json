@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "buildId": 35,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-06T05:40:51.068Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "Removal of temporary diagnostics and the Ability.Activate postfixes; check Hediff_Titan.Notify_PawnUsedVerb is back to its original logic",
+  "diffSource": "since build 33 (2026-10-06T05:23:29Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 1,
+    "note": 1
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Removing the postfix does not close the run #31 missed fire breath discovery; don't report it fixed",
+      "detail": "The removed doc comment said the Ability.Activate postfix existed because Notify_PawnUsedVerb 'missed fire breath casts in testing (run #31)'. For TF_Example_FireBreath (Verb_CastAbility), both hooks run in the same Verb.TryCastNextBurstShot call: TryCastShot calls Ability.Activate, then Verb.cs:497 calls health.Notify_UsedVerb. Both pass through the same TitanTrait.TryDiscoverBy check (TitanTrait.cs:53). So taking the postfix out neither causes nor fixes that miss. The cause is still unknown: either PlayerCanObserve returning false on a fogged cell, or the discovery message belonging to the pawn that was hit (build 33 review). Say the bug is still open when reporting done, not resolved.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Verse/Verb.cs:497"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "World-target abilities cast from a caravan no longer trigger UsesGrantedAbility",
+      "detail": "Ability.cs:659 calls Activate(GlobalTargetInfo) directly when the pawn is in a caravan. That skips the verb, so Notify_PawnUsedVerb never runs. The removed Patch_AbilityActivate_Global covered this case. It is an edge case for AI titan creatures, and none of the example traits grant a world-target ability, so this is worth knowing only if a content mod grants one.",
+      "evidence": {
+        "kind": "index",
+        "ref": "RimWorld/Ability.cs:659"
+      }
+    }
+  ],
+  "checked": [
+    "Hediff_Titan.Notify_PawnUsedVerb (Hediff_Titan.cs:644-661) unchanged by this diff: calls base, resolves abilityDef via IAbilityVerb and verbHediff via HediffComp DirectOwner, skips discovered traits,…",
+    "No leftover references to Notify_AbilityActivated, Patch_AbilityActivate_Local or Patch_AbilityActivate_Global anywhere in the mod (search_mod)",
+    "No leftover temporary diagnostics in Source/: the only Log.Message calls are in DebugActions.cs dev-menu actions",
+    "verify_patches: 12 of 12 targets resolve, including Pawn_JobTracker.DetermineNextConstantThinkTreeJob at TitanAI.cs:121",
+    "Verb_CastAbility implements IAbilityVerb and its TryCastShot calls Ability.Activate inside TryCastNextBurstShot, so verb-cast abilities still reach Notify_PawnUsedVerb (Verb.cs:478-497)",
+    "TF_Example_Firebreather still lists UsesGrantedAbility in discoverWhen and TF_Example_FireBreath in abilities, and the ability uses Verb_CastAbility (TF_ExampleTraits.xml)",
+    "TitanAI job giver casts through ability.GetJob, so AI casts take the verb path (TitanAI.cs:66-81)",
+    "Patch_TitanAbilityAI postfix in TitanAI.cs is intact after the removal above it",
+    "pyxis_board / pyxis_mod_errors: not run, no Pyxis token is configured (Settings → Integrations)"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanAI.cs",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "c1015c95da8b01b8544a4a22ac1bf12bc4cc7003",
+  "partial": false
+}

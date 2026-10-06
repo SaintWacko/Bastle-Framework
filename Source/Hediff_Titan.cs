@@ -641,6 +641,28 @@ namespace TitanFramework
             }
         }
 
+        /// <summary>True when an undiscovered trait grants this ability.</summary>
+        internal bool HasHiddenTraitGranting(AbilityDef abilityDef)
+        {
+            for (int i = 0; i < traits.Count; i++)
+                if (!traits[i].discovered && traits[i].def.abilities != null && traits[i].def.abilities.Contains(abilityDef))
+                    return true;
+            return false;
+        }
+
+        /// <summary>The ability's visible lead-in effect started (fire spew's flames play
+        /// 17 ticks before the ability resolves, and the cast can still be cancelled in
+        /// that window). The player saw it, so reveal the trait that granted it.</summary>
+        internal void Notify_AbilityEffectStarted(AbilityDef abilityDef)
+        {
+            for (int i = traits.Count - 1; i >= 0; i--)
+            {
+                var t = traits[i];
+                if (!t.discovered && t.def.abilities != null && t.def.abilities.Contains(abilityDef))
+                    t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedAbility);
+            }
+        }
+
         public override void Notify_PawnUsedVerb(Verb verb, LocalTargetInfo target)
         {
             base.Notify_PawnUsedVerb(verb, target);
