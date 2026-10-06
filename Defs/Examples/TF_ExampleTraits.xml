@@ -15,8 +15,8 @@
     <pointCost>2</pointCost>
     <exclusionTags><li>TF_Element</li></exclusionTags>
     <tags><li>Fire</li></tags>
-    <!-- A faint warm tint, a few flickering vanilla fire sprites on the body, and
-         flame licks, embers and smoke rising off it. -->
+    <!-- A faint warm tint, and flame licks, embers and smoke rising off it.
+         (The <flames> field can also draw fire sprites fixed to the body; left off here.) -->
     <overlays>
       <li>
         <color>(1.0, 0.4, 0.05, 0.35)</color>
@@ -26,13 +26,6 @@
         <pulseMin>0.5</pulseMin>
       </li>
     </overlays>
-    <flames>
-      <li>
-        <count>3</count>
-        <size>0.3~0.45</size>
-        <color>(1.0, 0.9, 0.8, 0.8)</color>
-      </li>
-    </flames>
     <effecters>
       <li>TF_Effecter_Embers</li>
     </effecters>
