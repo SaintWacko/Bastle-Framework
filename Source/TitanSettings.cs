@@ -17,6 +17,7 @@ namespace TitanFramework
         // Traits
         public float inheritChanceFactor = 1f;
         public bool discoveryMessages = true;
+        public bool abilityAI = true;
 
         // Materials
         public float materialArmorFactor = 0.5f;
@@ -34,6 +35,7 @@ namespace TitanFramework
             effectsEnabled = true;
             inheritChanceFactor = 1f;
             discoveryMessages = true;
+            abilityAI = true;
             materialArmorFactor = 0.5f;
             materialDamageStrength = 1f;
             fireWeaknessStrength = 1f;
@@ -51,6 +53,7 @@ namespace TitanFramework
             Scribe_Values.Look(ref effectsEnabled, "effectsEnabled", true);
             Scribe_Values.Look(ref inheritChanceFactor, "inheritChanceFactor", 1f);
             Scribe_Values.Look(ref discoveryMessages, "discoveryMessages", true);
+            Scribe_Values.Look(ref abilityAI, "abilityAI", true);
             Scribe_Values.Look(ref materialArmorFactor, "materialArmorFactor", 0.5f);
             Scribe_Values.Look(ref materialDamageStrength, "materialDamageStrength", 1f);
             Scribe_Values.Look(ref fireWeaknessStrength, "fireWeaknessStrength", 1f);
@@ -104,6 +107,7 @@ namespace TitanFramework
         {
             Slider(l, "TF_Settings_Inherit", ref inheritChanceFactor, 0f, 2f, inheritChanceFactor.ToStringPercent(), "TF_Settings_InheritHint", 0.05f);
             Check(l, "TF_Settings_DiscoveryMessages", ref discoveryMessages, null);
+            Check(l, "TF_Settings_AbilityAI", ref abilityAI, "TF_Settings_AbilityAIHint");
         }
 
         private void DoMaterials(Listing_Standard r)

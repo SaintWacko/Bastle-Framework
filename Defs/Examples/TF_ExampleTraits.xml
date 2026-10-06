@@ -249,4 +249,51 @@
     </comps>
   </HediffDef>
 
+  <!-- Hidden ability, cast by the AI in combat: revealed the first time it breathes fire.
+       Biotech only (it borrows vanilla's fire spew effect). -->
+  <TitanFramework.TitanTraitDef MayRequire="Ludeon.RimWorld.Biotech">
+    <defName>TF_Example_Firebreather</defName>
+    <label>firebreather</label>
+    <description>It can spit a stream of burning bile at anything that threatens it.</description>
+    <nameSuffix>the firebreather</nameSuffix>
+    <pointCost>3</pointCost>
+    <requiresFlesh>true</requiresFlesh>
+    <discoverWhen>
+      <li>UsesGrantedAbility</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <abilities>
+      <li>TF_Example_FireBreath</li>
+    </abilities>
+  </TitanFramework.TitanTraitDef>
+
+  <AbilityDef MayRequire="Ludeon.RimWorld.Biotech">
+    <defName>TF_Example_FireBreath</defName>
+    <label>fire breath</label>
+    <description>Spit a stream of burning bile up to 8 tiles. It sets fire to anything it hits and leaves flaming pools on the ground.</description>
+    <iconPath>UI/Abilities/FireSpew</iconPath>
+    <cooldownTicksRange>2500</cooldownTicksRange>
+    <aiCanUse>true</aiCanUse>
+    <ai_IsIncendiary>true</ai_IsIncendiary>
+    <warmupStartSound>FireSpew_Warmup</warmupStartSound>
+    <verbProperties>
+      <verbClass>Verb_CastAbility</verbClass>
+      <range>7.9</range>
+      <warmupTime>1</warmupTime>
+      <soundCast>FireSpew_Resolve</soundCast>
+      <targetParams>
+        <canTargetLocations>true</canTargetLocations>
+      </targetParams>
+    </verbProperties>
+    <comps>
+      <li Class="CompProperties_AbilityFireSpew">
+        <range>7.9</range>
+        <lineWidthEnd>3</lineWidthEnd>
+        <filthDef>Filth_FlammableBile</filthDef>
+        <effecterDef>Fire_Spew</effecterDef>
+        <canHitFilledCells>true</canHitFilledCells>
+      </li>
+    </comps>
+  </AbilityDef>
+
 </Defs>

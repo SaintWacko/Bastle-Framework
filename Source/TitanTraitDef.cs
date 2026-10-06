@@ -118,6 +118,12 @@ namespace TitanFramework
         /// <summary>Abilities granted while the trait is present.</summary>
         public List<AbilityDef> abilities;
 
+        /// <summary>Optional AI for this trait, run every 30 ticks before the built-in
+        /// combat casting (see JobGiver_TitanAbilities). Use it for abilities that need
+        /// their own conditions, in or out of combat, e.g. a copy of vanilla's longjump
+        /// escape branch. Runs whether or not the trait is discovered.</summary>
+        public ThinkTreeDef aiThinkTree;
+
         // ---- visuals -------------------------------------------------------------
 
         /// <summary>Glow overlays drawn from the creature's own body texture.</summary>
