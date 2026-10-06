@@ -92,7 +92,7 @@ namespace TitanFramework
                 "TF_Settings_FireHint".Translate((1f + 0.5f * fireWeaknessStrength).ToStringByStyle(ToStringStyle.FloatMaxTwo),
                     Mathf.Max(0f, 1f - 0.5f * fireWeaknessStrength).ToStringByStyle(ToStringStyle.FloatMaxTwo)), 0.05f);
             Slider(r, "TF_Settings_Butcher", ref butcherYieldPerBodySize, 0f, 200f, Mathf.RoundToInt(butcherYieldPerBodySize).ToString(),
-                "TF_Settings_ButcherHint".Translate(Mathf.RoundToInt(2.4f * butcherYieldPerBodySize)), 1f);
+                "TF_Settings_ButcherHint".Translate(Mathf.RoundToInt(2.15f * butcherYieldPerBodySize)), 1f);
             Slider(r, "TF_Settings_Precious", ref smallVolumeMultiplier, 1f, 20f, "x" + Mathf.RoundToInt(smallVolumeMultiplier), "TF_Settings_PreciousHint", 1f);
             Check(r, "TF_Settings_MarketValue", ref materialMarketValue, "TF_Settings_MarketValueHint");
             r.End();
