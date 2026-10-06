@@ -641,6 +641,18 @@ namespace TitanFramework
             }
         }
 
+        /// <summary>Called from the Ability.Activate postfix the moment any ability fires,
+        /// whatever verb or job path it took. Reveals the trait that granted it.</summary>
+        internal void Notify_AbilityActivated(AbilityDef abilityDef)
+        {
+            for (int i = traits.Count - 1; i >= 0; i--)
+            {
+                var t = traits[i];
+                if (!t.discovered && t.def.abilities != null && t.def.abilities.Contains(abilityDef))
+                    t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedAbility);
+            }
+        }
+
         public override void Notify_PawnUsedVerb(Verb verb, LocalTargetInfo target)
         {
             base.Notify_PawnUsedVerb(verb, target);

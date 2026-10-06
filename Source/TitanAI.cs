@@ -116,6 +116,21 @@ namespace TitanFramework
         }
     }
 
+    /// <summary>Reveals a trait when the ability it grants fires. Notify_PawnUsedVerb
+    /// alone missed fire breath casts in testing (run #31), so discovery hooks the
+    /// activation itself, which every ability goes through.</summary>
+    [HarmonyPatch(typeof(Ability), nameof(Ability.Activate), new[] { typeof(LocalTargetInfo), typeof(LocalTargetInfo) })]
+    internal static class Patch_AbilityActivate_Local
+    {
+        static void Postfix(Ability __instance) => TitanUtility.GetTitan(__instance.pawn)?.Notify_AbilityActivated(__instance.def);
+    }
+
+    [HarmonyPatch(typeof(Ability), nameof(Ability.Activate), new[] { typeof(RimWorld.Planet.GlobalTargetInfo) })]
+    internal static class Patch_AbilityActivate_Global
+    {
+        static void Postfix(Ability __instance) => TitanUtility.GetTitan(__instance.pawn)?.Notify_AbilityActivated(__instance.def);
+    }
+
     /// <summary>Runs the titan ability job giver whenever the constant think tree has
     /// nothing to do. Ordinary pawns cost one registry lookup per 30 ticks.</summary>
     [HarmonyPatch(typeof(Pawn_JobTracker), "DetermineNextConstantThinkTreeJob")]
