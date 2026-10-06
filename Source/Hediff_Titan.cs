@@ -42,6 +42,9 @@ namespace TitanFramework
         [Unsaved] private readonly List<Effecter> liveEffecters = new List<Effecter>();
         [Unsaved] private Map trackedMap;
         [Unsaved] private int effectersSpawnedTick = -1;
+        [Unsaved] private TitanGlow activeGlow;
+        [Unsaved] private bool glowResolved;
+        [Unsaved] private TitanGlower glower;
 
         // Sub-effecters stop spawning after their def's lifespanMaxTicks (default
         // 999999, about 16 days), so live effecters are respawned well before that.
@@ -224,10 +227,34 @@ namespace TitanFramework
             }
         }
 
+        /// <summary>The light this creature casts: the largest glow among its traits,
+        /// discovered or not.</summary>
+        public TitanGlow ActiveGlow
+        {
+            get
+            {
+                if (!glowResolved)
+                {
+                    glowResolved = true;
+                    activeGlow = null;
+                    foreach (var t in traits)
+                        if (t.def.glow != null && (activeGlow == null || t.def.glow.radius > activeGlow.radius))
+                            activeGlow = t.def.glow;
+                }
+                return activeGlow;
+            }
+        }
+
+        /// <summary>Has something the map component has to run: effecters or a light.</summary>
+        public bool HasMapVisuals => HasActiveEffecters || ActiveGlow != null;
+
         /// <summary>Call when which visuals should show may have changed.</summary>
         public void VisualsChanged(TitanTraitDef cause = null)
         {
             activeEffecterDefs = null;
+            glowResolved = false;
+            glower?.Remove();
+            glower = null;
             CleanupEffecters();
             // The render tree is only rebuilt when overlays could have changed:
             // rebuilding it is not free, and discovery of a stat-only trait
@@ -270,8 +297,19 @@ namespace TitanFramework
             return true;
         }
 
+        /// <summary>Moves the light with the creature. Runs even when nobody is looking:
+        /// light changes what pawns on that map can see.</summary>
+        internal void GlowTick()
+        {
+            var g = ActiveGlow;
+            if (g == null) return;
+            if (glower == null) glower = new TitanGlower(pawn, g);
+            glower.Update(pawn);
+        }
+
         internal void CleanupEffecters(bool keepTracked = false)
         {
+            if (!keepTracked) glower?.Remove();
             if (liveEffecters.Count == 0) { if (!keepTracked) trackedMap = null; return; }
             for (int i = 0; i < liveEffecters.Count; i++) liveEffecters[i].Cleanup();
             liveEffecters.Clear();
@@ -556,7 +594,7 @@ namespace TitanFramework
                     if (traits[i].def.Ticks) traits[i].TickInterval(delta);
             }
             // Hand effecters to the map component, which ticks them every tick.
-            if (pawn.Spawned && trackedMap != pawn.Map && HasActiveEffecters)
+            if (pawn.Spawned && trackedMap != pawn.Map && HasMapVisuals)
             {
                 pawn.Map.GetComponent<MapComponent_TitanVisuals>()?.Track(this);
                 trackedMap = pawn.Map;

@@ -220,9 +220,9 @@ namespace TitanFramework
     }
 
     /// <summary>
-    /// Ticks titans' effecters every tick (hediff ticks are batched in 1.6, which
-    /// would make particles stutter). Only titans with active effecters on this map
-    /// are tracked, so a map with none costs one empty loop.
+    /// Ticks titans' effecters and lights every tick (hediff ticks are batched in 1.6,
+    /// which would make particles stutter and lights lag). Only titans with effecters
+    /// or a light on this map are tracked, so a map with none costs one empty loop.
     /// </summary>
     public class MapComponent_TitanVisuals : MapComponent
     {
@@ -241,13 +241,14 @@ namespace TitanFramework
             {
                 var t = tracked[i];
                 var p = t.pawn;
-                if (p == null || !p.Spawned || p.Map != map || !t.HasActiveEffecters
+                if (p == null || !p.Spawned || p.Map != map || !t.HasMapVisuals
                     || !p.health.hediffSet.hediffs.Contains(t))
                 {
                     t.CleanupEffecters();
                     tracked.RemoveAt(i);
                     continue;
                 }
+                t.GlowTick();
                 // Nobody can see it: skip spawning particles nobody would see.
                 if (map != Find.CurrentMap || p.Position.Fogged(map)) continue;
                 t.EffectersTick();

@@ -137,7 +137,12 @@ namespace TitanFramework
         /// body size, so a bear's embers cover a bear and a rat's cover a rat.</summary>
         public bool scaleEffectersWithBodySize = true;
 
-        public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty() || !flames.NullOrEmpty();
+        /// <summary>Real light on the map, like a lamp that follows the creature. Always on
+        /// while the creature has the trait, discovered or not: a light you can see is no
+        /// secret. Traits that glow are best made visible.</summary>
+        public TitanGlow glow;
+
+        public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty() || !flames.NullOrEmpty() || glow != null;
         public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty();
 
         // ---- cached --------------------------------------------------------------

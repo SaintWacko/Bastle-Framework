@@ -29,6 +29,11 @@
     <effecters>
       <li>TF_Effecter_Embers</li>
     </effecters>
+    <!-- Real light: lights up a dark room around it, like a small campfire. -->
+    <glow>
+      <radius>5</radius>
+      <color>(240,130,50,0)</color>
+    </glow>
     <stage>
       <statOffsets>
         <ComfyTemperatureMin>-40</ComfyTemperatureMin>
@@ -114,6 +119,8 @@
     <label>irradiated</label>
     <description>Its uranium body poisons whatever it strikes.</description>
     <namePrefix>irradiated</namePrefix>
+    <!-- It glows, so it's no secret. -->
+    <visible>true</visible>
     <commonality>0</commonality>
     <pointCost>0</pointCost>
     <heritable>false</heritable>
@@ -129,6 +136,10 @@
         <pulseMin>0.3</pulseMin>
       </li>
     </overlays>
+    <glow>
+      <radius>3</radius>
+      <color>(80,220,60,0)</color>
+    </glow>
     <hediffs>
       <li><hediff>TF_Example_IrradiatedTouch</hediff></li>
     </hediffs>
