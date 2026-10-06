@@ -455,7 +455,13 @@ namespace TitanFramework
             {
                 if (TitanHiding.HidingFor(pawn))
                 {
-                    if (stageDirty || cardStage == null) cardStage = BuildStage(discoveredOnly: true);
+                    if (stageDirty)
+                    {
+                        cachedStage = BuildStage();
+                        stageDirty = false;
+                        cardStage = null;
+                    }
+                    if (cardStage == null) cardStage = BuildStage(discoveredOnly: true);
                     return cardStage;
                 }
                 if (stageDirty || cachedStage == null)

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "buildId": 41,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-06T17:59:19.435Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "capacity dirtying around the card in TitanHiding.Begin/End, cardStage invalidation in Hediff_Titan.CurStage",
+  "diffSource": "since build 40 (2026-10-06T17:50:48Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 1,
+    "note": 2
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Begin no longer clears stat caches, so gameplay-cached values can leak into card computations",
+      "detail": "Build 40's Begin called ClearStatCaches(p) before drawing. Now only End does. StatWorker.GetValue returns immutableStatCache entries unconditionally and temporaryStatCache entries when a caller passes cacheStaleAfterTicks. Nested stat reads do that, e.g. comfy temperatures (GenTemperature.cs:61) and MentalBreakThreshold (MentalBreaker.cs:40). Any value gameplay cached since the last End is the real one, with hidden traits included, and a card computation that reaches it shows it. Restore ClearStatCaches(p) in Begin right after cardPawn = p (Source/TitanHiding.cs:48).",
+      "evidence": {
+        "kind": "index",
+        "ref": "Assembly-CSharp/RimWorld/StatWorker.cs:37"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Card branch of CurStage rebuilds cardStage on every read while stageDirty is set",
+      "detail": "The hidden branch checks stageDirty but never clears it, because only the real branch does. Until gameplay next reads CurStage, every card read runs BuildStage, which allocates a List, Dictionaries and LINQ ToLists (Hediff_Titan.cs:482-551). That is several reads per GUI event. The window is usually short: TraitsChanged reads CurStage itself, and Begin's PainTotal warm reads it when uncached. Rebuilding cachedStage and clearing stageDirty at the top of the hidden branch at line 458 would make it one rebuild.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:458"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Capacities are dirtied twice per DrawStatsReport call while the card is open",
+      "detail": "DrawStatsReport runs for each GUI event, and Begin and End each call Notify_CapacityLevelsDirty. While the card is open, gameplay recalculates every capacity of that pawn at least once per frame. That is bounded to one pawn and is the cost of the design, but it is worth knowing when profiling. This is my opinion on cost, not a measured regression.",
+      "evidence": {
+        "kind": "opinion",
+        "ref": "Source/TitanHiding.cs:48"
+      }
+    }
+  ],
+  "checked": [
+    "every [HarmonyPatch] in Source/TitanHiding.cs binds (verify_patches: 4 of 4 resolved, DrawStatsReport overload unique)",
+    "PawnCapacitiesHandler.Notify_CapacityLevelsDirty only marks entries Uncached and creates the map if null: no side effects, safe in Begin and End",
+    "Begin ordering: PainTotal/BleedRateTotal warmed before cardPawn is set, capacities dirtied after, so the card computes them with hidden traits left out",
+    "End ordering: cardPawn cleared before capacities are dirtied and stat caches cleared, so gameplay recomputes real values; the Finalizer guarantees End runs",
+    "cardStage invalidation: every stageDirty site (Hediff_Titan.cs:101, 333, 352, 773) forces a card rebuild; the cachedStage rebuild nulls cardStage; Notify_TraitDiscovered nulls cardStage",
+    "CollectHiddenHediffs/DiscoveredTraitGrants refactor preserves the original LINQ semantics (same hediff+part match, discovered-only)",
+    "Hediff.CurStage postfix reorder (IsInMainThread before Contains) is behaviour-neutral",
+    "corpus: no other scanned mod patches DrawStatsReport, Hediff.get_CurStage or Ability.GizmosVisible (brief section 2)",
+    "pyxis_mod_errors unavailable: no Pyxis token configured"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanHiding.cs",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "8482a231f3fba6ef8ddeb5797fb1ce5b47ede5ff",
+  "partial": false
+}

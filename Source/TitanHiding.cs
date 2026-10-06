@@ -46,6 +46,8 @@ namespace TitanFramework
             titan.CollectHiddenHediffs(hiddenHediffs);
             cardPawn = p;
             p.health.capacities.Notify_CapacityLevelsDirty();
+            // Nested stat reads can serve cached values; drop the real ones gameplay cached.
+            ClearStatCaches(p);
             return true;
         }
 
