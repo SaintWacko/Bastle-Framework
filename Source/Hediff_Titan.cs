@@ -80,17 +80,19 @@ namespace TitanFramework
             material = stuff;
             materialStage = null;
 
-            // Drop what the old material granted, and anything a construct can't have.
+            // Drop what the old material granted (unless the new one grants it too), and
+            // anything a construct can't have.
+            var newTraits = TitanMaterialUtility.Ext(stuff)?.traits;
             foreach (var t in traits.ToList())
-                if (t.fromMaterial || (stuff != null && t.def.requiresFlesh))
+                if ((t.fromMaterial && (newTraits == null || !newTraits.Contains(t.def)))
+                    || (stuff != null && t.def.requiresFlesh))
                     RemoveTraitInternal(t);
             // Add what the new one grants, unless the creature already has it or a
             // trait it has excludes it.
-            var newTraits = TitanMaterialUtility.Ext(stuff)?.traits;
             if (newTraits != null)
                 foreach (var def in newTraits)
                     if (!HasTrait(def) && !traits.Any(t => t.def.ConflictsWith(def)))
-                        AddTraitInternal(def, false).fromMaterial = true;
+                        AddTraitInternal(def, false, fromMaterial: true);
 
             ApplyStatue(dirty: true);
             stageDirty = true;
@@ -114,12 +116,13 @@ namespace TitanFramework
 
         // ---- trait list mutation (use TitanUtility from outside) ----------------
 
-        internal TitanTrait AddTraitInternal(TitanTraitDef def, bool discovered)
+        internal TitanTrait AddTraitInternal(TitanTraitDef def, bool discovered, bool fromMaterial = false)
         {
             var trait = (TitanTrait)Activator.CreateInstance(def.traitClass);
             trait.def = def;
             trait.titan = this;
             trait.discovered = discovered || def.visible;
+            trait.fromMaterial = fromMaterial;
             traits.Add(trait);
             ApplyEffects(trait);
             trait.PostAdded();
