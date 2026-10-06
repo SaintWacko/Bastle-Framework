@@ -392,7 +392,8 @@ namespace TitanFramework
 
         /// <summary>The stage without undiscovered traits. Used in place of CurStage only
         /// while this titan's info card is drawing (TitanHiding), so the card's numbers
-        /// give no hint of hidden traits. Dropped when the card finishes drawing.</summary>
+        /// give no hint of hidden traits. Rebuilt when the stage changes or a trait is
+        /// discovered.</summary>
         [Unsaved] internal HediffStage cardStage;
 
         public bool AnyHiddenTrait

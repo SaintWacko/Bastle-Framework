@@ -12,8 +12,9 @@ namespace TitanFramework
     /// its titan hediff answers with a stage built from discovered traits only, and the
     /// hediffs that only hidden traits grant answer with no stage at all. The card's
     /// values and explanations are therefore computed as if the hidden traits did not
-    /// exist. Gameplay is untouched: everything the card computed is dropped from the
-    /// stat caches as soon as the card finishes drawing.
+    /// exist. The pawn's stat caches are cleared before the card draws (so nested
+    /// reads can't serve real cached values) and again after (so gameplay never sees
+    /// a value computed without the hidden traits).
     ///
     /// Capacities (moving, manipulation...) feed many card stats, so they are marked
     /// dirty on both sides of the card: the card computes them without hidden traits,
