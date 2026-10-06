@@ -85,7 +85,7 @@ namespace TitanFramework
             var newTraits = TitanMaterialUtility.Ext(stuff)?.traits;
             foreach (var t in traits.ToList())
                 if ((t.fromMaterial && (newTraits == null || !newTraits.Contains(t.def)))
-                    || (stuff != null && t.def.requiresFlesh))
+                    || (stuff != null && t.def.disallowConstructs))
                     RemoveTraitInternal(t);
             // Add what the new one grants, unless the creature already has it or a
             // trait it has excludes it.

@@ -54,7 +54,6 @@
     <description>Its bite carries a poison that builds up in the victim's body.</description>
     <namePrefix>venomous</namePrefix>
     <pointCost>2</pointCost>
-    <requiresFlesh>true</requiresFlesh>
     <discoverWhen>
       <li>UsesGrantedVerb</li>
       <li>Dies</li>

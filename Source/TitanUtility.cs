@@ -71,8 +71,8 @@ namespace TitanFramework
             if (pawn == null || def == null || !def.AllowedOn(pawn)) return false;
             var titan = GetTitan(pawn);
             if (titan == null) return true;
-            // A creature made of stone has no flesh for a flesh trait to work on.
-            if (def.requiresFlesh && titan.IsConstruct) return false;
+            // A creature made of stone has no meat, blood or pain for such a trait to work on.
+            if (def.disallowConstructs && titan.IsConstruct) return false;
             foreach (var t in titan.TraitsForReading)
                 if (t.def.ConflictsWith(def)) return false;
             return true;

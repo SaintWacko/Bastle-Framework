@@ -67,7 +67,12 @@ namespace TitanFramework
         public bool allowMechanoids = true;
         /// <summary>Anything that is none of the above (Anomaly entities, modded races).</summary>
         public bool allowOther = true;
+        /// <summary>Only flesh races: no mechanoids or other non-flesh races.</summary>
         public bool requiresFlesh;
+        /// <summary>Not on material creatures (TitanUtility.SetMaterial): for traits that
+        /// work through meat, leather, blood, pain, toxins or rot, which a construct
+        /// doesn't have. Removed if the creature later becomes a construct.</summary>
+        public bool disallowConstructs;
         public float minBodySize = 0f;
         public float maxBodySize = 9999f;
         public List<ThingDef> allowedRaces;
