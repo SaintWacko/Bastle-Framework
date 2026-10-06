@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "buildId": 37,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-06T16:26:13.052Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "the new Prefix/__state on Ability.Notify_StartedCasting",
+  "diffSource": "since build 36 (2026-10-06T05:52:15Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 0,
+    "note": 3
+  },
+  "findings": [
+    {
+      "severity": "note",
+      "title": "\"Leftovers are already wrapped\" holds only when the earlier cast passed the hidden-trait check",
+      "detail": "Entries left in preCastActions by a Notify_StartedCasting call where GetTitan returned null or HasHiddenTraitGranting was false were never wrapped. Starting at __state skips them on the next cast. That's harmless as long as a trait never goes from discovered back to undiscovered, and as long as a titan never gains a hidden trait for an ability while a cancelled cast's entries are still in the list. Consider rewording the comment to say this rather than claiming every leftover is wrapped. Not checked: whether anything can set discovered back to false.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanAI.cs:134"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Ability.Notify_StartedCasting is not in the Schematic",
+      "detail": "verify_patches reports the target is not in the Schematic and says to run update_schematic if the patch is meant to stay.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanAI.cs:129"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "No corpus precedent for this target",
+      "detail": "None of the 15 scanned mod trees patches Ability.Notify_StartedCasting, so the corpus can't tell us whether a prefix plus postfix is the usual approach. A void prefix that only reads the list is the least intrusive way to patch it.",
+      "evidence": {
+        "kind": "precedent",
+        "ref": "Ability.Notify_StartedCasting"
+      }
+    }
+  ],
+  "checked": [
+    "verify_patches: prefix and postfix on Ability.Notify_StartedCasting and the postfix on Pawn_JobTracker.DetermineNextConstantThinkTreeJob all bind (3/3)",
+    "Prefix returns void and uses out int __state, so it can't skip the original or other mods' patches (lint prefix-returns-void)",
+    "The comment's premise against vanilla: Notify_StartedCasting only calls AddRange (Ability.cs:1016); the list is cleared only in Activate (Ability.cs:556, 571) and on the invalid-target cancel (Abilit…",
+    "Null list: prefix stores 0 and the postfix returns early on null",
+    "Original skipped by another mod, or list shrunk between prefix and postfix: the loop starting at __state does nothing, so no out-of-range access",
+    "Wrapper lambda captures pawn and def per call and calls the original action first; Notify_AbilityEffectStarted only discovers undiscovered traits (Hediff_Titan.cs:656-664)",
+    "pyxis_mod_errors could not run: no Pyxis token is configured, so no error-class evidence either way"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/TitanAI.cs"
+  ],
+  "parts": 1,
+  "buildCommit": "179b37ff1a3517805bbe0df9140eac570438c52c",
+  "partial": false
+}
