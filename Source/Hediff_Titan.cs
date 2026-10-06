@@ -274,13 +274,13 @@ namespace TitanFramework
                 float scale = Mathf.Clamp(Mathf.Sqrt(pawn.BodySize), 0.5f, 2.5f);
                 foreach (var def in activeEffecterDefs)
                 {
-                    var eff = def.SpawnAttached(pawn, pawn.Map, EffecterScaled(def) ? scale : 1f);
-                    // SpawnAttached (offsetMode TrueCenterCompensated, the default) stores
-                    // DrawPos minus the cell centre as a fixed offset. The sprayer already
-                    // spawns at the live DrawPos, so for a pawn caught mid-step that
-                    // offset is counted twice and the effect trails up to a cell off
-                    // to one side until the effecter is rebuilt.
-                    eff.offset = Vector3.zero;
+                    // Not SpawnAttached: with offsetMode TrueCenterCompensated (the default)
+                    // it stores DrawPos minus the cell centre as a fixed offset. The sprayer
+                    // already spawns at the live DrawPos, so for a pawn caught mid-step that
+                    // offset is counted twice and the effect trails up to a cell off to
+                    // one side for the effecter's whole life.
+                    var eff = new Effecter(def) { scale = EffecterScaled(def) ? scale : 1f, offset = Vector3.zero };
+                    eff.Trigger(pawn, pawn);
                     liveEffecters.Add(eff);
                 }
                 effectersSpawnedTick = now;
@@ -303,9 +303,17 @@ namespace TitanFramework
         {
             var g = ActiveGlow;
             if (g == null) return;
-            if (glower == null) glower = new TitanGlower(pawn, g);
+            // The glow grid finds a light to remove by its thing's id, so a race with its
+            // own CompGlower would have the wrong light removed. That race keeps its own.
+            if (glower == null)
+            {
+                if (pawn.GetComp<CompGlower>() != null) return;
+                glower = new TitanGlower(pawn, g);
+            }
             glower.Update(pawn);
         }
+
+        internal Map TrackedMap => trackedMap;
 
         internal void CleanupEffecters(bool keepTracked = false)
         {

@@ -244,7 +244,9 @@ namespace TitanFramework
                 if (p == null || !p.Spawned || p.Map != map || !t.HasMapVisuals
                     || !p.health.hediffSet.hediffs.Contains(t))
                 {
-                    t.CleanupEffecters();
+                    // A creature that moved to another map is already tracked there; leave
+                    // its effecters and light to that map's component.
+                    if (t.TrackedMap == map || t.TrackedMap == null) t.CleanupEffecters();
                     tracked.RemoveAt(i);
                     continue;
                 }
