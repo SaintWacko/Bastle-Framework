@@ -216,7 +216,7 @@ namespace TitanFramework
         /// an unspawned stand-in pawn with no titan material; a material titan is drawn
         /// with the statue flag too and should keep its trait visuals.</summary>
         public static bool IsLiveTitan(PawnDrawParms parms) =>
-            !parms.Statue || TitanUtility.GetTitan(parms.pawn)?.IsConstruct == true;
+            !parms.Statue || TitanUtility.PeekTitan(parms.pawn)?.IsConstruct == true;
     }
 
     /// <summary>

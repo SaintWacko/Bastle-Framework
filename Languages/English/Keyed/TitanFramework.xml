@@ -12,5 +12,6 @@
   <TF_HediffBracketsUnknown>{0} known, {1} unknown</TF_HediffBracketsUnknown>
 
   <TF_MaterialTipTitle>Made of {0}</TF_MaterialTipTitle>
+  <TF_MaterialValue>Made of {0} {1}</TF_MaterialValue>
   <TF_MaterialTipDesc>Feels no pain, doesn't bleed or rot, and is immune to toxins. Butchering yields its material.</TF_MaterialTipDesc>
 </LanguageData>

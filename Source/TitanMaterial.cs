@@ -114,11 +114,50 @@ namespace TitanFramework
             return 1f + (m - 1f) * (Ext(stuff)?.damageFactor ?? 1f);
         }
 
-        public static int ButcherCount(Pawn pawn, ThingDef stuff, float efficiency = 1f)
+        public static float ButcherAmount(Pawn pawn, ThingDef stuff, float efficiency = 1f)
         {
             float n = pawn.BodySize * ButcherYieldPerBodySize * (Ext(stuff)?.butcherYieldFactor ?? 1f) * efficiency;
-            if (stuff.smallVolume) n *= 10f;
-            return Mathf.Max(0, GenMath.RoundRandom(n));
+            return stuff.smallVolume ? n * 10f : n;
+        }
+
+        public static int ButcherCount(Pawn pawn, ThingDef stuff, float efficiency = 1f) =>
+            Mathf.Max(0, GenMath.RoundRandom(ButcherAmount(pawn, stuff, efficiency)));
+    }
+
+    /// <summary>A creature made of jade is worth its jade. A hediff stat offset can't do
+    /// this: the pawn market value worker evaluates the race def, not the pawn's
+    /// hediffs. Added to MarketValue's parts at startup.</summary>
+    public class StatPart_TitanMaterial : StatPart
+    {
+        private static float Bonus(StatRequest req, out ThingDef stuff, out float amount)
+        {
+            stuff = null;
+            amount = 0f;
+            if (!(req.Thing is Pawn pawn)) return 0f;
+            stuff = TitanUtility.GetMaterial(pawn);
+            if (stuff == null) return 0f;
+            amount = TitanMaterialUtility.ButcherAmount(pawn, stuff);
+            return amount * stuff.BaseMarketValue;
+        }
+
+        public override void TransformValue(StatRequest req, ref float val) => val += Bonus(req, out _, out _);
+
+        public override string ExplanationPart(StatRequest req)
+        {
+            float bonus = Bonus(req, out var stuff, out float amount);
+            if (stuff == null) return null;
+            return "TF_MaterialValue".Translate(Mathf.RoundToInt(amount), stuff.label) + ": +" + bonus.ToStringMoney();
+        }
+    }
+
+    [StaticConstructorOnStartup]
+    internal static class TitanMaterialStartup
+    {
+        static TitanMaterialStartup()
+        {
+            var stat = StatDefOf.MarketValue;
+            if (stat.parts == null) stat.parts = new List<StatPart>();
+            stat.parts.Add(new StatPart_TitanMaterial { parentStat = stat });
         }
 
         /// <summary>
@@ -145,8 +184,6 @@ namespace TitanFramework
                     new StatModifier { stat = StatDefOf.ArmorRating_Heat, value = ArmorPower(stuff, StatDefOf.StuffPower_Armor_Heat) * armor },
                     new StatModifier { stat = StatDefOf.ToxicResistance, value = 1f },
                     new StatModifier { stat = StatDefOf.ToxicEnvironmentResistance, value = 1f },
-                    // A creature made of jade is worth its jade.
-                    new StatModifier { stat = StatDefOf.MarketValue, value = ButcherCount(pawn, stuff) * stuff.BaseMarketValue },
                 },
                 statFactors = new List<StatModifier>
                 {

@@ -77,22 +77,20 @@ namespace TitanFramework
         internal void SetMaterialInternal(ThingDef stuff)
         {
             if (stuff == material) return;
-            var oldTraits = TitanMaterialUtility.Ext(material)?.traits;
             material = stuff;
             materialStage = null;
 
-            // Swap the traits that come with the material.
-            if (oldTraits != null)
-                foreach (var def in oldTraits)
-                {
-                    var t = GetTrait(def);
-                    if (t != null && (TitanMaterialUtility.Ext(stuff)?.traits == null || !TitanMaterialUtility.Ext(stuff).traits.Contains(def)))
-                        RemoveTraitInternal(t);
-                }
+            // Drop what the old material granted, and anything a construct can't have.
+            foreach (var t in traits.ToList())
+                if (t.fromMaterial || (stuff != null && t.def.requiresFlesh))
+                    RemoveTraitInternal(t);
+            // Add what the new one grants, unless the creature already has it or a
+            // trait it has excludes it.
             var newTraits = TitanMaterialUtility.Ext(stuff)?.traits;
             if (newTraits != null)
                 foreach (var def in newTraits)
-                    if (!HasTrait(def)) AddTraitInternal(def, false);
+                    if (!HasTrait(def) && !traits.Any(t => t.def.ConflictsWith(def)))
+                        AddTraitInternal(def, false).fromMaterial = true;
 
             ApplyStatue(dirty: true);
             stageDirty = true;
@@ -528,9 +526,18 @@ namespace TitanFramework
             }
         }
 
+        [Unsaved] private bool statueChecked;
+
         public override void TickInterval(int delta)
         {
             base.TickInterval(delta);
+            // The render tree setup reapplies the statue after a load; this covers races
+            // whose tree never runs dynamic setups.
+            if (!statueChecked && material != null)
+            {
+                statueChecked = true;
+                ApplyStatue(dirty: true);
+            }
             if (anyTicking)
             {
                 for (int i = traits.Count - 1; i >= 0; i--)

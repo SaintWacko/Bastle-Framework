@@ -47,6 +47,15 @@ namespace TitanFramework
 
         public static bool IsTitan(Pawn pawn) => GetTitan(pawn) != null;
 
+        /// <summary>GetTitan without the stale-entry cleanup, safe to call from the
+        /// parallel pre-draw threads (ConditionalWeakTable reads are thread-safe; the
+        /// Remove in GetTitan is not safe to race).</summary>
+        internal static Hediff_Titan PeekTitan(Pawn pawn)
+        {
+            if (pawn == null || !registry.TryGetValue(pawn, out var t)) return null;
+            return t.pawn == pawn && t.pawn.health?.hediffSet?.hediffs.Contains(t) == true ? t : null;
+        }
+
         public static Hediff_Titan GetOrMakeTitan(Pawn pawn)
         {
             var titan = GetTitan(pawn);
@@ -158,7 +167,8 @@ namespace TitanFramework
                 if (t == null) return;
                 foreach (var tr in t.TraitsForReading)
                 {
-                    if (!tr.def.heritable) continue;
+                    // Material traits come with the material, not on their own.
+                    if (!tr.def.heritable || tr.fromMaterial) continue;
                     carriers.TryGetValue(tr.def, out int n);
                     carriers[tr.def] = n + 1;
                     if (tr.discovered) known.Add(tr.def);

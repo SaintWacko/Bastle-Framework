@@ -14,6 +14,10 @@ namespace TitanFramework
         public TitanTraitDef def;
         public bool discovered;
 
+        /// <summary>Granted by the creature's material (TitanMaterialExtension.traits):
+        /// removed when the material changes, and not inherited on its own.</summary>
+        public bool fromMaterial;
+
         /// <summary>Set by the owning hediff after creation and after load.</summary>
         public Hediff_Titan titan;
 
@@ -75,6 +79,7 @@ namespace TitanFramework
         {
             Scribe_Defs.Look(ref def, "def");
             Scribe_Values.Look(ref discovered, "discovered");
+            Scribe_Values.Look(ref fromMaterial, "fromMaterial");
         }
     }
 }
