@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -60,31 +61,53 @@ namespace TitanFramework
 
         // ---- window --------------------------------------------------------------
 
+        private enum Tab { Lights, Traits, Materials }
+        private static Tab tab = Tab.Lights;
+
         public void DoWindowContents(Rect inRect)
         {
-            const float gap = 24f;
-            float colW = (inRect.width - gap) / 2f;
-            var left = new Rect(inRect.x, inRect.y, colW, inRect.height - 40f);
-            var right = new Rect(inRect.x + colW + gap, inRect.y, colW, inRect.height - 40f);
+            // TabDrawer draws the strip above the rect it is given, so the body starts one
+            // tab height down; the bottom 40 px hold the reset button.
+            var body = new Rect(inRect.x, inRect.y + TabDrawer.TabHeight, inRect.width, inRect.height - TabDrawer.TabHeight - 40f);
+            var tabs = new List<TabRecord>
+            {
+                new TabRecord("TF_Settings_LightsSection".Translate(), () => tab = Tab.Lights, tab == Tab.Lights),
+                new TabRecord("TF_Settings_TraitsSection".Translate(), () => tab = Tab.Traits, tab == Tab.Traits),
+                new TabRecord("TF_Settings_MaterialsSection".Translate(), () => tab = Tab.Materials, tab == Tab.Materials),
+            };
+            Widgets.DrawMenuSection(body);
+            TabDrawer.DrawTabs(body, tabs);
 
             var l = new Listing_Standard();
-            l.Begin(left);
-            Section(l, "TF_Settings_LightsSection");
+            l.Begin(body.ContractedBy(12f));
+            if (tab == Tab.Lights) DoLights(l);
+            else if (tab == Tab.Traits) DoTraits(l);
+            else DoMaterials(l);
+            l.End();
+
+            var reset = new Rect(inRect.xMax - 160f, inRect.yMax - 32f, 160f, 32f);
+            if (Widgets.ButtonText(reset, "TF_Settings_Reset".Translate()))
+                Reset();
+        }
+
+        private void DoLights(Listing_Standard l)
+        {
             Check(l, "TF_Settings_Lights", ref lightsEnabled, "TF_Settings_LightsHint");
             float follow = lightFollowCells;
             Slider(l, "TF_Settings_LightFollow", ref follow, 1f, 5f, "TF_Settings_LightFollowValue".Translate(Mathf.RoundToInt(follow)), "TF_Settings_LightFollowHint", 1f);
             lightFollowCells = Mathf.RoundToInt(follow);
             Slider(l, "TF_Settings_LightRadius", ref lightRadiusFactor, 0.25f, 2f, lightRadiusFactor.ToStringPercent(), null, 0.05f);
             Check(l, "TF_Settings_Effects", ref effectsEnabled, "TF_Settings_EffectsHint");
-            l.Gap(16f);
-            Section(l, "TF_Settings_TraitsSection");
+        }
+
+        private void DoTraits(Listing_Standard l)
+        {
             Slider(l, "TF_Settings_Inherit", ref inheritChanceFactor, 0f, 2f, inheritChanceFactor.ToStringPercent(), "TF_Settings_InheritHint", 0.05f);
             Check(l, "TF_Settings_DiscoveryMessages", ref discoveryMessages, null);
-            l.End();
+        }
 
-            var r = new Listing_Standard();
-            r.Begin(right);
-            Section(r, "TF_Settings_MaterialsSection");
+        private void DoMaterials(Listing_Standard r)
+        {
             Slider(r, "TF_Settings_Armor", ref materialArmorFactor, 0f, 1.5f, materialArmorFactor.ToStringPercent(),
                 "TF_Settings_ArmorHint".Translate((0.9f * materialArmorFactor).ToStringPercent()), 0.05f);
             Slider(r, "TF_Settings_Damage", ref materialDamageStrength, 0f, 2f, materialDamageStrength.ToStringPercent(), "TF_Settings_DamageHint", 0.05f);
@@ -95,19 +118,6 @@ namespace TitanFramework
                 "TF_Settings_ButcherHint".Translate(Mathf.RoundToInt(2.15f * butcherYieldPerBodySize)), 1f);
             Slider(r, "TF_Settings_Precious", ref smallVolumeMultiplier, 1f, 20f, "x" + Mathf.RoundToInt(smallVolumeMultiplier), "TF_Settings_PreciousHint", 1f);
             Check(r, "TF_Settings_MarketValue", ref materialMarketValue, "TF_Settings_MarketValueHint");
-            r.End();
-
-            var reset = new Rect(inRect.xMax - 160f, inRect.yMax - 32f, 160f, 32f);
-            if (Widgets.ButtonText(reset, "TF_Settings_Reset".Translate()))
-                Reset();
-        }
-
-        private static void Section(Listing_Standard l, string key)
-        {
-            Text.Font = GameFont.Medium;
-            l.Label(key.Translate());
-            Text.Font = GameFont.Small;
-            l.GapLine(6f);
         }
 
         private static void Hint(Listing_Standard l, string text)
