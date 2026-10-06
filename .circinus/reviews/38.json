@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "buildId": 38,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-06T16:27:18.159Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "comment-only change since build 37",
+  "diffSource": "since build 37 (2026-10-06T16:25:21Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 0,
+    "note": 1
+  },
+  "findings": [
+    {
+      "severity": "note",
+      "title": "New comment's justification (\"traits never go back to hidden\") doesn't cover a hidden trait added later",
+      "detail": "The comment says an unwrapped leftover stays harmless because traits never return to hidden. A single trait can't (discovered is only set true, TitanTrait.cs:39), but TitanUtility.AddTrait defaults to discovered=false (Hediff_Titan.cs:127), and a pawn that becomes a titan after an earlier cast had GetTitan return null at that cast. Either way an unwrapped leftover can exist while something is now hidden. Behaviour is still correct: this call's fresh entries are wrapped, share the same ticksAwayFromCast, and vanilla fires every entry whose threshold has been reached in the same loop (Ability.cs:941-946), so the reveal happens that tick anyway. Suggest the comment state that reason instead.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:127"
+      }
+    }
+  ],
+  "checked": [
+    "Diff since build 37 is comment-only in Source/TitanAI.cs (lines 136-138); no code changed",
+    "Every [HarmonyPatch] in Source/TitanAI.cs binds (verify_patches: 3 of 3 resolved, Ability.Notify_StartedCasting prefix/postfix, Pawn_JobTracker.DetermineNextConstantThinkTreeJob postfix)",
+    "Prefix on Ability.Notify_StartedCasting returns void (prefix-returns-void lint holds)",
+    "Comment's claim that vanilla does not clear preCastActions when a cast job ends early, checked against Ability.cs: cleared only on Activate (Ability.cs:556, 571) and on an invalid target during warmu…",
+    "Trait discovery is one-way: discovered only ever set true (TitanTrait.cs:39), saved via Scribe_Values (TitanTrait.cs:81)",
+    "pyxis_mod_errors could not run: no Pyxis token configured, so no community error-class evidence was available"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/TitanAI.cs"
+  ],
+  "parts": 1,
+  "buildCommit": "41ddfbb8bab6eec6b746cc85a5c7de71c69cdec5",
+  "partial": false
+}

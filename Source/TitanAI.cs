@@ -133,9 +133,10 @@ namespace TitanFramework
             AccessTools.FieldRefAccess<Ability, List<PreCastAction>>("preCastActions");
 
         // Vanilla appends to the list and doesn't clear it when a cast job ends early, so
-        // only the entries this call adds are wrapped. A leftover is either already wrapped
-        // or from a cast that had nothing hidden to reveal, which stays true because
-        // traits never go back to hidden.
+        // only the entries this call adds are wrapped. An unwrapped leftover is harmless:
+        // this call's fresh entries share its ticksAwayFromCast, and vanilla fires every
+        // entry that has reached its threshold in the same loop, so the reveal still
+        // happens on that tick.
         static void Prefix(Ability __instance, out int __state) => __state = PreCastActions(__instance)?.Count ?? 0;
 
         static void Postfix(Ability __instance, int __state)
