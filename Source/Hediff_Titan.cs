@@ -389,10 +389,58 @@ namespace TitanFramework
 
         // ---- stage ---------------------------------------------------------------
 
+        /// <summary>The stage without undiscovered traits. Used in place of CurStage only
+        /// while this titan's info card is drawing (TitanHiding), so the card's numbers
+        /// give no hint of hidden traits. Dropped when the card finishes drawing.</summary>
+        [Unsaved] internal HediffStage cardStage;
+
+        public bool AnyHiddenTrait
+        {
+            get
+            {
+                for (int i = 0; i < traits.Count; i++)
+                    if (!traits[i].discovered) return true;
+                return false;
+            }
+        }
+
+        /// <summary>Adds the hediffs that only undiscovered traits grant. A hediff that a
+        /// discovered trait also grants is left out: the player already knows about it.</summary>
+        internal void CollectHiddenHediffs(HashSet<Hediff> into)
+        {
+            foreach (var t in traits)
+            {
+                if (t.discovered || t.def.hediffs == null) continue;
+                foreach (var th in t.def.hediffs)
+                {
+                    if (traits.Any(o => o.discovered && o.def.hediffs != null && o.def.hediffs.Any(x => x.hediff == th.hediff && x.part == th.part)))
+                        continue;
+                    foreach (var h in pawn.health.hediffSet.hediffs)
+                        if (h.def == th.hediff && (th.part == null || h.Part?.def == th.part)) into.Add(h);
+                }
+            }
+        }
+
+        /// <summary>True when every trait that grants this ability is undiscovered.</summary>
+        internal bool AbilityOnlyFromHiddenTraits(AbilityDef abilityDef)
+        {
+            bool any = false;
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var t = traits[i];
+                if (t.def.abilities == null || !t.def.abilities.Contains(abilityDef)) continue;
+                if (t.discovered) return false;
+                any = true;
+            }
+            return any;
+        }
+
         public override HediffStage CurStage
         {
             get
             {
+                if (TitanHiding.HidingFor(pawn))
+                    return cardStage ?? (cardStage = BuildStage(discoveredOnly: true));
                 if (stageDirty || cachedStage == null)
                 {
                     cachedStage = BuildStage();
@@ -413,7 +461,7 @@ namespace TitanFramework
         /// stats, part-only fields (partEfficiencyOffset, partIgnoreMissingHP,
         /// destroyPart), and label/tooltip fields.
         /// </summary>
-        protected virtual HediffStage BuildStage()
+        protected virtual HediffStage BuildStage(bool discoveredOnly = false)
         {
             var s = new HediffStage { becomeVisible = true };
             Dictionary<StatDef, float> offsets = null, factors = null;
@@ -421,7 +469,7 @@ namespace TitanFramework
 
             var stages = new List<HediffStage>(traits.Count + 1);
             foreach (var trait in traits)
-                if (trait.def.stage != null) stages.Add(trait.def.stage);
+                if (trait.def.stage != null && (!discoveredOnly || trait.discovered)) stages.Add(trait.def.stage);
             if (MaterialStage != null) stages.Add(MaterialStage);
 
             foreach (var t in stages)
