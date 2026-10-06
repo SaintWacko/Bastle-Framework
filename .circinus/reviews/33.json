@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "buildId": 33,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-06T05:28:33.729Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "Ability.Activate postfixes for discovery; also: can you find why Hediff_Titan.Notify_PawnUsedVerb did NOT discover a trait when its granted FireSpew-copy ability was cast (user saw discovery only once the fire injured a pawn)?",
+  "diffSource": "since build 32 (2026-10-06T04:59:24Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 2,
+    "note": 3
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "The Ability.Activate postfix cannot explain or fix the missed fire breath discovery; the comment claiming it does is unproven",
+      "detail": "For a Verb_CastAbility ability (TF_Example_FireBreath), Ability.Activate runs inside Verb.TryCastNextBurstShot via TryCastShot (Verb_CastAbility.cs:61). The same method then calls CasterPawn.health.Notify_UsedVerb at Verb.cs:497, which reaches Hediff_Titan.Notify_PawnUsedVerb with an IAbilityVerb whose Ability.def is TF_Example_FireBreath. Both paths go through the same TitanTrait.TryDiscoverBy gates (discovered, DiscoveredBy, PlayerCanObserve; TitanTrait.cs:53), a few lines apart in one call. Whatever stopped discovery in run #31 stops the postfix too, unless something threw in between (that would be in that run's log). Change the doc comment at TitanAI.cs:119-121 so it doesn't state that Notify_PawnUsedVerb missed the cast, and don't report the bug fixed until a run reproduces it.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Verse/Verb.cs:497"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "Postfix reveals the trait even when Activate returned false (failed psycast)",
+      "detail": "Psycast.Activate returns false without casting when entropy can't be added (Psycast.cs:72-75 and 105-108). Both postfixes ignore the result, so a trait granting a psycast-class ability is revealed by a cast that never happened. Add `bool __result` to Patch_AbilityActivate_Local/Global.Postfix and return early when it is false.",
+      "evidence": {
+        "kind": "index",
+        "ref": "RimWorld/Psycast.cs:72"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Likely explanations for 'discovered only when the fire injured a pawn' (unverified)",
+      "detail": "(1) CompAbilityEffect_FireSpew.Apply hands its damage to GenExplosion.DoExplosion (CompAbilityEffect_FireSpew.cs:26); if, as I believe, that damage spreads over the next few ticks, the cast-tick discovery and the injury would look like one moment to the user. (2) PlayerCanObserve returns false when the titan's cell is fogged (TitanUtility.cs:228); Firebreather is only discovered by UsesGrantedAbility or Dies, so nothing re-checks it when the fire lands. (3) Notify_PawnPostApplyDamage tries TakesDamage on every trait of a damaged titan (Hediff_Titan.cs:640), so the message may have been the victim's trait, not the caster's. Check run #31's log and the message's pawn label before choosing a fix.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanUtility.cs:228"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "UsesGrantedAbility check in Notify_PawnUsedVerb is now redundant",
+      "detail": "The postfix runs first in the same TryCastNextBurstShot call, so by the time Notify_PawnUsedVerb runs the trait is already discovered and the ability branch at Hediff_Titan.cs:668-669 never fires. Harmless; keeping it is fine as a fallback for ability verbs that don't call Activate.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:668"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Ability.Activate is not in the Schematic",
+      "detail": "verify_patches reports both Ability.Activate patches resolve but are not recorded in the Schematic; update_schematic if they stay.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanAI.cs:122"
+      }
+    }
+  ],
+  "checked": [
+    "verify_patches on Source/TitanAI.cs: all 3 targets bind, each Ability.Activate patch picks exactly one of the 2 overloads",
+    "precedents for Ability.Activate: no corpus mod patches it, so there is no conflict to cite; a postfix is non-destructive",
+    "The only corpus override of Ability.Activate is Psycast, and it calls base.Activate on both overloads, so the postfix sees every cast route",
+    "The other direct caller of Activate (Ability.cs:659, global cast) is covered by the GlobalTargetInfo postfix",
+    "Notify_AbilityActivated: null-safe on def.abilities, reverse loop over traits, discovered guard; GetTitan returns null for a null pawn, and nothing in the corpus calls Activate off the main thread",
+    "TF_Example_Firebreather discoverWhen lists UsesGrantedAbility and abilities lists TF_Example_FireBreath (TF_ExampleTraits.xml:254-268)",
+    "Verb_CastAbility implements IAbilityVerb, so abilityDef resolves in Notify_PawnUsedVerb",
+    "Notify_TraitDiscovered copies hediffs with ToList before changing them, so the vanilla hediff foreach is not invalidated",
+    "pyxis_mod_errors: not run, because no Pyxis token is configured (Settings → Integrations)"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanAI.cs",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "0deffe9a0b0eade16bf476d293072530c2a520dd",
+  "partial": false
+}

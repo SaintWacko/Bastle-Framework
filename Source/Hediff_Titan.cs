@@ -641,21 +641,11 @@ namespace TitanFramework
             }
         }
 
-        /// <summary>Called from the Ability.Activate postfix the moment any ability fires,
-        /// whatever verb or job path it took. Reveals the trait that granted it.</summary>
-        internal void Notify_AbilityActivated(AbilityDef abilityDef)
-        {
-            for (int i = traits.Count - 1; i >= 0; i--)
-            {
-                var t = traits[i];
-                if (!t.discovered && t.def.abilities != null && t.def.abilities.Contains(abilityDef))
-                    t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedAbility);
-            }
-        }
-
         public override void Notify_PawnUsedVerb(Verb verb, LocalTargetInfo target)
         {
             base.Notify_PawnUsedVerb(verb, target);
+            if (verb is IAbilityVerb)  // TEMP diagnostic, see below
+                Log.Warning($"[Titan Framework] DIAG {pawn.LabelShort} used ability verb {(verb as IAbilityVerb).Ability?.def?.defName}, tick={Find.TickManager.TicksGame}");
             AbilityDef abilityDef = (verb as IAbilityVerb)?.Ability?.def;
             HediffDef verbHediff = (verb.DirectOwner as HediffComp)?.parent?.def;
 
@@ -666,7 +656,12 @@ namespace TitanFramework
                 if (t.discovered) continue;
                 t.TryDiscoverBy(TitanDiscoveryTrigger.Attacks);
                 if (abilityDef != null && t.def.abilities != null && t.def.abilities.Contains(abilityDef))
+                {
                     t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedAbility);
+                    // TEMP diagnostic (run #31: fire breath not revealed on cast). Remove once found.
+                    Log.Warning($"[Titan Framework] DIAG {pawn.LabelShort} cast {abilityDef.defName}: trait {t.def.defName} discovered={t.discovered}, " +
+                        $"listed={t.def.DiscoveredBy(TitanDiscoveryTrigger.UsesGrantedAbility)}, observable={TitanUtility.PlayerCanObserve(pawn)}, tick={Find.TickManager.TicksGame}");
+                }
                 if (verbHediff != null && t.def.hediffs != null && t.def.hediffs.Any(h => h.hediff == verbHediff))
                     t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedVerb);
             }
