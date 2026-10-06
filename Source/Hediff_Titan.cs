@@ -369,6 +369,7 @@ namespace TitanFramework
         internal void Notify_TraitDiscovered(TitanTrait trait)
         {
             nameDirty = true;
+            cardStage = null;
             if (trait.def.HasVisuals) VisualsChanged(trait.def);
             if (trait.def.hediffs == null) return;
             foreach (var th in trait.def.hediffs)
@@ -408,17 +409,30 @@ namespace TitanFramework
         /// discovered trait also grants is left out: the player already knows about it.</summary>
         internal void CollectHiddenHediffs(HashSet<Hediff> into)
         {
-            foreach (var t in traits)
+            var hediffs = pawn.health.hediffSet.hediffs;
+            for (int i = 0; i < traits.Count; i++)
             {
+                var t = traits[i];
                 if (t.discovered || t.def.hediffs == null) continue;
                 foreach (var th in t.def.hediffs)
                 {
-                    if (traits.Any(o => o.discovered && o.def.hediffs != null && o.def.hediffs.Any(x => x.hediff == th.hediff && x.part == th.part)))
-                        continue;
-                    foreach (var h in pawn.health.hediffSet.hediffs)
-                        if (h.def == th.hediff && (th.part == null || h.Part?.def == th.part)) into.Add(h);
+                    if (DiscoveredTraitGrants(th)) continue;
+                    for (int j = 0; j < hediffs.Count; j++)
+                        if (hediffs[j].def == th.hediff && (th.part == null || hediffs[j].Part?.def == th.part)) into.Add(hediffs[j]);
                 }
             }
+        }
+
+        private bool DiscoveredTraitGrants(TitanTraitHediff th)
+        {
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var t = traits[i];
+                if (!t.discovered || t.def.hediffs == null) continue;
+                foreach (var x in t.def.hediffs)
+                    if (x.hediff == th.hediff && x.part == th.part) return true;
+            }
+            return false;
         }
 
         /// <summary>True when every trait that grants this ability is undiscovered.</summary>
@@ -440,10 +454,14 @@ namespace TitanFramework
             get
             {
                 if (TitanHiding.HidingFor(pawn))
-                    return cardStage ?? (cardStage = BuildStage(discoveredOnly: true));
+                {
+                    if (stageDirty || cardStage == null) cardStage = BuildStage(discoveredOnly: true);
+                    return cardStage;
+                }
                 if (stageDirty || cachedStage == null)
                 {
                     cachedStage = BuildStage();
+                    cardStage = null;
                     stageDirty = false;
                 }
                 return cachedStage;

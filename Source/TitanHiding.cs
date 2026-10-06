@@ -15,9 +15,14 @@ namespace TitanFramework
     /// exist. Gameplay is untouched: everything the card computed is dropped from the
     /// stat caches as soon as the card finishes drawing.
     ///
-    /// Capacities and hediff-set totals (pain, bleeding) have their own caches that
-    /// a card read would fill with hidden-free values, so they are warmed with the
-    /// real values before hiding starts and the card only ever reads them.
+    /// Capacities (moving, manipulation...) feed many card stats, so they are marked
+    /// dirty on both sides of the card: the card computes them without hidden traits,
+    /// and gameplay recomputes the real ones on its next read.
+    ///
+    /// Not hidden: pain and bleeding totals (cached by the hediff set, which can't be
+    /// dirtied cheaply, so they are warmed with real values first and only read),
+    /// effects from a hidden hediff's comps, and hidden hediffs whose class overrides
+    /// CurStage without calling base.
     /// </summary>
     public static class TitanHiding
     {
@@ -34,16 +39,13 @@ namespace TitanFramework
             var titan = TitanUtility.GetTitan(p);
             if (titan == null || !titan.AnyHiddenTrait) return false;
 
-            // Real values first, so the cached ones the card reads are the true ones.
-            var caps = DefDatabase<PawnCapacityDef>.AllDefsListForReading;
-            for (int i = 0; i < caps.Count; i++) p.health.capacities.GetLevel(caps[i]);
+            // Real totals first, so the cached ones the card reads are the true ones.
             _ = p.health.hediffSet.PainTotal;
             _ = p.health.hediffSet.BleedRateTotal;
 
             titan.CollectHiddenHediffs(hiddenHediffs);
-            titan.cardStage = null;
-            ClearStatCaches(p);
             cardPawn = p;
+            p.health.capacities.Notify_CapacityLevelsDirty();
             return true;
         }
 
@@ -53,8 +55,7 @@ namespace TitanFramework
             cardPawn = null;
             hiddenHediffs.Clear();
             if (p == null) return;
-            var titan = TitanUtility.GetTitan(p);
-            if (titan != null) titan.cardStage = null;
+            p.health.capacities.Notify_CapacityLevelsDirty();
             ClearStatCaches(p);
         }
 
@@ -85,7 +86,7 @@ namespace TitanFramework
         static void Postfix(Hediff __instance, ref HediffStage __result)
         {
             if (TitanHiding.cardPawn == null) return;
-            if (TitanHiding.hiddenHediffs.Contains(__instance) && UnityData.IsInMainThread) __result = null;
+            if (UnityData.IsInMainThread && TitanHiding.hiddenHediffs.Contains(__instance)) __result = null;
         }
     }
 
