@@ -275,6 +275,8 @@
     <cooldownTicksRange>2500</cooldownTicksRange>
     <aiCanUse>true</aiCanUse>
     <ai_IsIncendiary>true</ai_IsIncendiary>
+    <!-- Animals can't be drafted, so without this a tamed titan never shows the button. -->
+    <displayGizmoWhileUndrafted>true</displayGizmoWhileUndrafted>
     <warmupStartSound>FireSpew_Warmup</warmupStartSound>
     <verbProperties>
       <verbClass>Verb_CastAbility</verbClass>
