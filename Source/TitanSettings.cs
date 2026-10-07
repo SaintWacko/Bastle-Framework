@@ -18,6 +18,9 @@ namespace TitanFramework
         public float inheritChanceFactor = 1f;
         public bool discoveryMessages = true;
         public bool abilityAI = true;
+        public float valuePercentPerPoint = 0.2f;
+        public float valueFlatPerPoint = 100f;
+        public float mysteryTradeBonus = 0.25f;
 
         // Materials
         public float materialArmorFactor = 0.5f;
@@ -37,6 +40,9 @@ namespace TitanFramework
             inheritChanceFactor = 1f;
             discoveryMessages = true;
             abilityAI = true;
+            valuePercentPerPoint = 0.2f;
+            valueFlatPerPoint = 100f;
+            mysteryTradeBonus = 0.25f;
             materialArmorFactor = 0.5f;
             materialDamageStrength = 1f;
             fireWeaknessStrength = 1f;
@@ -56,6 +62,9 @@ namespace TitanFramework
             Scribe_Values.Look(ref inheritChanceFactor, "inheritChanceFactor", 1f);
             Scribe_Values.Look(ref discoveryMessages, "discoveryMessages", true);
             Scribe_Values.Look(ref abilityAI, "abilityAI", true);
+            Scribe_Values.Look(ref valuePercentPerPoint, "valuePercentPerPoint", 0.2f);
+            Scribe_Values.Look(ref valueFlatPerPoint, "valueFlatPerPoint", 100f);
+            Scribe_Values.Look(ref mysteryTradeBonus, "mysteryTradeBonus", 0.25f);
             Scribe_Values.Look(ref materialArmorFactor, "materialArmorFactor", 0.5f);
             Scribe_Values.Look(ref materialDamageStrength, "materialDamageStrength", 1f);
             Scribe_Values.Look(ref fireWeaknessStrength, "fireWeaknessStrength", 1f);
@@ -111,6 +120,9 @@ namespace TitanFramework
             Slider(l, "TF_Settings_Inherit", ref inheritChanceFactor, 0f, 2f, inheritChanceFactor.ToStringPercent(), "TF_Settings_InheritHint", 0.05f);
             Check(l, "TF_Settings_DiscoveryMessages", ref discoveryMessages, null);
             Check(l, "TF_Settings_AbilityAI", ref abilityAI, "TF_Settings_AbilityAIHint");
+            Slider(l, "TF_Settings_ValuePercent", ref valuePercentPerPoint, 0f, 1f, "+" + valuePercentPerPoint.ToStringPercent(), "TF_Settings_ValuePercentHint", 0.01f);
+            Slider(l, "TF_Settings_ValueFlat", ref valueFlatPerPoint, 0f, 500f, "+" + valueFlatPerPoint.ToStringMoney(), "TF_Settings_ValueFlatHint", 5f);
+            Slider(l, "TF_Settings_Mystery", ref mysteryTradeBonus, 0f, 1f, "+" + mysteryTradeBonus.ToStringPercent(), "TF_Settings_MysteryHint", 0.05f);
         }
 
         private void DoMaterials(Listing_Standard r)

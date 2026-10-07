@@ -55,6 +55,14 @@ namespace TitanFramework
         /// <summary>Budget cost. Negative values are drawbacks that give points back.</summary>
         public float pointCost = 1f;
 
+        /// <summary>Market value added, as a fraction of the creature's own value (0.3 =
+        /// +30%). Setting this or marketValueOffset replaces the price the trait would
+        /// otherwise get from pointCost and the mod settings.</summary>
+        public float? marketValuePercent;
+
+        /// <summary>Flat market value added, in silver. See marketValuePercent.</summary>
+        public float? marketValueOffset;
+
         /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
         public List<string> exclusionTags;
 

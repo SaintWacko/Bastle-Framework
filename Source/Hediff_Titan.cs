@@ -63,6 +63,8 @@ namespace TitanFramework
 
         public float TotalPointCost => traits.Sum(t => t.def.pointCost);
 
+        public List<TitanTrait> Traits => traits;
+
         public ThingDef Material => material;
 
         [Unsaved] private TitanDiet diet;

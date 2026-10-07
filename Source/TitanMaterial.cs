@@ -160,6 +160,9 @@ namespace TitanFramework
         {
             var stat = StatDefOf.MarketValue;
             if (stat.parts == null) stat.parts = new List<StatPart>();
+            // Traits first: they're priced off the creature's value before its material.
+            StatPart_TitanTraits.Instance = new StatPart_TitanTraits { parentStat = stat };
+            stat.parts.Add(StatPart_TitanTraits.Instance);
             stat.parts.Add(new StatPart_TitanMaterial { parentStat = stat });
         }
     }
