@@ -197,13 +197,6 @@ namespace TitanFramework
         }
     }
 
-    [DefOf]
-    public static class TitanDefOf
-    {
-        public static JobDef TF_EatNonFood;
-        static TitanDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(TitanDefOf));
-    }
-
     /// <summary>Walks to the thing, chews for a while, then consumes job.count units and
     /// adds their nutrition. The thing's def is never changed into food.</summary>
     public class JobDriver_TitanEatNonFood : JobDriver

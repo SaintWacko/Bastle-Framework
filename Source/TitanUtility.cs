@@ -242,6 +242,7 @@ namespace TitanFramework
     public static class TitanDefOf
     {
         public static HediffDef TF_Titan;
+        public static JobDef TF_EatNonFood;
 
         static TitanDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(TitanDefOf));
     }
