@@ -79,8 +79,12 @@ namespace TitanFramework
 
         private static Mode ModeFor(Pawn pawn)
         {
+            // TradeSession.trader is never cleared after a trade (nothing calls Close), so
+            // the dialog being open is what marks a trade. Checked before the card, so a
+            // card opened from the trade screen shows the same price as the trade row.
+            if (TradeSession.Active && UnityData.IsInMainThread && Find.WindowStack != null
+                && Find.WindowStack.IsOpen<Dialog_Trade>()) return Mode.Trade;
             if (TitanHiding.HidingFor(pawn)) return Mode.Card;
-            if (TradeSession.Active && UnityData.IsInMainThread) return Mode.Trade;
             return Mode.Wealth;
         }
 

@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "buildId": 51,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-07T17:08:19.847Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "TitanValue.cs StatPart_TitanTraits: mode detection (card/trade/wealth), base value before material part, ExplanationPart's BaseBeforeThisPart recomputation (recursion, other mods' parts), floor, threading of TradeSession/HidingFor, WealthWatcher pawn wealth path",
+  "diffSource": "since build 49 (2026-10-07T05:09:27Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 1,
+    "note": 3
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "TradeSession.Active stays true for the rest of the game after the first trade, so colony wealth takes the Trade branch",
+      "detail": "TradeSession.Active is `trader != null`, and only TradeSession.Close() clears it. Nothing in vanilla or the fetched mod corpus calls Close() (Dialog_Trade.Close does not). After the first trade, ModeFor returns Mode.Trade for every main-thread MarketValue read. That includes WealthWatcher.ForceRecount's `item.MarketValue` over player pawns (WealthWatcher.cs:143), so colony wealth and raid points leave hidden traits out and add the mystery bonus, the opposite of the documented design. In ModeFor (Source/TitanValue.cs:83), also require the trade dialog to be open, e.g. `TradeSession.Active && Find.WindowStack.IsOpen<Dialog_Trade>()`. Trade prices are still covered because Tradeable.InitPriceDataIfNeeded reads MarketValue lazily while the dialog is drawing (Tradeable.cs:250-259).",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Assembly-CSharp/RimWorld/TradeSession.cs:15"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Mystery bonus also raises the price the player pays when buying a titan from a trader",
+      "detail": "In Trade mode, mystery is added for any pawn with a hidden trait, whichever side owns it. That includes the trader's own stock (and gift-mode goodwill). If the bonus is only meant for selling, check whether the pawn belongs to the player before adding it. This is a design reading, not a defect.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanValue.cs:95"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "An info card opened from the trade dialog shows a lower market value than the trade price",
+      "detail": "ModeFor checks HidingFor before TradeSession, so the card of a titan with hidden traits, opened during a trade, uses Card mode and leaves out the mystery bonus the trade row includes. The two numbers will differ.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanValue.cs:82"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "BaseBeforeThisPart runs every part if another mod removes this part from MarketValue.parts",
+      "detail": "The loop stops when it reaches `this`. If the part has been removed or replaced, it runs the whole list, material part included, and TitanValueUtility.BaseValue returns a value with the material in it. This can't happen with the current startup code; it only matters if another mod rebuilds the parts list.",
+      "evidence": {
+        "kind": "opinion",
+        "ref": "Source/TitanValue.cs:120-127"
+      }
+    }
+  ],
+  "checked": [
+    "BaseBeforeThisPart does what StatWorker.GetValue/FinalizeValue do before the parts (GetValueUnfinalized with applyPostProcess=true, then parts in order; post-process, scenario factor, rounding and cl…",
+    "StatWorker_MarketValue.GetValueUnfinalized for pawns (race def x PawnQualityPriceFactor + offset) is the right starting point for the base",
+    "The MarketValue parts that run before StatPart_TitanTraits (Quality, WornByCorpse, IsCorpseFresh, WeaponTraits, Biocoded, Reload, Genes, Health, Age) are pure, so recomputing them in ExplanationPart …",
+    "MarketValue is neither cacheable nor immutable, so StatWorker keeps no per-thing cache and each mode reads a fresh value",
+    "StatPart_TitanMaterial adds a flat value, so ordering traits before material keeps material out of trait prices",
+    "TitanHiding.HidingFor is set only around DrawStatsReport on the main thread, with a finalizer that always clears it",
+    "Hediff_Titan.AnyHiddenTrait is a simple loop with no side effects",
+    "The floor is the same in Compute and in TitanValueUtility.TraitsValue(Pawn), and minValue 0 clamps the final value",
+    "WealthWatcher.ForceRecount reads p.MarketValue on the main thread for player-faction pawns",
+    "The TitanDiet GetMaxRegionsToScan fallback matches vanilla (100 player / 30 others, minus the pen cap)",
+    "verify_patches on Source/TitanDiet.cs: 4 of 4 targets resolve",
+    "Settings fields have Scribe defaults matching their initializers and Reset values; the Keyed strings for new settings and explanation lines exist"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanDiet.cs",
+    "Source/TitanMaterial.cs",
+    "Source/TitanSettings.cs",
+    "Source/TitanTraitDef.cs",
+    "Source/TitanValue.cs",
+    "Languages/English/Keyed/TitanFramework.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "a15f8d64cb7f4e3e45196e620dbf5d43107a294d",
+  "partial": false
+}
