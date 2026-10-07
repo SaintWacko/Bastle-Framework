@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "buildId": 44,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-07T03:17:41.404Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "ApplyBirthOutcome prefix/postfix/finalizer for humanlike inheritance: are all birth paths covered (normal, doctor carry, growth vat, stillborn), any nesting with the existing BirthContext, and does inheriting after spawn (carried case) refresh name/visuals",
+  "diffSource": "since build 42 (2026-10-06T17:59:24Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 0,
+    "note": 3
+  },
+  "findings": [
+    {
+      "severity": "note",
+      "title": "BirthContext finalizers clear unconditionally, so the context is not re-entrant",
+      "detail": "Patch_PregnancyUtility_ApplyBirthOutcome.Finalizer (and the existing DoBirthSpawn/Hatch finalizers) call BirthContext.Clear() regardless of what was active on entry. No vanilla path nests these calls: DoBirthSpawn and CompHatcher.Hatch never reach ApplyBirthOutcome, and ApplyBirthOutcome's only callers are LaborPushing, the ChildBirth ritual, the growth vat and a dev tool. But a mod that calls ApplyBirthOutcome from inside an animal birth or hatch would have the outer context wiped before its own TrySpawnHatchedOrBornPawn. Saving the previous state in __state in the Prefix and restoring it in the Finalizer would make it safe. No corpus mod patches these targets, so there is no precedent either way.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Patches.cs:58"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Carried-case inheritance runs after the birth letter and Notify_PawnBorn",
+      "detail": "In the doctor-carry branch the postfix applies traits only after ApplyBirthOutcome has sent the ChoiceLetter_BabyBirth and called Find.QuestManager.Notify_PawnBorn. The letter shows the pawn's temporary name, not the decorated kind label, so nothing visibly goes stale today. Anything later hooked to those notifications will see the baby without its inherited traits in this one branch, but with them in the spawned branch.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Assembly-CSharp/RimWorld/PregnancyUtility.cs:331-438"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Inherited material on a humanlike baby makes a statue-tinted baby",
+      "detail": "InheritTraits calls SetMaterial whenever either parent has a material, with no race filter. Before this change only animals took this path; now a titan human parent with a material gives its newborn the statue rendering. That may be intended; nothing here limits it to animals.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanUtility.cs:160-162"
+      }
+    }
+  ],
+  "checked": [
+    "verify_patches: all 9 targets in Source/Patches.cs resolve, including the three new ApplyBirthOutcome patches",
+    "Prefix parameter names geneticMother and father match the real ApplyBirthOutcome signature (PregnancyUtility.cs:225), despite verify_patches only partly matching the indexed signature",
+    "Every ApplyBirthOutcome caller passes the genetic parents (Hediff_LaborPushing:83, RitualOutcomeEffectWorker_ChildBirth:40, Building_GrowthVat:598, DebugToolsPawns:1898)",
+    "Normal birth and growth vat go through TrySpawnHatchedOrBornPawn after the parent relations are added, and are covered by the existing spawn prefix with applied=true so the postfix does not apply a s…",
+    "Doctor carry skips TrySpawn and the postfix inherits on the carried pawn",
+    "Stillborn returns pawn.Corpse, so the postfix skips it, and TrySpawn is never reached",
+    "No nesting with BirthContext in vanilla: DoBirthSpawn (Hediff_Pregnant.cs:157-204) and CompHatcher.Hatch do not call ApplyBirthOutcome",
+    "Failed spawn (PassToWorld) sets applied, so there is no second application",
+    "Refresh after a carried-case inherit: VisualsChanged calls SetAllGraphicsDirty, nameDirty and stage are rebuilt lazily, needs and work types are refreshed in TraitsChanged, ApplyStatue runs on materi…",
+    "All new patches are void prefix, postfix and finalizer, none can skip the original (lint prefix-returns-void)",
+    "TitanHiding.cs doc change matches the code: ClearStatCaches runs in both Begin and End",
+    "Hediff_Titan.cardStage doc change matches the code: reset on stage rebuild (lines 463, 471) and on discovery (line 372)",
+    "TF_ExampleTraits.xml displayGizmoWhileUndrafted is a real AbilityDef field, and Pawn_AbilityTracker.GetGizmos shows the gizmo for IsColonyAnimal when it is set",
+    "Corpus precedents: no scanned mod patches ApplyBirthOutcome, DoBirthSpawn, Hatch or TrySpawnHatchedOrBornPawn (corpus silent)",
+    "pyxis_mod_errors could not run: no Pyxis token is configured"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/Patches.cs",
+    "Source/TitanHiding.cs",
+    "Defs/Examples/TF_ExampleTraits.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "fcc8a72bb8b8ae314de2b91399b68058de4f0d62",
+  "partial": false
+}

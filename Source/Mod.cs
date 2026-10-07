@@ -11,7 +11,7 @@ namespace TitanFramework
         public TitanFrameworkMod(ModContentPack content) : base(content)
         {
             Settings = GetSettings<TitanSettings>();
-            new Harmony("saintwacko.TitanFramework").PatchAll();
+            // Harmony is applied in TitanPatcher, after defs load: see there.
         }
 
         public override string SettingsCategory() => "Titan Framework";
@@ -27,5 +27,21 @@ namespace TitanFramework
             foreach (var p in RimWorld.PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
                 TitanUtility.GetTitan(p)?.SettingsChanged();
         }
+    }
+
+    /// <summary>
+    /// Patching a method makes Harmony run its type's static constructor. Some vanilla
+    /// types fill static tables from DefOf fields there (PregnancyUtility builds a
+    /// dictionary keyed by PawnRelationDefOf.Spouse etc.). Patched from the Mod
+    /// constructor, that runs before defs load, the keys are null, the type initializer
+    /// throws, and the type is broken for the whole session: every pawn generation
+    /// then fails (test run #48). StaticConstructorOnStartup runs after defs and DefOfs
+    /// are ready, and before any game is loaded, which is early enough for every patch
+    /// here.
+    /// </summary>
+    [StaticConstructorOnStartup]
+    internal static class TitanPatcher
+    {
+        static TitanPatcher() => new Harmony("saintwacko.TitanFramework").PatchAll();
     }
 }
