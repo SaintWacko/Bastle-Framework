@@ -17,8 +17,8 @@ namespace TitanFramework
     ///                                    (stone chunks, steel) is eaten by its own job
     ///                                    and gives `nutrition` per unit
     ///   hunts                            true makes it hunt like a predator, false stops
-    ///                                    it. Unset: unchanged, except removing Corpse
-    ///                                    stops hunting
+    ///                                    it. Unset: unchanged. Removing Corpse (on any
+    ///                                    trait) always stops hunting, whatever hunts says
     /// Refusing behaves like a normal animal's diet: a refused food is never picked, and
     /// a creature with nothing it can eat starves.
     /// </summary>
@@ -186,8 +186,8 @@ namespace TitanFramework
             var m = AccessTools.Method(typeof(FoodUtility), "GetMaxRegionsToScan", new[] { typeof(Pawn), typeof(bool) });
             if (m != null)
                 try { return AccessTools.MethodDelegate<Func<Pawn, bool, int>>(m); } catch { }
-            Log.Warning("[Titan Framework] FoodUtility.GetMaxRegionsToScan not found; titan food searches use 100 regions.");
-            return (p, all) => p.RaceProps.Humanlike || all ? -1 : 100;
+            Log.Warning("[Titan Framework] FoodUtility.GetMaxRegionsToScan not found; titan food searches use vanilla's default limits (100 regions for colony animals, 30 for others).");
+            return (p, all) => p.RaceProps.Humanlike || all ? -1 : (p.Faction == Faction.OfPlayer ? 100 : 30);
         }
 
         internal static int MaxRegions(Pawn getter, bool forceScanWholeMap) => maxRegions(getter, forceScanWholeMap);
