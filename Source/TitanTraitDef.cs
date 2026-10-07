@@ -124,6 +124,9 @@ namespace TitanFramework
         /// escape branch. Runs whether or not the trait is discovered.</summary>
         public ThinkTreeDef aiThinkTree;
 
+        /// <summary>Changes what the creature eats, forages and hunts. See TitanDietProps.</summary>
+        public TitanDietProps diet;
+
         // ---- visuals -------------------------------------------------------------
 
         /// <summary>Glow overlays drawn from the creature's own body texture.</summary>
@@ -211,6 +214,13 @@ namespace TitanFramework
                     if (h.hediff == null) { yield return "hediffs entry with no hediff"; continue; }
                     if (!visible && (h.hediff.stages.NullOrEmpty() || h.hediff.stages.Any(s => s.becomeVisible)))
                         yield return $"hediff {h.hediff.defName} will show in the health tab before the trait is discovered. Give it a stage with <becomeVisible>false</becomeVisible>; discovery makes it visible.";
+                }
+            if (diet?.extraFoods != null)
+                foreach (var f in diet.extraFoods)
+                {
+                    if (f.thing == null) yield return "diet extraFoods entry with no thing";
+                    else if (!f.thing.IsNutritionGivingIngestible && f.nutrition <= 0f)
+                        yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
             if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(TitanTrait))
                 yield return "not visible and has no discoverWhen: only code can ever reveal it (add <li>Manual</li> to discoverWhen to silence this)";

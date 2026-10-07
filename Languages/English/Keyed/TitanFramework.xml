@@ -44,5 +44,9 @@
   <TF_Settings_PreciousHint>Extra units for small-volume stuffs like gold and silver, as vanilla does.</TF_Settings_PreciousHint>
   <TF_Settings_MarketValue>Material adds to market value</TF_Settings_MarketValue>
   <TF_Settings_MarketValueHint>A tamed jade bear counts its jade toward colony wealth (and raid size).</TF_Settings_MarketValueHint>
+  <TF_Settings_EatMaterial>Nutrition from eating own material (per unit)</TF_Settings_EatMaterial>
+  <!-- {0}: units of material for one full meal's worth of nutrition. -->
+  <TF_Settings_EatMaterialHint>A hungry material creature with no other food eats its own material: {0} units fill 1 nutrition. Tamed ones eat from your stockpiles unless the stack is forbidden.</TF_Settings_EatMaterialHint>
+  <TF_Settings_EatMaterialOffHint>Material creatures don't eat their material.</TF_Settings_EatMaterialOffHint>
   <TF_Settings_Reset>Reset to defaults</TF_Settings_Reset>
 </LanguageData>

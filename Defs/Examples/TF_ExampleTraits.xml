@@ -93,6 +93,41 @@
     </stage>
   </TitanFramework.TitanTraitDef>
 
+  <!-- Diet: lives on rock. Eats stone chunks when there's no normal food. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_Rockgut</defName>
+    <label>rockgut</label>
+    <description>It grinds stone in its gut and lives on it when there is nothing better.</description>
+    <namePrefix>rockgut</namePrefix>
+    <pointCost>1</pointCost>
+    <visible>true</visible>
+    <diet>
+      <extraFoods>
+        <li><thing>ChunkGranite</thing><nutrition>0.5</nutrition></li>
+        <li><thing>ChunkLimestone</thing><nutrition>0.5</nutrition></li>
+        <li><thing>ChunkMarble</thing><nutrition>0.5</nutrition></li>
+        <li><thing>ChunkSandstone</thing><nutrition>0.5</nutrition></li>
+        <li><thing>ChunkSlate</thing><nutrition>0.5</nutrition></li>
+      </extraFoods>
+    </diet>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Diet: turns any animal into a meat-eating hunter that won't touch plants. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Example_Bloodthirsty</defName>
+    <label>bloodthirsty</label>
+    <description>It has lost its taste for plants and hunts for meat instead.</description>
+    <namePrefix>bloodthirsty</namePrefix>
+    <pointCost>1</pointCost>
+    <visible>true</visible>
+    <requiresFlesh>true</requiresFlesh>
+    <diet>
+      <addFoodTypes>Meat, Corpse</addFoodTypes>
+      <removeFoodTypes>VegetableOrFruit, Plant, Tree, Seed</removeFoodTypes>
+      <hunts>true</hunts>
+    </diet>
+  </TitanFramework.TitanTraitDef>
+
   <!-- Drawback: negative cost gives budget back. -->
   <TitanFramework.TitanTraitDef>
     <defName>TF_Example_Brittle</defName>

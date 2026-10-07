@@ -65,6 +65,31 @@ namespace TitanFramework
 
         public ThingDef Material => material;
 
+        [Unsaved] private TitanDiet diet;
+        [Unsaved] private HediffStage dietBuiltFor;
+
+        /// <summary>Merged diet of every trait plus the material, or null when nothing
+        /// changes what this creature eats. Rebuilt with the stage, which is marked dirty
+        /// whenever traits, material or settings change.</summary>
+        public TitanDiet Diet
+        {
+            get
+            {
+                if (stageDirty || cachedStage == null)
+                {
+                    cachedStage = BuildStage();
+                    stageDirty = false;
+                    cardStage = null;
+                }
+                if (dietBuiltFor != cachedStage)
+                {
+                    diet = TitanDiet.Build(traits, material);
+                    dietBuiltFor = cachedStage;
+                }
+                return diet;
+            }
+        }
+
         /// <summary>Made of a material: no pain, blood or rot.</summary>
         public bool IsConstruct => material != null;
 

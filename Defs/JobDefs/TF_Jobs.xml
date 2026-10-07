@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A titan eating something on its diet that isn't food: its own material, stone chunks... -->
+  <JobDef>
+    <defName>TF_EatNonFood</defName>
+    <driverClass>TitanFramework.JobDriver_TitanEatNonFood</driverClass>
+    <reportString>eating TargetA.</reportString>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+</Defs>

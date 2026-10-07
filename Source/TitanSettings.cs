@@ -26,6 +26,7 @@ namespace TitanFramework
         public float butcherYieldPerBodySize = 40f;
         public float smallVolumeMultiplier = 10f;
         public bool materialMarketValue = true;
+        public float materialNutritionPerUnit = 0.05f;
 
         public void Reset()
         {
@@ -42,6 +43,7 @@ namespace TitanFramework
             butcherYieldPerBodySize = 40f;
             smallVolumeMultiplier = 10f;
             materialMarketValue = true;
+            materialNutritionPerUnit = 0.05f;
         }
 
         public override void ExposeData()
@@ -60,6 +62,7 @@ namespace TitanFramework
             Scribe_Values.Look(ref butcherYieldPerBodySize, "butcherYieldPerBodySize", 40f);
             Scribe_Values.Look(ref smallVolumeMultiplier, "smallVolumeMultiplier", 10f);
             Scribe_Values.Look(ref materialMarketValue, "materialMarketValue", true);
+            Scribe_Values.Look(ref materialNutritionPerUnit, "materialNutritionPerUnit", 0.05f);
         }
 
         // ---- window --------------------------------------------------------------
@@ -122,6 +125,10 @@ namespace TitanFramework
                 "TF_Settings_ButcherHint".Translate(Mathf.RoundToInt(2.15f * butcherYieldPerBodySize)), 1f);
             Slider(r, "TF_Settings_Precious", ref smallVolumeMultiplier, 1f, 20f, "x" + Mathf.RoundToInt(smallVolumeMultiplier), "TF_Settings_PreciousHint", 1f);
             Check(r, "TF_Settings_MarketValue", ref materialMarketValue, "TF_Settings_MarketValueHint");
+            Slider(r, "TF_Settings_EatMaterial", ref materialNutritionPerUnit, 0f, 0.5f, materialNutritionPerUnit.ToStringByStyle(ToStringStyle.FloatMaxTwo),
+                materialNutritionPerUnit > 0f
+                    ? "TF_Settings_EatMaterialHint".Translate(Mathf.CeilToInt(1f / materialNutritionPerUnit)).ToString()
+                    : "TF_Settings_EatMaterialOffHint".Translate().ToString(), 0.01f);
         }
 
         private static void Hint(Listing_Standard l, string text)
