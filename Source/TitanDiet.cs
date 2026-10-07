@@ -78,7 +78,9 @@ namespace TitanFramework
                 d = d ?? new TitanDiet();
                 if (!d.nonFood.ContainsKey(material)) d.nonFood[material] = own;
             }
-            if (d != null && d.hunts == null && (d.remove & FoodTypeFlags.Corpse) != 0) d.hunts = false;
+            // Removing Corpse stops hunting even when another trait says it hunts:
+            // vanilla's hunt job eats the kill without checking the diet.
+            if (d != null && (d.remove & FoodTypeFlags.Corpse) != 0) d.hunts = false;
             return d;
         }
 
@@ -145,7 +147,7 @@ namespace TitanFramework
                 9999f, t => t is Plant && t.IngestibleNow && eater.WillEat(t, getter)
                     && (allowForbidden || !t.IsForbidden(getter)) && getter.CanReserve(t)
                     && TitanDietUtility.WithinRope(getter, t),
-                null, 0, forceScanWholeMap ? -1 : 30);
+                null, 0, TitanDietUtility.MaxRegions(getter, forceScanWholeMap));
             if (plant == null) return;
             __result = plant;
             foodDef = FoodUtility.GetFinalIngestibleDef(plant);
@@ -175,8 +177,20 @@ namespace TitanFramework
 
     public static class TitanDietUtility
     {
-        private static readonly Func<Pawn, bool, int> MaxRegions =
-            AccessTools.MethodDelegate<Func<Pawn, bool, int>>(AccessTools.Method(typeof(FoodUtility), "GetMaxRegionsToScan"));
+        private static readonly Func<Pawn, bool, int> maxRegions = MakeMaxRegions();
+
+        // Falls back to vanilla's plain animal limit if a game update renames the method,
+        // rather than breaking every food search through a failed static constructor.
+        private static Func<Pawn, bool, int> MakeMaxRegions()
+        {
+            var m = AccessTools.Method(typeof(FoodUtility), "GetMaxRegionsToScan", new[] { typeof(Pawn), typeof(bool) });
+            if (m != null)
+                try { return AccessTools.MethodDelegate<Func<Pawn, bool, int>>(m); } catch { }
+            Log.Warning("[Titan Framework] FoodUtility.GetMaxRegionsToScan not found; titan food searches use 100 regions.");
+            return (p, all) => p.RaceProps.Humanlike || all ? -1 : 100;
+        }
+
+        internal static int MaxRegions(Pawn getter, bool forceScanWholeMap) => maxRegions(getter, forceScanWholeMap);
 
         /// <summary>Vanilla's food search keeps a roped animal within 8 cells of its anchor.</summary>
         public static bool WithinRope(Pawn getter, Thing t)
