@@ -143,7 +143,8 @@ namespace TitanFramework
             Thing plant = GenClosest.ClosestThingReachable(getter.Position, getter.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.FoodSource), PathEndMode.Touch, TraverseParms.For(getter),
                 9999f, t => t is Plant && t.IngestibleNow && eater.WillEat(t, getter)
-                    && (allowForbidden || !t.IsForbidden(getter)) && getter.CanReserve(t),
+                    && (allowForbidden || !t.IsForbidden(getter)) && getter.CanReserve(t)
+                    && TitanDietUtility.WithinRope(getter, t),
                 null, 0, forceScanWholeMap ? -1 : 30);
             if (plant == null) return;
             __result = plant;
@@ -174,8 +175,17 @@ namespace TitanFramework
 
     public static class TitanDietUtility
     {
+        private static readonly Func<Pawn, bool, int> MaxRegions =
+            AccessTools.MethodDelegate<Func<Pawn, bool, int>>(AccessTools.Method(typeof(FoodUtility), "GetMaxRegionsToScan"));
+
+        /// <summary>Vanilla's food search keeps a roped animal within 8 cells of its anchor.</summary>
+        public static bool WithinRope(Pawn getter, Thing t)
+            => getter.roping == null || !getter.roping.IsRoped || t.PositionHeld.InHorDistOf(getter.roping.RopedTo.Cell, 8f);
+
         public static Job EatNonFoodJob(Pawn pawn, TitanDiet d)
         {
+            // Same limit vanilla's private FoodUtility.GetMaxRegionsToScan gives the food search.
+            int maxRegions = MaxRegions(pawn, false);
             Thing best = null;
             float bestDist = float.MaxValue;
             float bestNutrition = 0f;
@@ -183,7 +193,8 @@ namespace TitanFramework
             {
                 Thing t = GenClosest.ClosestThingReachable(pawn.Position, pawn.Map, ThingRequest.ForDef(kv.Key),
                     PathEndMode.ClosestTouch, TraverseParms.For(pawn), 9999f,
-                    x => !x.IsForbidden(pawn) && !x.IsBurning() && pawn.CanReserve(x));
+                    x => !x.IsForbidden(pawn) && !x.IsBurning() && pawn.CanReserve(x) && WithinRope(pawn, x),
+                    null, 0, maxRegions);
                 if (t == null) continue;
                 float dist = (t.Position - pawn.Position).LengthHorizontalSquared;
                 if (dist < bestDist) { best = t; bestDist = dist; bestNutrition = kv.Value; }

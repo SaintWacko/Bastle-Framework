@@ -215,6 +215,8 @@ namespace TitanFramework
                     if (!visible && (h.hediff.stages.NullOrEmpty() || h.hediff.stages.Any(s => s.becomeVisible)))
                         yield return $"hediff {h.hediff.defName} will show in the health tab before the trait is discovered. Give it a stage with <becomeVisible>false</becomeVisible>; discovery makes it visible.";
                 }
+            if (diet != null && diet.hunts == true && (diet.removeFoodTypes & FoodTypeFlags.Corpse) != 0)
+                yield return "diet hunts but removes Corpse: vanilla's hunt job eats the kill without checking the diet, so the creature will still eat it";
             if (diet?.extraFoods != null)
                 foreach (var f in diet.extraFoods)
                 {
