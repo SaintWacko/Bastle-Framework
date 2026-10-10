@@ -379,29 +379,36 @@ namespace TitanFramework
             glower = null;
             CleanupEffecters(keepTracked: true);
             // The health-per-point slider changes every titan, flesh or not.
-            float oldHealth = HealthFactor;
             materialStage = null;
             stageDirty = true;
             if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
             {
-                KeepInjuryFractions(oldHealth);
+                SyncInjuries();
                 pawn.health.Notify_HediffChanged(this);
             }
         }
 
-        /// <summary>Injury severity is in absolute hit points, so a lower health factor
-        /// would leave a wounded titan with less health than it had, and
-        /// Notify_HediffChanged could then kill it on the spot. Scale injuries down so
-        /// every part keeps the same fraction of its health. Call after marking the
-        /// stage dirty, with the factor read before.</summary>
-        private void KeepInjuryFractions(float oldFactor)
+        /// <summary>The health factor the creature's injuries are currently sized for.
+        /// Saved, so a slider change made while the save wasn't loaded is caught on load.</summary>
+        private float appliedHealth = 1f;
+
+        /// <summary>Injury severity is in absolute hit points. When the health factor
+        /// changes, scale every injury so each part keeps the same fraction of its
+        /// health: otherwise a lower factor can kill a wounded titan on the spot, and a
+        /// round trip down and up would heal it for free. Call after marking the stage
+        /// dirty.</summary>
+        private void SyncInjuries()
         {
             float newFactor = HealthFactor;
-            if (newFactor >= oldFactor || oldFactor <= 0f) return;
-            float scale = newFactor / oldFactor;
-            foreach (var h in pawn.health.hediffSet.hediffs)
-                if (h is Hediff_Injury injury)
-                    injury.Severity *= scale;
+            if (appliedHealth > 0f && Mathf.Abs(newFactor - appliedHealth) > 0.0001f)
+            {
+                float scale = newFactor / appliedHealth;
+                // Copy: raising a staged injury's severity can notify the health tracker.
+                foreach (var h in pawn.health.hediffSet.hediffs.ToList())
+                    if (h is Hediff_Injury injury)
+                        injury.Severity *= scale;
+            }
+            appliedHealth = newFactor;
         }
 
         internal void CleanupEffecters(bool keepTracked = false)
@@ -417,12 +424,11 @@ namespace TitanFramework
         {
             if (changed.HasVisuals) VisualsChanged(changed);
             var oldStage = cachedStage;
-            float oldHealth = healthBuiltFor != null ? healthFactor : 1f;
             stageDirty = true;
             nameDirty = true;
             RecalcTicking();
             if (pawn?.health?.hediffSet == null || !pawn.health.hediffSet.hediffs.Contains(this)) return;
-            KeepInjuryFractions(oldHealth);
+            SyncInjuries();
             pawn.health.Notify_HediffChanged(this);
 
             // Vanilla only refreshes needs and disabled work when a hediff is added or
@@ -845,6 +851,7 @@ namespace TitanFramework
             base.ExposeData();
             Scribe_Collections.Look(ref traits, "traits", LookMode.Deep);
             Scribe_Defs.Look(ref material, "material");
+            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 1f);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 materialStage = null;
@@ -855,6 +862,12 @@ namespace TitanFramework
                 nameDirty = true;
                 RecalcTicking();
                 TitanUtility.Register(pawn, this);
+                // After the load finishes, so the whole pawn is resolved.
+                LongEventHandler.ExecuteWhenFinished(() =>
+                {
+                    if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
+                        SyncInjuries();
+                });
             }
         }
     }
