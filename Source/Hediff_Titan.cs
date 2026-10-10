@@ -669,6 +669,8 @@ namespace TitanFramework
                         foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, this))
                             if (e.ShouldDisplay())
                                 sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
+                    foreach (string line in TitanDiet.Describe(t.def.diet))
+                        sb.AppendLine("  - " + line);
                     string extra = t.TipStringExtra;
                     if (!extra.NullOrEmpty()) sb.AppendLine("  " + extra);
                 }

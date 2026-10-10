@@ -95,6 +95,76 @@ namespace TitanFramework
             => edible.Contains(food) || (food.ingestible != null && (food.ingestible.foodType & add) != 0);
 
         public bool AddsPlants => (add & (FoodTypeFlags.Plant | FoodTypeFlags.Tree)) != 0;
+
+        /// <summary>The race's food types with this diet applied.</summary>
+        public FoodTypeFlags Apply(FoodTypeFlags race) => (race | add) & ~remove;
+
+        /// <summary>Specific things it eats beyond its food types, as one list.</summary>
+        public string ExtraFoodsLabel()
+        {
+            var labels = new List<string>();
+            foreach (var t in edible) labels.Add(t.label);
+            foreach (var t in nonFood.Keys) labels.Add(t.label);
+            return labels.Count > 0 ? string.Join(", ", labels) : null;
+        }
+
+        /// <summary>Tooltip lines for one trait's diet, without bullets.</summary>
+        public static IEnumerable<string> Describe(TitanDietProps p)
+        {
+            if (p == null) yield break;
+            if (p.addFoodTypes != 0) yield return "TF_DietAdds".Translate(p.addFoodTypes.ToHumanString());
+            if (p.removeFoodTypes != 0) yield return "TF_DietRemoves".Translate(p.removeFoodTypes.ToHumanString());
+            if (!p.extraFoods.NullOrEmpty())
+            {
+                var labels = new List<string>();
+                foreach (var f in p.extraFoods)
+                    if (f.thing != null) labels.Add(f.thing.label);
+                if (labels.Count > 0) yield return "TF_DietAdds".Translate(string.Join(", ", labels));
+            }
+            if (!p.refuseFoods.NullOrEmpty())
+            {
+                var labels = new List<string>();
+                foreach (var f in p.refuseFoods)
+                    if (f != null) labels.Add(f.label);
+                if (labels.Count > 0) yield return "TF_DietRefuses".Translate(string.Join(", ", labels));
+            }
+            if (p.hunts == true && (p.removeFoodTypes & FoodTypeFlags.Corpse) == 0) yield return "TF_DietHunts".Translate();
+            else if (p.hunts == false || (p.removeFoodTypes & FoodTypeFlags.Corpse) != 0) yield return "TF_DietNoHunt".Translate();
+        }
+    }
+
+    /// <summary>The info card's Diet line shows the creature's own diet: its race's,
+    /// changed by its material and discovered traits. Undiscovered traits stay out.</summary>
+    [HarmonyPatch(typeof(RaceProperties), nameof(RaceProperties.SpecialDisplayStats))]
+    internal static class Patch_RaceSpecialDisplayStats_Diet
+    {
+        static IEnumerable<StatDrawEntry> Postfix(IEnumerable<StatDrawEntry> __result, RaceProperties __instance, StatRequest req)
+        {
+            var pawn = req.Pawn ?? req.Thing as Pawn;
+            var titan = pawn == null ? null : TitanUtility.PeekTitan(pawn);
+            TitanDiet diet = null;
+            if (titan != null && !(pawn.IsMutant && pawn.mutant.Def.overrideFoodType))
+            {
+                var known = new List<TitanTrait>();
+                foreach (var t in titan.Traits)
+                    if (t.discovered) known.Add(t);
+                diet = TitanDiet.Build(known, titan.Material);
+            }
+            string dietLabel = diet == null ? null : "Diet".Translate().CapitalizeFirst();
+            foreach (var e in __result)
+            {
+                if (diet != null && e.category == StatCategoryDefOf.PawnFood && e.LabelCap == dietLabel)
+                {
+                    string value = diet.Apply(__instance.foodType).ToHumanString().CapitalizeFirst();
+                    string extra = diet.ExtraFoodsLabel();
+                    if (extra != null) value = value.NullOrEmpty() ? extra.CapitalizeFirst() : value + ", " + extra;
+                    string desc = "Stat_Race_Diet_Desc".Translate(value) + "\n\n" + "TF_DietCardNote".Translate();
+                    yield return new StatDrawEntry(StatCategoryDefOf.PawnFood, "Diet".Translate(), value, desc, e.DisplayPriorityWithinCategory);
+                    continue;
+                }
+                yield return e;
+            }
+        }
     }
 
     // ---- patches ------------------------------------------------------------------

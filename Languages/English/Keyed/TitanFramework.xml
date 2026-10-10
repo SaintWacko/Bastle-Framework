@@ -50,6 +50,12 @@
   <TF_Settings_ValueFlatHint>Added on top of the percentage, so small titans still count. Colony wealth, and so raid points, include every trait, known or not. Trade prices and the info card include only discovered traits.</TF_Settings_ValueFlatHint>
   <TF_Settings_Mystery>Trade bonus for unknown traits</TF_Settings_Mystery>
   <TF_Settings_MysteryHint>Traders pay this much more (of the creature's normal value) for a creature with any undiscovered trait.</TF_Settings_MysteryHint>
+  <TF_DietAdds>Also eats: {0}</TF_DietAdds>
+  <TF_DietRemoves>Won't eat: {0}</TF_DietRemoves>
+  <TF_DietRefuses>Refuses: {0}</TF_DietRefuses>
+  <TF_DietHunts>Hunts other creatures</TF_DietHunts>
+  <TF_DietNoHunt>Never hunts</TF_DietNoHunt>
+  <TF_DietCardNote>Changed by this creature's material and known titan traits.</TF_DietCardNote>
   <TF_TraitValue>Titan traits</TF_TraitValue>
   <TF_MysteryValue>Unknown traits</TF_MysteryValue>
   <TF_Settings_EatMaterial>Nutrition from eating own material (per unit)</TF_Settings_EatMaterial>
