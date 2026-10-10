@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "buildId": 55,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-10T03:22:58.645Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "TitanCard.cs info card rows: Hyperlink ctor, BaseValue call during card hiding, hidden-trait leakage",
+  "diffSource": "since build 53 (2026-10-10T02:33:14Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 0,
+    "should": 2,
+    "note": 1
+  },
+  "findings": [
+    {
+      "severity": "should",
+      "title": "Per-trait effect lines in the Titan traits tooltip show the merged stage's capacities and pain, not the trait's",
+      "detail": "TitanCard.cs:57-59 calls HediffStatsUtility.SpecialDisplayStats(t.def.stage, titan). With a non-null instance, vanilla takes capMods, PainOffset and PainFactor from instance (HediffStatsUtility.cs:22, 43, 65), which is Hediff_Titan.CurStage: every discovered trait plus the material inside the hiding window, every trait when there are no hidden traits. Each discovered trait therefore lists the others' capacity and pain effects. Pass null as the second argument so stage.capMods, stage.painOffset and stage.painFactor are used (the instance==null branch at line 17). Only severity-scaled lists are lost, and BuildStage does not merge those.",
+      "evidence": {
+        "kind": "index",
+        "ref": "/Users/tirrella/Library/Application Support/CircinusDevSuite/index/Source/Assembly-CSharp/Verse/HediffStatsUtility.cs:65"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "Health-tab tooltip (not in this diff) shows hidden traits' capacity and pain numbers under discovered traits",
+      "detail": "Hediff_Titan.TipStringExtra (Hediff_Titan.cs:668-671) has the same call with `this` as the instance. The health-tab tooltip draws outside TitanHiding's window, so CurStage is the full stage built from every trait (Hediff_Titan.cs:495-500), and hidden traits' capacity and pain numbers appear under each discovered trait. That contradicts the comment at line 650. Passing null as the instance there fixes it the same way.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:670"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Per-trait market value lines skip the floor the stat applies",
+      "detail": "TraitsTip shows TitanValueUtility.TraitValue for each discovered trait. StatPart_TitanTraits.Compute clamps the total at baseValue*MinFractionOfBase - baseValue (TitanValue.cs:101-102). With heavy drawback traits, the tooltip lines can add up to a bigger drop than the Market value row shows.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/TitanValue.cs:101"
+      }
+    }
+  ],
+  "checked": [
+    "verify_patches: the Patch_RaceSpecialDisplayStats_Traits postfix binds to RaceProperties.SpecialDisplayStats(ThingDef, StatRequest). The pass-through IEnumerable postfix (yield __result, then append)…",
+    "corpus is silent on RaceProperties.SpecialDisplayStats (no scanned mod patches it). This mod's own diet postfix on the same method passes entries through and doesn't conflict",
+    "Dialog_InfoCard.Hyperlink(titan.Material) uses the Hyperlink(Def, int) constructor (Dialog_InfoCard.cs:141), same as vanilla's leather row in RaceProperties.SpecialDisplayStats",
+    "Row priorities 4204/4203 sit just below vanilla's Race row (4205) in BasicsPawn",
+    "BaseValue during card hiding: rows and tooltip are built eagerly inside DrawStatsReport(Rect, Thing) (StatsReportUtility.cs:92), inside TitanHiding's Begin/End window, so BaseBeforeThisPart sees Card…",
+    "Hidden-trait leakage in TitanCard.cs: undiscovered traits show only TitanTrait.Label/Description (TF_UnknownTrait '???' and TF_UnknownTraitDesc). Effects, diet, TipStringExtra and value lines are ski…",
+    "TitanDiet.cs:121 label filter matches the predicate TitanDiet.Build uses (TitanDiet.cs:68-70) and the ConfigErrors check (TitanTraitDef.cs:232)",
+    "Card diet row (TitanDiet.cs:138-165) builds from discovered traits only",
+    "New Keyed strings exist in Languages/English/Keyed/TitanFramework.xml with argument counts matching their Translate calls. TF_MaterialTipDesc already exists",
+    "pyxis_mod_errors: could not run, no Pyxis token is configured"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/TitanCard.cs",
+    "Source/TitanDiet.cs",
+    "Languages/English/Keyed/TitanFramework.xml",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "b6a357473d8588f7cf8969a3fb4c5860962f9cf8",
+  "partial": false
+}

@@ -655,7 +655,7 @@ namespace TitanFramework
                 {
                     sb.AppendLine("TF_MaterialTipTitle".Translate(material.LabelCap).ToString().Colorize(ColoredText.TipSectionTitleColor));
                     sb.AppendLine("  " + "TF_MaterialTipDesc".Translate());
-                    foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(MaterialStage, this))
+                    foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(MaterialStage, null))
                         if (e.ShouldDisplay())
                             sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
                 }
@@ -666,7 +666,7 @@ namespace TitanFramework
                     if (!t.Description.NullOrEmpty()) sb.AppendLine("  " + t.Description);
                     if (!t.discovered) continue;
                     if (t.def.stage != null)
-                        foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, this))
+                        foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
                             if (e.ShouldDisplay())
                                 sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
                     foreach (string line in TitanDiet.Describe(t.def.diet))

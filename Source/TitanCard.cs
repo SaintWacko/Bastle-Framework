@@ -56,7 +56,7 @@ namespace TitanFramework
                 }
                 if (!t.def.description.NullOrEmpty()) sb.AppendLine(t.def.description);
                 if (t.def.stage != null)
-                    foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, titan))
+                    foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
                         if (e.ShouldDisplay())
                             sb.AppendLine(" - " + e.LabelCap + ": " + e.ValueString);
                 foreach (string line in TitanDiet.Describe(t.def.diet))
