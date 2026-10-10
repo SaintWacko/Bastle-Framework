@@ -6,39 +6,47 @@ using Verse;
 namespace TitanFramework
 {
     /// <summary>
-    /// Titans are tougher than their kind. Each trait multiplies the creature's health
-    /// scale (which sets every body part's hit points, the lethal damage threshold and
-    /// how fast injuries heal) by (1 + healthPerPoint × pointCost) × healthScaleFactor.
+    /// Titans are tougher than their kind. The creature's health scale (which sets every
+    /// body part's hit points, the lethal damage threshold and how fast injuries heal)
+    /// is multiplied by (1 + healthPerPoint × total trait points), then by each trait's
+    /// healthScaleFactor. Points are totalled first, so drawbacks cancel bonuses and a
+    /// big titan grows linearly rather than compounding.
     /// Hidden traits count: a creature that takes too many hits to drop is a clue.
-    /// Traits granted by the material skip the per-point part; the material's armor is
-    /// its toughness. Their own healthScaleFactor still applies, since a content mod
-    /// set it on purpose.
+    /// Traits granted by the material add no points; the material's armor is its
+    /// toughness. Their own healthScaleFactor still applies, since a content mod set it
+    /// on purpose.
     /// </summary>
     public static class TitanHealth
     {
         // Drawback traits can lower health, but never below this fraction.
         private const float MinFactor = 0.25f;
 
-        public static float TraitFactor(TitanTrait t)
-        {
-            float perPoint = t.fromMaterial ? 1f : 1f + TitanFrameworkMod.Settings.healthPerPoint * t.def.pointCost;
-            // Clamped per trait, so one harsh drawback can't zero out every other bonus.
-            return Mathf.Max(MinFactor, perPoint * t.def.healthScaleFactor);
-        }
+        /// <summary>This trait's share of the points part: healthPerPoint × pointCost.</summary>
+        public static float PointShare(TitanTrait t) =>
+            t.fromMaterial ? 0f : TitanFrameworkMod.Settings.healthPerPoint * t.def.pointCost;
 
         public static float Factor(List<TitanTrait> traits)
         {
-            float f = 1f;
-            foreach (var t in traits) f *= TraitFactor(t);
-            return Mathf.Max(MinFactor, f);
+            float points = 0f, scale = 1f;
+            foreach (var t in traits)
+            {
+                points += PointShare(t);
+                scale *= t.def.healthScaleFactor;
+            }
+            return Mathf.Max(MinFactor, Mathf.Max(0f, 1f + points) * scale);
         }
 
-        /// <summary>Tooltip line ("Health: +20%"), or null when the trait doesn't change it.</summary>
+        /// <summary>Tooltip line ("Health: +10%", "Health: +10%, ×1.5"), or null when
+        /// the trait doesn't change it.</summary>
         public static string Describe(TitanTrait t)
         {
-            float change = TraitFactor(t) - 1f;
-            if (Mathf.Abs(change) < 0.005f) return null;
-            return "TF_HealthLine".Translate((change > 0f ? "+" : "") + change.ToStringPercent());
+            float share = PointShare(t);
+            float scale = t.def.healthScaleFactor;
+            bool hasShare = Mathf.Abs(share) >= 0.005f, hasScale = Mathf.Abs(scale - 1f) >= 0.005f;
+            if (!hasShare && !hasScale) return null;
+            string text = hasShare ? (share > 0f ? "+" : "") + share.ToStringPercent() : null;
+            if (hasScale) text = (text == null ? "" : text + ", ") + "×" + scale.ToString("0.##");
+            return "TF_HealthLine".Translate(text);
         }
     }
 
