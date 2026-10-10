@@ -28,10 +28,13 @@ namespace TitanFramework
         // Saved as an int; -1 (saves from before rarity) means the def's own rarity.
         private int rarityValue = -1;
 
-        /// <summary>The rarity this trait rolled at. Only scaling traits differ from the def's.</summary>
+        /// <summary>The rarity this trait rolled at. Only scaling traits differ from the def's.
+        /// Clamped when set, not when read: MaxRarity depends on the settings, and a trait
+        /// whose rarity changed after its hediffs and abilities were granted would leave the
+        /// old ones behind. Factors are floored when scaled, so any rarity is safe.</summary>
         public TitanRarity Rarity
         {
-            get => rarityValue < 0 ? def.rarity : def.ClampRarity((TitanRarity)rarityValue);
+            get => rarityValue < 0 ? def.rarity : (TitanRarity)rarityValue;
             internal set { rarityValue = (int)def.ClampRarity(value); scaledStage = null; }
         }
 

@@ -25,9 +25,16 @@ namespace TitanFramework
         /// <summary>One trait's price on a creature with this base value.</summary>
         public static float TraitValue(TitanTrait t, float baseValue)
         {
-            float? pct = t.MarketValuePercent, flat = t.MarketValueOffset;
-            if (pct != null || flat != null)
-                return (baseValue * (pct ?? 0f) + (flat ?? 0f)) * t.def.ValueScaleAt(t.Rarity);
+            var o = t.Override;
+            if (o != null && (o.marketValuePercent != null || o.marketValueOffset != null))
+            {
+                // Written for the override's own rarity, so scaled from there.
+                float from = t.def.PointsAt(o.minRarity);
+                float scale = t.def.scalesWithRarity && Mathf.Abs(from) > 0.0001f ? t.Points / from : 1f;
+                return (baseValue * (o.marketValuePercent ?? 0f) + (o.marketValueOffset ?? 0f)) * scale;
+            }
+            if (t.def.marketValuePercent != null || t.def.marketValueOffset != null)
+                return (baseValue * (t.def.marketValuePercent ?? 0f) + (t.def.marketValueOffset ?? 0f)) * t.def.ValueScaleAt(t.Rarity);
             var s = TitanFrameworkMod.Settings;
             return t.Points * (baseValue * s.valuePercentPerPoint + s.valueFlatPerPoint);
         }

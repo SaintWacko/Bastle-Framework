@@ -23,7 +23,6 @@ namespace TitanFramework
         public override void WriteSettings()
         {
             base.WriteSettings();
-            TitanSettings.Version++;
             if (Current.Game == null) return;
             foreach (var p in RimWorld.PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
                 TitanUtility.GetTitan(p)?.SettingsChanged();

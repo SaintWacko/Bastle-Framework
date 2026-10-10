@@ -147,6 +147,7 @@
     <namePrefix>brittle</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
+    <commonality>0.5</commonality>
     <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags><li>TF_Toughness</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
