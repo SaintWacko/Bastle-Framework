@@ -839,7 +839,7 @@ namespace TitanFramework
 
         /// <summary>Next tick a starving search for refused food may run (see
         /// TitanDietUtility.TryDiscoverRefusal). Not saved: a reload only allows one early check.</summary>
-        [Unsaved] internal int nextRefusalCheck;
+        internal int nextRefusalCheck;
 
         public override void Notify_IngestedThing(Thing thing, int amount)
         {

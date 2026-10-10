@@ -114,10 +114,12 @@ namespace TitanFramework
         public static bool TraitAdds(TitanDietProps p, ThingDef food, Pawn pawn)
         {
             if (p == null || food == null) return false;
-            if (p.extraFoods != null)
+            var type = food.ingestible?.foodType ?? FoodTypeFlags.None;
+            // Ordinary food the race eats anyway says nothing about the trait.
+            bool raceEats = food.IsNutritionGivingIngestible && (type & pawn.RaceProps.foodType) != 0;
+            if (p.extraFoods != null && !raceEats)
                 foreach (var f in p.extraFoods)
                     if (f.thing == food) return true;
-            var type = food.ingestible?.foodType ?? FoodTypeFlags.None;
             return (type & p.addFoodTypes & ~pawn.RaceProps.foodType) != 0;
         }
 
@@ -311,7 +313,7 @@ namespace TitanFramework
 
             Thing refused = GenClosest.ClosestThingReachable(pawn.Position, pawn.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.FoodSource), PathEndMode.Touch, TraverseParms.For(pawn),
-                RefusalRadius, x => x.def.ingestible != null && !x.IsForbidden(pawn) && x.IngestibleNow
+                RefusalRadius, x => x.def.ingestible != null && !x.IsForbidden(pawn) && x.IngestibleNow && WithinRope(pawn, x)
                     && pending.Any(t => TitanDiet.TraitRefuses(t.Diet, x.def, pawn)));
             if (refused == null) return;
             foreach (var t in pending)

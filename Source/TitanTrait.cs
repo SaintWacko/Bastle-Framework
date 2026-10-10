@@ -153,6 +153,9 @@ namespace TitanFramework
         /// <summary>Before the trait is removed or the titan hediff is removed.</summary>
         public virtual void PreRemoved() { }
 
+        /// <summary>After the trait is revealed. Can run inside vanilla loops over the
+        /// pawn's hediffs (damage, verb use, Thing.Ingested), so don't add or remove
+        /// hediffs or traits here: queue it for TickInterval.</summary>
         public virtual void PostDiscovered() { }
 
         public virtual void TickInterval(int delta) { }

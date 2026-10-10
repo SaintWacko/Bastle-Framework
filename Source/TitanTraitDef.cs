@@ -292,7 +292,11 @@ namespace TitanFramework
         {
             base.ResolveReferences();
             // Diet traits are revealed by what the creature eats unless the def says otherwise.
-            if (diet != null && !visible && discoverWhen == null)
+            bool hasDiet = diet != null;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    hasDiet |= o?.diet != null;
+            if (hasDiet && !visible && discoverWhen == null)
                 discoverWhen = new List<TitanDiscoveryTrigger>
                     { TitanDiscoveryTrigger.EatsAddedFood, TitanDiscoveryTrigger.StarvesNearRefusedFood };
         }
