@@ -32,6 +32,24 @@
   </Operation>
 
   <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Silver"]</xpath>
+    <value>
+      <li Class="TitanFramework.TitanMaterialExtension">
+        <traits><li>TF_Argent</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="WoodLog"]</xpath>
+    <value>
+      <li Class="TitanFramework.TitanMaterialExtension">
+        <traits><li>TF_Kindling</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
     <xpath>Defs/ThingDef[defName="BlocksGranite"]</xpath>
     <value>
       <li Class="TitanFramework.TitanMaterialExtension">

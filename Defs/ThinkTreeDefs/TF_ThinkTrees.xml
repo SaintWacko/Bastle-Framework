@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Trait AI (TitanTraitDef.aiThinkTree), run by JobGiver_TitanAbilities every 30 ticks.
+       Vanilla's jump job giver jumps to a spot next to the current job's target. -->
+  <ThinkTreeDef>
+    <defName>TF_LeapAtTarget</defName>
+    <thinkRoot Class="ThinkNode_Priority">
+      <subNodes>
+        <li Class="ThinkNode_ConditionalDoingJob">
+          <jobDef>AttackMelee</jobDef>
+          <subNodes>
+            <li Class="JobGiver_AIJumpToJobTarget">
+              <ability>TF_Leap</ability>
+            </li>
+          </subNodes>
+        </li>
+        <li Class="ThinkNode_ConditionalDoingJob">
+          <jobDef>PredatorHunt</jobDef>
+          <subNodes>
+            <li Class="JobGiver_AIJumpToJobTarget">
+              <ability>TF_Leap</ability>
+            </li>
+          </subNodes>
+        </li>
+      </subNodes>
+    </thinkRoot>
+  </ThinkTreeDef>
+
+</Defs>

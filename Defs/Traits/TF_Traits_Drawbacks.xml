@@ -105,6 +105,7 @@
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
     <requiresFlesh>true</requiresFlesh>
+    <exclusionTags><li>TF_Sight</li></exclusionTags>
     <discoverWhen>
       <li>Attacks</li>
       <li>JoinsColony</li>
@@ -172,6 +173,35 @@
     </discoverWhen>
     <stage>
       <restFallFactor>1.5</restFallFactor>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Its stage only applies while it stands in light (TitanTrait_Lightsick). -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Lightsick</defName>
+    <label>lightsick</label>
+    <description>It is a creature of the dark. In bright light it squints, stumbles and fights poorly.</description>
+    <namePrefix>lightsick</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-1</pointCost>
+    <traitClass>TitanFramework.TitanTrait_Lightsick</traitClass>
+    <requiresFlesh>true</requiresFlesh>
+    <exclusionTags><li>TF_Sight</li></exclusionTags>
+    <discoverWhen>
+      <li>Attacks</li>
+      <li>JoinsColony</li>
+    </discoverWhen>
+    <stage>
+      <capMods>
+        <li>
+          <capacity>Sight</capacity>
+          <offset>-0.3</offset>
+        </li>
+      </capMods>
+      <statFactors>
+        <MoveSpeed>0.85</MoveSpeed>
+        <MeleeHitChance>0.85</MeleeHitChance>
+      </statFactors>
     </stage>
   </TitanFramework.TitanTraitDef>
 

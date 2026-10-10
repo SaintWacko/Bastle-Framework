@@ -71,6 +71,36 @@
     </projectile>
   </ThingDef>
 
+  <!-- Core: a jump. Not offensive, so the built-in combat casting leaves it alone; the
+       TF_LeapAtTarget think tree jumps it next to whatever it is attacking or hunting. -->
+  <AbilityDef>
+    <defName>TF_Leap</defName>
+    <label>leap</label>
+    <description>Leap up to 10 tiles to a spot in sight.</description>
+    <iconPath>UI/Abilities/TF_Leap</iconPath>
+    <cooldownTicksRange>600</cooldownTicksRange>
+    <hostile>false</hostile>
+    <aiCanUse>true</aiCanUse>
+    <ai_IsOffensive>false</ai_IsOffensive>
+    <casterMustBeCapableOfViolence>false</casterMustBeCapableOfViolence>
+    <jobDef>CastJump</jobDef>
+    <verbProperties>
+      <verbClass>Verb_CastAbilityJump</verbClass>
+      <label>leap</label>
+      <violent>false</violent>
+      <forceNormalTimeSpeed>false</forceNormalTimeSpeed>
+      <warmupTime>0.3</warmupTime>
+      <range>9.9</range>
+      <minRange>3.5</minRange>
+      <requireLineOfSight>true</requireLineOfSight>
+      <targetParams>
+        <canTargetLocations>true</canTargetLocations>
+        <canTargetPawns>false</canTargetPawns>
+        <canTargetBuildings>false</canTargetBuildings>
+      </targetParams>
+    </verbProperties>
+  </AbilityDef>
+
   <!-- Biotech: vanilla acid spray, a few hours' cooldown instead of half a day. -->
   <AbilityDef MayRequire="Ludeon.RimWorld.Biotech">
     <defName>TF_AcidSpit</defName>

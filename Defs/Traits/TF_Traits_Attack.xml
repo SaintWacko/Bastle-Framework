@@ -170,6 +170,21 @@
   </TitanFramework.TitanTraitDef>
 
   <TitanFramework.TitanTraitDef>
+    <defName>TF_Leaping</defName>
+    <label>leaping</label>
+    <description>Its powerful legs let it leap up to 10 tiles to land beside its prey.</description>
+    <namePrefix>leaping</namePrefix>
+    <rarity>Uncommon</rarity>
+    <allowHumanlikes>false</allowHumanlikes>
+    <discoverWhen>
+      <li>UsesGrantedAbility</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <abilities><li>TF_Leap</li></abilities>
+    <aiThinkTree>TF_LeapAtTarget</aiThinkTree>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
     <defName>TF_Vampiric</defName>
     <label>vampiric</label>
     <description>Its wounds close as it feeds. Part of the damage it deals in melee to living flesh heals it.</description>

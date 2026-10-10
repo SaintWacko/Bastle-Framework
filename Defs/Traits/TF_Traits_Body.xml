@@ -97,6 +97,14 @@
         <MoveSpeed>1.15</MoveSpeed>
       </statFactors>
     </stage>
+    <rarityOverrides>
+      <li>
+        <minRarity>Epic</minRarity>
+        <description>It moves much faster than others of its kind, and can leap up to 10 tiles to land beside its prey.</description>
+        <abilities><li>TF_Leap</li></abilities>
+        <aiThinkTree>TF_LeapAtTarget</aiThinkTree>
+      </li>
+    </rarityOverrides>
   </TitanFramework.TitanTraitDef>
 
   <TitanFramework.TitanTraitDef>
@@ -106,6 +114,14 @@
     <namePrefix>regenerating</namePrefix>
     <rarity>Uncommon</rarity>
     <scalesWithRarity>true</scalesWithRarity>
+    <!-- Regrows lost parts from Legendary up (RegrowthParams.minRarity). -->
+    <traitClass>TitanFramework.TitanTrait_Regrowth</traitClass>
+    <rarityOverrides>
+      <li>
+        <minRarity>Legendary</minRarity>
+        <description>Its wounds close with unnatural speed, and lost limbs grow back, one every few hours.</description>
+      </li>
+    </rarityOverrides>
     <exclusionTags><li>TF_Healing</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
