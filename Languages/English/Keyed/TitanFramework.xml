@@ -56,6 +56,11 @@
   <TF_DietHunts>Hunts other creatures</TF_DietHunts>
   <TF_DietNoHunt>Never hunts</TF_DietNoHunt>
   <TF_DietCardNote>Changed by this creature's material and known titan traits.</TF_DietCardNote>
+  <TF_Card_Material>Material</TF_Card_Material>
+  <TF_Card_Traits>Titan traits</TF_Card_Traits>
+  <TF_Card_TraitsIntro>Rare traits this creature was born with. Unknown traits reveal themselves in time, and offspring can inherit any of them.</TF_Card_TraitsIntro>
+  <TF_Card_TraitValue>Market value: {0}</TF_Card_TraitValue>
+  <TF_Card_Mystery>Traders pay {0} more for a creature with unknown traits.</TF_Card_Mystery>
   <TF_TraitValue>Titan traits</TF_TraitValue>
   <TF_MysteryValue>Unknown traits</TF_MysteryValue>
   <TF_Settings_EatMaterial>Nutrition from eating own material (per unit)</TF_Settings_EatMaterial>
