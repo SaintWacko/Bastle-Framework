@@ -110,6 +110,10 @@ namespace TitanFramework
         /// <summary>Changes what it gives when shorn or milked.</summary>
         public TitanProducts products;
 
+        /// <summary>A chance to shrug off a hit completely, and optionally send a shot
+        /// back at whoever fired it.</summary>
+        public TitanDeflect deflect;
+
         /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
         public List<string> exclusionTags;
 

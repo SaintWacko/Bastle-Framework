@@ -1,3 +1,4 @@
+using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -49,12 +50,82 @@ namespace TitanFramework
         public bool ChangesMilk => milkDef != null || milkAmountFactor != 1f;
     }
 
+    /// <summary>A chance to shrug off a hit completely. Shots can be sent back.</summary>
+    public class TitanDeflect
+    {
+        /// <summary>Chance per hit, before rarity scaling (capped at 0.9).</summary>
+        public float chance = 0.25f;
+
+        /// <summary>Only shots (isRanged damage), not melee or explosions.</summary>
+        public bool rangedOnly = true;
+
+        /// <summary>Fire a deflected shot back at the shooter, as the weapon's own
+        /// projectile. Shots with no known projectile are just deflected.</summary>
+        public bool reflect = true;
+    }
+
     public static class TitanCombatUtility
     {
         // Two thorned creatures hitting each other would otherwise bounce damage forever.
+        // Also set while trait code deals extra damage (DealExtraDamage), so that damage
+        // doesn't trigger more of the same.
         private static bool retaliating;
 
-        public static bool IsMelee(DamageInfo dinfo, Pawn victim, out Pawn attacker)
+        /// <summary>True while retaliation or DealExtraDamage is being applied.</summary>
+        public static bool InExtraDamage => retaliating;
+
+        /// <summary>Damage a trait deals on top of a hit (bonus damage, burns). Doesn't
+        /// trigger retaliation, lifesteal, or other extra damage. Don't call it from inside
+        /// a damage notification: queue it with TitanScheduler.NextTick.</summary>
+        public static void DealExtraDamage(Thing target, DamageInfo dinfo)
+        {
+            if (target == null || target.Destroyed || retaliating) return;
+            retaliating = true;
+            try { target.TakeDamage(dinfo); }
+            finally { retaliating = false; }
+        }
+
+        /// <summary>Called from Pawn.PreApplyDamage. True when a trait deflected the hit.</summary>
+        internal static bool TryDeflect(Hediff_Titan titan, DamageInfo dinfo)
+        {
+            if (dinfo.Def == null || !dinfo.Def.harmsHealth || dinfo.Def.consideredHelpful) return false;
+            var traits = titan.TraitsForReading;
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var t = traits[i];
+                var d = t.Deflect;
+                if (d == null || (d.rangedOnly && !dinfo.Def.isRanged)) continue;
+                float chance = UnityEngine.Mathf.Min(0.9f, d.chance * t.def.StrengthFor(t.Override?.deflect != null, t.Rarity));
+                if (!Rand.Chance(chance)) continue;
+                var pawn = titan.pawn;
+                if (pawn.Spawned)
+                {
+                    FleckMaker.ThrowMicroSparks(pawn.DrawPos, pawn.Map);
+                    if (d.reflect && dinfo.Def.isRanged) Reflect(pawn, dinfo);
+                }
+                if (!t.discovered && TitanUtility.PlayerCanObserve(pawn)) t.Discover();
+                return true;
+            }
+            return false;
+        }
+
+        private static void Reflect(Pawn pawn, DamageInfo dinfo)
+        {
+            var shooter = dinfo.Instigator;
+            if (shooter == null || !shooter.Spawned || shooter.Map != pawn.Map) return;
+            ThingDef proj = dinfo.Weapon?.Verbs?.FirstOrDefault(v => v.defaultProjectile != null)?.defaultProjectile;
+            if (proj == null) return;
+            // Spawning mid-impact is what vanilla's own explosions do; the launch itself
+            // waits a tick so nothing hits during this damage call.
+            TitanScheduler.NextTick(() =>
+            {
+                if (!pawn.Spawned || shooter.Destroyed || !shooter.Spawned || shooter.Map != pawn.Map) return;
+                var p = (Projectile)GenSpawn.Spawn(proj, pawn.Position, pawn.Map);
+                p.Launch(pawn, pawn.DrawPos, shooter, shooter, ProjectileHitFlags.IntendedTarget);
+            });
+        }
+
+        public static bool IsMelee(DamageInfo dinfo, Thing victim, out Pawn attacker)
         {
             attacker = dinfo.Instigator as Pawn;
             if (attacker == null || attacker == victim) return false;
@@ -107,7 +178,7 @@ namespace TitanFramework
             // Thorns and burns dealt back don't feed it.
             if (l == null || retaliating || result == null || result.totalDamageDealt <= 0f) return 0f;
             if (l.fleshOnly && !(victim is Pawn p && p.RaceProps.IsFlesh)) return 0f;
-            if (l.meleeOnly && !(victim is Pawn vp && IsMelee(dinfo, vp, out _))) return 0f;
+            if (l.meleeOnly && !IsMelee(dinfo, victim, out _)) return 0f;
             return result.totalDamageDealt * l.fraction * trait.LifestealStrength;
         }
 

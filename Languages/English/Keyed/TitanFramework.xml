@@ -97,4 +97,11 @@
   <TF_Rarity_Legendary>legendary</TF_Rarity_Legendary>
   <!-- {0}: trait label. {1}: rarity. -->
   <TF_TraitWithRarity>{0} ({1})</TF_TraitWithRarity>
+  <!-- Trait classes -->
+  <TF_UndyingRose>{PAWN_labelShort} has risen from the dead.</TF_UndyingRose>
+  <TF_PackCalled>{PAWN_labelShort} called its pack. {1} came to fight.</TF_PackCalled>
+  <TF_LightsickActive>Weakened by the light.</TF_LightsickActive>
+  <TF_PartRegrown>{PAWN_labelShort} has regrown its {1}.</TF_PartRegrown>
+  <TF_HydraSplit>{PAWN_labelShort} split as it died. {1} young ones sprang from its body.</TF_HydraSplit>
+
 </LanguageData>

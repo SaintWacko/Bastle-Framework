@@ -303,6 +303,7 @@ namespace TitanFramework
     {
         public static HediffDef TF_Titan;
         public static JobDef TF_EatNonFood;
+        public static HediffDef TF_DreadStruck;
 
         static TitanDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(TitanDefOf));
     }

@@ -61,8 +61,10 @@ namespace TitanFramework
         [Unsaved] private int scaledFor = -1;
 
         /// <summary>This trait's stage at its rarity (override applied, numbers scaled).
-        /// Rebuilt when the settings change.</summary>
-        public HediffStage Stage
+        /// Rebuilt when the settings change. A subclass can override this to switch its
+        /// stage on and off (return null for none); call titan.StageChanged() whenever
+        /// what it returns changes.</summary>
+        public virtual HediffStage Stage
         {
             get
             {
@@ -94,6 +96,7 @@ namespace TitanFramework
         public float RetaliationStrength => def.StrengthFor(Override?.retaliation != null, Rarity);
         public float LifestealStrength => def.StrengthFor(Override?.lifesteal != null, Rarity);
         public TitanProducts Products => Override?.products ?? def.products;
+        public TitanDeflect Deflect => Override?.deflect ?? def.deflect;
 
         public List<TitanTraitHediff> Hediffs => Override?.hediffs ?? def.hediffs;
         public List<AbilityDef> Abilities => Override?.abilities ?? def.abilities;

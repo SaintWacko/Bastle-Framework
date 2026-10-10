@@ -452,6 +452,17 @@ namespace TitanFramework
                 pawn.Notify_DisabledWorkTypesChanged();
         }
 
+        /// <summary>A trait's Stage now returns something different (a trait that switches
+        /// its stage on and off). Rebuilds the merged stage and refreshes the pawn's
+        /// stats and capacities. Not for changes that alter needs: use the trait list.</summary>
+        public void StageChanged()
+        {
+            stageDirty = true;
+            cardStage = null;
+            if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
+                pawn.health.Notify_HediffChanged(this);
+        }
+
         internal void Notify_TraitDiscovered(TitanTrait trait)
         {
             nameDirty = true;

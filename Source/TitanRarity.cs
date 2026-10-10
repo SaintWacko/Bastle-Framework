@@ -61,6 +61,7 @@ namespace TitanFramework
         public TitanRetaliation retaliation;
         public TitanLifesteal lifesteal;
         public TitanProducts products;
+        public TitanDeflect deflect;
         public float? marketValuePercent;
         public float? marketValueOffset;
     }

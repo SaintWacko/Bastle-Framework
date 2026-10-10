@@ -28,6 +28,19 @@ namespace TitanFramework
         }
     }
 
+    /// <summary>Deflection (TitanTraitDef.deflect). Runs after vanilla's own checks
+    /// (shield belts absorb first). Only on damage, so a plain lookup is fine.</summary>
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.PreApplyDamage))]
+    public static class Patch_Pawn_PreApplyDamage
+    {
+        public static void Postfix(Pawn __instance, ref DamageInfo dinfo, ref bool absorbed)
+        {
+            if (absorbed) return;
+            var titan = TitanUtility.GetTitan(__instance);
+            if (titan != null && TitanCombatUtility.TryDeflect(titan, dinfo)) absorbed = true;
+        }
+    }
+
     /// <summary>Per-creature wool (TitanTraitDef.products). Only read when shearing.</summary>
     [HarmonyPatch(typeof(CompShearable), "ResourceDef", MethodType.Getter)]
     public static class Patch_CompShearable_ResourceDef
