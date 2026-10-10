@@ -93,8 +93,10 @@ namespace TitanFramework
         }
     }
 
-    /// <summary>JoinsColony discovery: taming, recruiting, buying and rescuing all end
-    /// in SetFaction. Rare, so a plain registry lookup is fine.</summary>
+    /// <summary>JoinsColony discovery: taming, recruiting, most purchases and rescues end
+    /// in SetFaction (a pawn generated straight into the colony doesn't). The creature
+    /// is the player's own from here, so this skips the observe check: an animal bought
+    /// from an orbital trader joins while still unspawned. Rare, so a plain lookup is fine.</summary>
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.SetFaction))]
     public static class Patch_Pawn_SetFaction
     {
@@ -105,7 +107,8 @@ namespace TitanFramework
             if (titan == null) return;
             var traits = titan.TraitsForReading;
             for (int i = traits.Count - 1; i >= 0; i--)
-                traits[i].TryDiscoverBy(TitanDiscoveryTrigger.JoinsColony);
+                if (!traits[i].discovered && traits[i].def.DiscoveredBy(TitanDiscoveryTrigger.JoinsColony))
+                    traits[i].Discover();
         }
     }
 }

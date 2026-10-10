@@ -102,10 +102,6 @@
     <visible>true</visible>
     <exclusionTags><li>TF_Element</li></exclusionTags>
     <tags><li>Storm</li></tags>
-    <discoverWhen>
-      <li>UsesGrantedVerb</li>
-      <li>Dies</li>
-    </discoverWhen>
     <overlays>
       <li>
         <color>(0.45, 0.7, 1.0, 0.3)</color>

@@ -5,7 +5,7 @@
        always has them; see Patches/TF_Materials.xml. The material already shows in
        the name, so most of these have no name part of their own. -->
 
-  <!-- Uranium. The faint green glow shows even before the trait is identified. -->
+  <!-- Uranium. -->
   <TitanFramework.TitanTraitDef>
     <defName>TF_Irradiated</defName>
     <label>irradiated</label>
@@ -15,11 +15,6 @@
     <commonality>0</commonality>
     <pointCost>0</pointCost>
     <heritable>false</heritable>
-    <showVisualsWhenHidden>true</showVisualsWhenHidden>
-    <discoverWhen>
-      <li>UsesGrantedVerb</li>
-      <li>Dies</li>
-    </discoverWhen>
     <overlays>
       <li>
         <color>(0.4, 1.0, 0.3, 0.25)</color>
