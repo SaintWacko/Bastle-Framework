@@ -182,7 +182,13 @@ namespace TitanFramework
         /// through TitanTrait.CopyStateFrom. Whatever titan state <paramref name="to"/> had is
         /// replaced; if <paramref name="from"/> is not a titan, <paramref name="to"/> stops being one.
         /// Traits are copied as they are, without the usual race and conflict checks, so the
-        /// copy matches even when the target is a different kind of creature.
+        /// copy matches even when the target is a different kind of creature. Two exceptions:
+        /// a trait that refuses constructs is left off a copy that has a material, and a
+        /// material trait the copy's own traits exclude is not granted.
+        /// Do not call this from a TitanTrait's Notify_PawnUsedVerb,
+        /// Notify_PawnPostApplyDamage or PostDiscovered: vanilla is iterating the pawn's
+        /// hediffs at that point and adding or removing one throws. Queue it and apply it
+        /// from TickInterval instead.
         /// </summary>
         /// <param name="includeDiscovery">Also copy which traits are discovered. Otherwise
         /// the copy starts with only visible traits known. No messages are sent either way.</param>
@@ -202,6 +208,8 @@ namespace TitanFramework
             foreach (var src in source.TraitsForReading)
             {
                 if (src.fromMaterial || titan.HasTrait(src.def)) continue;
+                // SetMaterialInternal below would only remove it again.
+                if (source.Material != null && src.def.disallowConstructs) continue;
                 copies.Add((titan.AddTraitInternal(src.def, includeDiscovery && src.discovered, rarity: src.Rarity, exactRarity: true), src));
             }
 
@@ -224,6 +232,8 @@ namespace TitanFramework
             }
 
             foreach (var (copy, src) in copies) copy.CopyStateFrom(src);
+            // Copied state can change what a trait shows (VisualsActive is virtual).
+            titan.VisualsChanged();
             return titan;
         }
 

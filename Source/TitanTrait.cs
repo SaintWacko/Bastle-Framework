@@ -145,7 +145,9 @@ namespace TitanFramework
         /// <summary>When TitanUtility.CopyTitan copies this trait onto another creature:
         /// called on the new trait, after PostAdded, with the trait it was copied from.
         /// Override to copy any per-creature state your subclass keeps (charges,
-        /// cooldowns, counters). The def, rarity and discovery are already copied.</summary>
+        /// cooldowns, counters). The def, rarity and discovery are already copied.
+        /// PostDiscovered is not called for traits copied as discovered, so copy anything
+        /// it would have set up here.</summary>
         public virtual void CopyStateFrom(TitanTrait source) { }
 
         /// <summary>Before the trait is removed or the titan hediff is removed.</summary>
