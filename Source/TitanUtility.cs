@@ -77,7 +77,7 @@ namespace TitanFramework
                 if (t.def.ConflictsWith(def)) return false;
             // A trait that only grants abilities adds nothing when another trait already
             // grants them all (leaping on an Epic swift creature).
-            if (!def.abilities.NullOrEmpty() && def.stage == null && def.hediffs.NullOrEmpty()
+            if (def.OnlyGrantsAbilities
                 && def.abilities.TrueForAll(a => titan.TraitsForReading.Any(t => t.Abilities != null && t.Abilities.Contains(a))))
                 return false;
             return true;

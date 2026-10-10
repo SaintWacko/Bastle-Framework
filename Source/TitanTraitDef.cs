@@ -217,6 +217,15 @@ namespace TitanFramework
 
         public float BasePoints => float.IsNaN(pointCost) ? rarity.Points() : pointCost;
 
+        /// <summary>Abilities (and the AI to use them) are all this trait does: no stage,
+        /// hediffs, code, combat effects, diet, size, health, visuals or rarity overrides.
+        /// Such a trait isn't added where other traits already grant every one of its
+        /// abilities (TitanUtility.CanAddTrait).</summary>
+        public bool OnlyGrantsAbilities =>
+            !abilities.NullOrEmpty() && stage == null && hediffs.NullOrEmpty() && traitClass == typeof(TitanTrait)
+            && rarityOverrides.NullOrEmpty() && retaliation == null && lifesteal == null && products == null
+            && deflect == null && diet == null && healthScaleFactor == 1f && drawSizeFactor == 1f && !HasVisuals;
+
         public bool IsDrawback => BasePoints < 0f;
 
         /// <summary>Points when rolled at a rarity: a scaling trait follows the settings'
