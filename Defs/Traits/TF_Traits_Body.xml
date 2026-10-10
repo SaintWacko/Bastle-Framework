@@ -86,7 +86,6 @@
     <namePrefix>swift</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags><li>TF_Speed</li></exclusionTags>
-    <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>Attacks</li>
       <li>JoinsColony</li>

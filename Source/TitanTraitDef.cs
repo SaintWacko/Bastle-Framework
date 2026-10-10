@@ -228,6 +228,12 @@ namespace TitanFramework
 
         public bool IsDrawback => BasePoints < 0f;
 
+        /// <summary>Tag for traits worth something mainly once the creature is tamed. They
+        /// get their own roll (TitanRolling) and their points add no health.</summary>
+        public const string UtilityTag = "Utility";
+
+        public bool IsUtility => tags != null && tags.Contains(UtilityTag);
+
         /// <summary>Points when rolled at a rarity: a scaling trait follows the settings'
         /// points table relative to its own rarity.</summary>
         public float PointsAt(TitanRarity at)

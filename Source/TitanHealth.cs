@@ -12,7 +12,8 @@ namespace TitanFramework
     /// healthScaleFactor. Points are totalled first, so drawbacks cancel bonuses and a
     /// big titan grows linearly rather than compounding.
     /// Hidden traits count: a creature that takes too many hits to drop is a clue.
-    /// Traits granted by the material count like any other. Each healthScaleFactor is
+    /// Traits granted by the material count like any other. Utility traits' points don't
+    /// count, so a pack beast isn't secretly tougher. Each healthScaleFactor is
     /// floored at 0.25 before it multiplies, and so is the total.
     /// </summary>
     public static class TitanHealth
@@ -28,7 +29,7 @@ namespace TitanFramework
             foreach (var t in traits)
             {
                 if (discoveredOnly && !t.discovered) continue;
-                points += TitanFrameworkMod.Settings.healthPerPoint * t.Points;
+                if (!t.def.IsUtility) points += TitanFrameworkMod.Settings.healthPerPoint * t.Points;
                 // Floored per trait, so one harsh trait can't wipe out every other bonus.
                 scale *= Mathf.Max(MinFactor, t.HealthScaleFactor);
             }

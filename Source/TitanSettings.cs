@@ -35,10 +35,12 @@ namespace TitanFramework
         public float[] rarityPoints = (float[])DefaultRarityPoints.Clone();
         public FloatRange pointTarget = DefaultPointTarget;
         public float overshootStrictness = 1f;
-        public int maxTraits = 5;
+        public int maxTraits = 10;
         public float drawbackChance = 0.3f;
         public int maxDrawbacks = 1;
         public float rarityShiftChance = 0.2f;
+        public float utilityChance = 0.4f;
+        public float utilityBudget = 0.25f;
 
         /// <summary>Bumped whenever the settings are saved, so caches built from them
         /// (each trait's scaled stage) know to rebuild.</summary>
@@ -71,10 +73,12 @@ namespace TitanFramework
             rarityPoints = (float[])DefaultRarityPoints.Clone();
             pointTarget = DefaultPointTarget;
             overshootStrictness = 1f;
-            maxTraits = 5;
+            maxTraits = 10;
             drawbackChance = 0.3f;
             maxDrawbacks = 1;
             rarityShiftChance = 0.2f;
+            utilityChance = 0.4f;
+            utilityBudget = 0.25f;
             materialArmorFactor = 0.5f;
             materialDamageStrength = 1f;
             fireWeaknessStrength = 1f;
@@ -110,11 +114,13 @@ namespace TitanFramework
             }
             Scribe_Values.Look(ref pointTarget, "pointTarget", DefaultPointTarget);
             Scribe_Values.Look(ref overshootStrictness, "overshootStrictness", 1f);
-            Scribe_Values.Look(ref maxTraits, "maxTraits", 5);
-            maxTraits = Mathf.Clamp(maxTraits, 1, 10);
+            Scribe_Values.Look(ref maxTraits, "maxTraits", 10);
+            maxTraits = Mathf.Clamp(maxTraits, 1, MaxTraitsLimit);
             Scribe_Values.Look(ref drawbackChance, "drawbackChance", 0.3f);
             Scribe_Values.Look(ref maxDrawbacks, "maxDrawbacks", 1);
             Scribe_Values.Look(ref rarityShiftChance, "rarityShiftChance", 0.2f);
+            Scribe_Values.Look(ref utilityChance, "utilityChance", 0.4f);
+            Scribe_Values.Look(ref utilityBudget, "utilityBudget", 0.25f);
             Version++;
             Scribe_Values.Look(ref materialArmorFactor, "materialArmorFactor", 0.5f);
             Scribe_Values.Look(ref materialDamageStrength, "materialDamageStrength", 1f);
@@ -188,15 +194,18 @@ namespace TitanFramework
             new Color(0.76f, 0.48f, 1f), new Color(1f, 0.70f, 0.28f),
         };
 
-        // Two columns of generation controls, then one column per rarity table. Laid out
-        // side by side so the whole tab fits without a scroll view.
+        private const int MaxTraitsLimit = 15;
+
+        // Three columns of generation controls (target, drawbacks, utility roll), then one
+        // column per rarity table. Laid out side by side so the whole tab fits without a
+        // scroll view.
         private void DoGeneration(Rect r)
         {
             const float gap = 18f;
-            float half = (r.width - gap) / 2f;
+            float third = (r.width - 2f * gap) / 3f;
 
             var left = new Listing_Standard();
-            left.Begin(new Rect(r.x, r.y, half, r.height));
+            left.Begin(new Rect(r.x, r.y, third, r.height));
             var row = left.GetRect(Text.LineHeight);
             Widgets.Label(row, "TF_Settings_PointTarget".Translate());
             var rangeRect = left.GetRect(32f);
@@ -205,13 +214,13 @@ namespace TitanFramework
             Hint(left, "TF_Settings_PointTargetHint".Translate());
             Slider(left, "TF_Settings_Strictness", ref overshootStrictness, 0f, 4f, overshootStrictness.ToStringByStyle(ToStringStyle.FloatMaxOne), "TF_Settings_StrictnessHint", 0.1f);
             float traits = maxTraits;
-            Slider(left, "TF_Settings_MaxTraits", ref traits, 1f, 10f, Mathf.RoundToInt(traits).ToString(), null, 1f);
+            Slider(left, "TF_Settings_MaxTraits", ref traits, 1f, MaxTraitsLimit, Mathf.RoundToInt(traits).ToString(), null, 1f);
             maxTraits = Mathf.RoundToInt(traits);
             float leftHeight = left.CurHeight;
             left.End();
 
             var right = new Listing_Standard();
-            right.Begin(new Rect(r.x + half + gap, r.y, half, r.height));
+            right.Begin(new Rect(r.x + third + gap, r.y, third, r.height));
             Slider(right, "TF_Settings_DrawbackChance", ref drawbackChance, 0f, 1f, drawbackChance.ToStringPercent(), null, 0.05f);
             float drawbacks = maxDrawbacks;
             Slider(right, "TF_Settings_MaxDrawbacks", ref drawbacks, 0f, 5f, Mathf.RoundToInt(drawbacks).ToString(), "TF_Settings_DrawbackHint", 1f);
@@ -220,8 +229,14 @@ namespace TitanFramework
             float rightHeight = right.CurHeight;
             right.End();
 
-            float top = r.y + Mathf.Max(leftHeight, rightHeight) + 10f;
-            float third = (r.width - 2f * gap) / 3f;
+            var util = new Listing_Standard();
+            util.Begin(new Rect(r.x + 2f * (third + gap), r.y, third, r.height));
+            Slider(util, "TF_Settings_UtilityChance", ref utilityChance, 0f, 1f, utilityChance.ToStringPercent(), null, 0.05f);
+            Slider(util, "TF_Settings_UtilityBudget", ref utilityBudget, 0f, 1f, utilityBudget.ToStringPercent(), "TF_Settings_UtilityHint", 0.05f);
+            float utilHeight = util.CurHeight;
+            util.End();
+
+            float top = r.y + Mathf.Max(leftHeight, Mathf.Max(rightHeight, utilHeight)) + 10f;
             var area = new Rect(r.x, top, third, r.yMax - top);
             float totalWeight = rarityWeights.Sum();
             RarityColumn(area, "TF_Settings_RarityWeights", "TF_Settings_RarityWeightsHint", rarityWeights, 0f, 100f, 1f,

@@ -30,8 +30,17 @@ namespace TitanFramework
         /// <summary>Only these rarities. Null or empty: all.</summary>
         public HashSet<TitanRarity> allowedRarities;
 
-        /// <summary>Extra filter, e.g. d => d.tags != null && d.tags.Contains("Fire").</summary>
+        /// <summary>Extra filter, e.g. d => d.tags != null && d.tags.Contains("Fire").
+        /// Applies to both the main roll and the utility roll.</summary>
         public Predicate<TitanTraitDef> validator;
+
+        /// <summary>Chance of the separate utility roll (traits tagged Utility), made after
+        /// the main roll with whatever trait slots are left.</summary>
+        public float? utilityChance;
+
+        /// <summary>The utility roll's point target as a fraction of the main target,
+        /// never less than one Common trait's points.</summary>
+        public float? utilityBudget;
     }
 
     /// <summary>
@@ -47,6 +56,10 @@ namespace TitanFramework
     /// A creature allowed drawbacks takes one as soon as one fits after its first real
     /// trait, as long as the drawback leaves a slot to pay its points back. The trait cap
     /// is the only thing that can stop a creature short of its target.
+    /// Utility traits (tagged Utility) are kept out of that roll. Afterwards, with
+    /// utilityChance, the same roller runs again over utility traits alone, on a smaller
+    /// target and only in the slots the main roll left, so they never cost a creature
+    /// combat strength.
     /// </summary>
     public static class TitanRolling
     {
@@ -65,11 +78,29 @@ namespace TitanFramework
             var s = TitanFrameworkMod.Settings;
 
             float budget = fixedPoints ?? (request.points ?? s.pointTarget).RandomInRange;
+            int cap = Math.Max(1, request.maxTraits ?? s.maxTraits);
+            int drawbacks = Rand.Chance(request.drawbackChance ?? s.drawbackChance) ? (request.maxDrawbacks ?? s.maxDrawbacks) : 0;
+            var validator = request.validator;
+
+            RollPool(pawn, request, budget, cap, drawbacks, d => !d.IsUtility && (validator == null || validator(d)), added);
+
+            if (added.Count < cap && Rand.Chance(request.utilityChance ?? s.utilityChance))
+            {
+                float utilityBudget = Math.Max(budget * Math.Max(0f, request.utilityBudget ?? s.utilityBudget), TitanRarity.Common.Points());
+                var utility = new List<TitanTrait>();
+                RollPool(pawn, request, utilityBudget, cap - added.Count, 0, d => d.IsUtility && (validator == null || validator(d)), utility);
+                added.AddRange(utility);
+            }
+            return added;
+        }
+
+        private static void RollPool(Pawn pawn, TitanRollRequest request, float budget, int cap, int drawbacksLeft,
+            Predicate<TitanTraitDef> filter, List<TitanTrait> added)
+        {
+            var s = TitanFrameworkMod.Settings;
             // Never zero, so a zero target still gets one trait.
             float remaining = Math.Max(budget, 0.1f);
             float strictness = Math.Max(0f, request.overshootStrictness ?? s.overshootStrictness);
-            int cap = Math.Max(1, request.maxTraits ?? s.maxTraits);
-            int drawbacksLeft = Rand.Chance(request.drawbackChance ?? s.drawbackChance) ? (request.maxDrawbacks ?? s.maxDrawbacks) : 0;
             float[] weights = s.rarityWeights;
             if (request.rarityWeights != null)
             {
@@ -83,7 +114,7 @@ namespace TitanFramework
             {
                 if (remaining <= Epsilon && !(drawbacksLeft > 0 && hasRealTrait)) break;
                 var candidates = DefDatabase<TitanTraitDef>.AllDefsListForReading
-                    .Where(d => d.commonality > 0f && (request.validator == null || request.validator(d)) && TitanUtility.CanAddTrait(pawn, d))
+                    .Where(d => d.commonality > 0f && filter(d) && TitanUtility.CanAddTrait(pawn, d))
                     .ToList();
                 if (candidates.Count == 0) break;
 
@@ -134,7 +165,6 @@ namespace TitanFramework
                 if (!pick.Value.def.IsDrawback) hasRealTrait = true;
                 remaining -= trait.Points;
             }
-            return added;
         }
 
         private static List<Pair> Pairs(List<TitanTraitDef> candidates, float[] weights, HashSet<TitanRarity> allowed)

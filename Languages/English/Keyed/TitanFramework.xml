@@ -61,6 +61,9 @@
   <TF_Settings_MaxDrawbacks>Most drawbacks</TF_Settings_MaxDrawbacks>
   <TF_Settings_DrawbackHint>A titan that rolls the chance can take drawbacks. Their negative points are paid back with more or better traits.</TF_Settings_DrawbackHint>
   <TF_Settings_RarityShift>Rarity shift on inheritance</TF_Settings_RarityShift>
+  <TF_Settings_UtilityChance>Utility trait chance</TF_Settings_UtilityChance>
+  <TF_Settings_UtilityBudget>Utility points</TF_Settings_UtilityBudget>
+  <TF_Settings_UtilityHint>Utility traits (meaty, pack beast and the like) get their own roll after the others, in any trait slots left. Their points are this share of the titan's target, at least one common trait's worth, and add no health.</TF_Settings_UtilityHint>
   <TF_Settings_RarityShiftHint>Chance an inherited scaling trait is born one rarity higher or lower than its parent's (even odds either way).</TF_Settings_RarityShiftHint>
   <TF_Settings_RarityWeights>Rarity chances</TF_Settings_RarityWeights>
   <TF_Settings_RarityWeightsHint>Relative weight of each rarity when a trait is rolled.</TF_Settings_RarityWeightsHint>

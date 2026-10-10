@@ -2,7 +2,9 @@
 <Defs>
 
   <!-- Utility traits: mostly worth something once the creature is tamed. Most are
-       revealed when it joins the colony, so taming an unknown titan is a gamble. -->
+       revealed when it joins the colony, so taming an unknown titan is a gamble.
+       The Utility tag puts a trait in the separate utility roll (Generation settings)
+       instead of the main one, and keeps its points out of the health bonus. -->
 
   <!-- Diet: lives on rock. Hidden; revealed by eating a chunk (diet default). -->
   <TitanFramework.TitanTraitDef>

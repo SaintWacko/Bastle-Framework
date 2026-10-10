@@ -16,22 +16,30 @@ namespace TitanFramework
             var list = new List<DebugActionNode>();
             foreach (var def in DefDatabase<TitanTraitDef>.AllDefs.OrderBy(d => d.defName))
             {
-                var local = def;
-                // A scaling trait gets one entry per rarity it can roll at.
+                var rarities = new List<TitanRarity>();
                 for (var r = def.rarity; r <= def.MaxRarity; r++)
+                    if (def.CanAppearAt(r)) rarities.Add(r);
+                if (rarities.Count == 0) continue;
+                if (rarities.Count == 1)
                 {
-                    if (!def.CanAppearAt(r)) continue;
-                    var rarity = r;
-                    string label = def.scalesWithRarity ? $"{def.defName} ({r})" : def.defName;
-                    list.Add(new DebugActionNode(label, DebugActionType.ToolMapForPawns, null, p =>
-                    {
-                        if (TitanUtility.AddTrait(p, local, rarity: rarity) == null)
-                            Messages.Message($"{local.defName} cannot go on {p.LabelShort} (filters or a conflicting trait).", MessageTypeDefOf.RejectInput, false);
-                    }));
+                    list.Add(AddTraitNode($"{def.defName} ({rarities[0]})", def, rarities[0]));
+                    continue;
                 }
+                // A trait that rolls at several rarities gets one entry that opens a
+                // list of them, so the main list stays one line per trait.
+                var node = new DebugActionNode($"{def.defName} (variable)");
+                foreach (var r in rarities) node.AddChild(AddTraitNode(r.ToString(), def, r));
+                list.Add(node);
             }
             return list;
         }
+
+        private static DebugActionNode AddTraitNode(string label, TitanTraitDef def, TitanRarity rarity) =>
+            new DebugActionNode(label, DebugActionType.ToolMapForPawns, null, p =>
+            {
+                if (TitanUtility.AddTrait(p, def, rarity: rarity) == null)
+                    Messages.Message($"{def.defName} cannot go on {p.LabelShort} (filters or a conflicting trait).", MessageTypeDefOf.RejectInput, false);
+            });
 
         [DebugAction(Category, "Roll traits...", actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static List<DebugActionNode> RollTraits()
