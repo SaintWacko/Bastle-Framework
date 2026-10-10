@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Legendary signature traits. -->
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Elder</defName>
+    <label>elder</label>
+    <description>An ancient of its kind. It is bigger, tougher and stronger than any other, and its wounds close quickly.</description>
+    <nameSuffix>the elder</nameSuffix>
+    <rarity>Legendary</rarity>
+    <allowMechanoids>false</allowMechanoids>
+    <healthScaleFactor>2</healthScaleFactor>
+    <discoverWhen>
+      <li>Attacks</li>
+      <li>TakesDamage</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <stage>
+      <naturalHealingFactor>1.5</naturalHealingFactor>
+      <statOffsets>
+        <ComfyTemperatureMin>-10</ComfyTemperatureMin>
+        <ComfyTemperatureMax>10</ComfyTemperatureMax>
+      </statOffsets>
+      <statFactors>
+        <MoveSpeed>1.1</MoveSpeed>
+        <MeleeDamageFactor>1.25</MeleeDamageFactor>
+        <IncomingDamageFactor>0.85</IncomingDamageFactor>
+      </statFactors>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+</Defs>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Material traits: every creature made of one of these stuffs has the trait.
+       Defs/Traits/TF_Traits_Materials.xml has the traits themselves. -->
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Uranium"]</xpath>
+    <value>
+      <li Class="TitanFramework.TitanMaterialExtension">
+        <traits><li>TF_Irradiated</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Gold"]</xpath>
+    <value>
+      <li Class="TitanFramework.TitanMaterialExtension">
+        <traits><li>TF_Gilded</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Plasteel"]</xpath>
+    <value>
+      <li Class="TitanFramework.TitanMaterialExtension">
+        <traits><li>TF_Unyielding</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="BlocksGranite"]</xpath>
+    <value>
+      <li Class="TitanFramework.TitanMaterialExtension">
+        <traits><li>TF_Stonebound</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Anomaly</li></mods>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/ThingDef[defName="Bioferrite"]</xpath>
+      <value>
+        <li Class="TitanFramework.TitanMaterialExtension">
+          <traits><li>TF_VoidTouched</li></traits>
+        </li>
+      </value>
+    </match>
+  </Operation>
+
+</Patch>

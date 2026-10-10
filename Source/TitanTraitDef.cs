@@ -32,6 +32,9 @@ namespace TitanFramework
         /// <summary>The creature is starving, finds nothing to eat, and food this trait's
         /// diet refuses (one its race would otherwise eat) is within reach.</summary>
         StarvesNearRefusedFood,
+        /// <summary>The creature joins the player's faction: tamed, recruited, bought or
+        /// rescued. For traits that only show once you live with it (meat yield, hunger).</summary>
+        JoinsColony,
     }
 
     /// <summary>A hediff a trait adds to its creature, optionally on a body part.</summary>

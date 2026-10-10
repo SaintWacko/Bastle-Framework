@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Rising embers, a faint glow and the odd wisp of smoke. Built from vanilla flecks and motes. -->
+  <EffecterDef>
+    <defName>TF_Effecter_Embers</defName>
+    <children>
+      <!-- Animated flame licks rising off the body (Biotech's fire-spew art; skipped without Biotech). -->
+      <li MayRequire="Ludeon.RimWorld.Biotech">
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>FireSpew_A</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.12</chancePerTick>
+        <scale>0.35~0.55</scale>
+        <angle>-12~12</angle>
+        <speed>0.4~0.8</speed>
+        <positionRadius>0.35</positionRadius>
+        <color>(1.0, 0.85, 0.7, 0.75)</color>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>FireGlow</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.04</chancePerTick>
+        <scale>0.7~1.1</scale>
+        <positionRadius>0.25</positionRadius>
+        <color>(1.0, 0.6, 0.2, 0.6)</color>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <moteDef>Mote_SparkThrown</moteDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.2</chancePerTick>
+        <scale>0.15~0.35</scale>
+        <airTime>0.3~0.8</airTime>
+        <angle>-30~30</angle>
+        <speed>0.6~1.4</speed>
+        <rotationRate>-120~120</rotationRate>
+        <positionRadius>0.35</positionRadius>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>Smoke</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.015</chancePerTick>
+        <scale>0.5~0.9</scale>
+        <speed>0.2~0.4</speed>
+        <angle>-20~20</angle>
+        <rotationRate>-10~10</rotationRate>
+        <positionRadius>0.3</positionRadius>
+        <color>(0.4, 0.4, 0.4, 0.5)</color>
+      </li>
+    </children>
+  </EffecterDef>
+
+</Defs>

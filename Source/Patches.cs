@@ -92,4 +92,20 @@ namespace TitanFramework
             TitanUtility.InheritTraits(pawn, BirthContext.mother, BirthContext.father);
         }
     }
+
+    /// <summary>JoinsColony discovery: taming, recruiting, buying and rescuing all end
+    /// in SetFaction. Rare, so a plain registry lookup is fine.</summary>
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.SetFaction))]
+    public static class Patch_Pawn_SetFaction
+    {
+        public static void Postfix(Pawn __instance, Faction newFaction)
+        {
+            if (newFaction == null || !newFaction.IsPlayer) return;
+            var titan = TitanUtility.PeekTitan(__instance);
+            if (titan == null) return;
+            var traits = titan.TraitsForReading;
+            for (int i = traits.Count - 1; i >= 0; i--)
+                traits[i].TryDiscoverBy(TitanDiscoveryTrigger.JoinsColony);
+        }
+    }
 }

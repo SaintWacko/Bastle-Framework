@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Hidden attack: revealed the first time it bites with the venomous fangs. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Venomous</defName>
+    <label>venomous</label>
+    <description>Its bite carries a poison that builds up in the victim's body.</description>
+    <namePrefix>venomous</namePrefix>
+    <!-- Scales with rarity; from Epic up its fangs are replaced by stronger ones. -->
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen>
+      <li>UsesGrantedVerb</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <hediffs>
+      <li><hediff>TF_VenomFangs</hediff></li>
+    </hediffs>
+    <rarityOverrides>
+      <li>
+        <minRarity>Epic</minRarity>
+        <label>virulent</label>
+        <namePrefix>virulent</namePrefix>
+        <description>Its bite carries a virulent poison that overwhelms the victim within moments.</description>
+        <hediffs>
+          <li><hediff>TF_VirulentFangs</hediff></li>
+        </hediffs>
+      </li>
+    </rarityOverrides>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Hidden ability, cast by the AI in combat. Biotech only (vanilla fire spew effect). -->
+  <TitanFramework.TitanTraitDef MayRequire="Ludeon.RimWorld.Biotech">
+    <defName>TF_Firebreather</defName>
+    <label>firebreather</label>
+    <description>It can spit a stream of burning bile at anything that threatens it.</description>
+    <nameSuffix>the firebreather</nameSuffix>
+    <rarity>Rare</rarity>
+    <requiresFlesh>true</requiresFlesh>
+    <tags><li>Fire</li></tags>
+    <discoverWhen>
+      <li>UsesGrantedAbility</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <abilities>
+      <li>TF_FireBreath</li>
+    </abilities>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Razorclawed</defName>
+    <label>razorclawed</label>
+    <description>Its natural weapons are sharper and heavier than they should be.</description>
+    <namePrefix>razorclawed</namePrefix>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Attacks</li></discoverWhen>
+    <stage>
+      <statFactors>
+        <MeleeDamageFactor>1.2</MeleeDamageFactor>
+      </statFactors>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Frenzied</defName>
+    <label>frenzied</label>
+    <description>It attacks in a wild flurry: much faster, but less accurate.</description>
+    <namePrefix>frenzied</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Attacks</li></discoverWhen>
+    <stage>
+      <statFactors>
+        <MeleeCooldownFactor>0.8</MeleeCooldownFactor>
+        <MeleeHitChance>0.92</MeleeHitChance>
+      </statFactors>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Bonebreaker</defName>
+    <label>bonebreaker</label>
+    <description>It strikes with crushing force. A blow can leave the victim stunned.</description>
+    <nameSuffix>the bonebreaker</nameSuffix>
+    <rarity>Rare</rarity>
+    <discoverWhen>
+      <li>UsesGrantedVerb</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <hediffs>
+      <li><hediff>TF_BonebreakerBlow</hediff></li>
+    </hediffs>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Visible: the blue glow gives it away. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Stormborn</defName>
+    <label>stormborn</label>
+    <description>Static crackles across its body. Its strikes carry an electric shock that stuns machines.</description>
+    <namePrefix>stormborn</namePrefix>
+    <rarity>Rare</rarity>
+    <visible>true</visible>
+    <exclusionTags><li>TF_Element</li></exclusionTags>
+    <tags><li>Storm</li></tags>
+    <discoverWhen>
+      <li>UsesGrantedVerb</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <overlays>
+      <li>
+        <color>(0.45, 0.7, 1.0, 0.3)</color>
+        <pulseSpeed>2.2</pulseSpeed>
+        <pulseMin>0.3</pulseMin>
+      </li>
+    </overlays>
+    <glow>
+      <radius>3.5</radius>
+      <color>(110,170,255,0)</color>
+    </glow>
+    <hediffs>
+      <li><hediff>TF_StormStrike</hediff></li>
+    </hediffs>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Quilled</defName>
+    <label>quilled</label>
+    <description>It can flick a volley of barbed quills at enemies up to 15 tiles away.</description>
+    <namePrefix>quilled</namePrefix>
+    <rarity>Rare</rarity>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <discoverWhen>
+      <li>UsesGrantedAbility</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <abilities>
+      <li>TF_QuillVolley</li>
+    </abilities>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Biotech only: uses vanilla's acid spray projectile and effect. -->
+  <TitanFramework.TitanTraitDef MayRequire="Ludeon.RimWorld.Biotech">
+    <defName>TF_AcidSpitting</defName>
+    <label>acid-spitting</label>
+    <description>It can spray sticky acid over an area, burning whatever it lands on.</description>
+    <namePrefix>acid-spitting</namePrefix>
+    <rarity>Rare</rarity>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <discoverWhen>
+      <li>UsesGrantedAbility</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <abilities>
+      <li>TF_AcidSpit</li>
+    </abilities>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Odyssey only: a copy of the terror roar, without the trainable requirement. -->
+  <TitanFramework.TitanTraitDef MayRequire="Ludeon.RimWorld.Odyssey">
+    <defName>TF_Dread</defName>
+    <label>dread</label>
+    <description>Its howl can send nearby enemies fleeing in terror.</description>
+    <nameSuffix>of dread</nameSuffix>
+    <rarity>Epic</rarity>
+    <discoverWhen>
+      <li>UsesGrantedAbility</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <abilities>
+      <li>TF_DreadHowl</li>
+    </abilities>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Dangerous in a dungeon, a liability as a pet. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Volatile</defName>
+    <label>volatile</label>
+    <description>Something unstable builds inside it. When it dies, it explodes.</description>
+    <namePrefix>volatile</namePrefix>
+    <rarity>Uncommon</rarity>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <hediffs>
+      <li><hediff>TF_VolatileCore</hediff></li>
+    </hediffs>
+  </TitanFramework.TitanTraitDef>
+
+</Defs>
