@@ -31,7 +31,8 @@ namespace TitanFramework
         public HashSet<TitanRarity> allowedRarities;
 
         /// <summary>Extra filter, e.g. d => d.tags != null && d.tags.Contains("Fire").
-        /// Applies to both the main roll and the utility roll.</summary>
+        /// Applies to both the main roll and the utility roll. When it leaves the main roll
+        /// with nothing, the utility roll always happens, on the full target.</summary>
         public Predicate<TitanTraitDef> validator;
 
         /// <summary>Chance of the separate utility roll (traits tagged Utility), made after
@@ -84,9 +85,14 @@ namespace TitanFramework
 
             RollPool(pawn, request, budget, cap, drawbacks, d => !d.IsUtility && (validator == null || validator(d)), added);
 
-            if (added.Count < cap && Rand.Chance(request.utilityChance ?? s.utilityChance))
+            // A validator that only lets utility traits through (a "tame-worthy" roll) leaves
+            // the main pool empty: then they roll on the full target, without the chance.
+            bool onlyUtility = added.Count == 0 && validator != null
+                && !DefDatabase<TitanTraitDef>.AllDefsListForReading.Any(d => !d.IsUtility && d.commonality > 0f && validator(d));
+            if (added.Count < cap && (onlyUtility || Rand.Chance(request.utilityChance ?? s.utilityChance)))
             {
-                float utilityBudget = Math.Max(budget * Math.Max(0f, request.utilityBudget ?? s.utilityBudget), TitanRarity.Common.Points());
+                float utilityBudget = onlyUtility ? budget
+                    : Math.Max(budget * Math.Max(0f, request.utilityBudget ?? s.utilityBudget), TitanRarity.Common.Points());
                 var utility = new List<TitanTrait>();
                 RollPool(pawn, request, utilityBudget, cap - added.Count, 0, d => d.IsUtility && (validator == null || validator(d)), utility);
                 added.AddRange(utility);

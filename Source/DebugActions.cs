@@ -28,7 +28,7 @@ namespace TitanFramework
                 // A trait that rolls at several rarities gets one entry that opens a
                 // list of them, so the main list stays one line per trait.
                 var node = new DebugActionNode($"{def.defName} (variable)");
-                foreach (var r in rarities) node.AddChild(AddTraitNode(r.ToString(), def, r));
+                foreach (var r in rarities) node.AddChild(AddTraitNode($"{def.defName} ({r})", def, r));
                 list.Add(node);
             }
             return list;
