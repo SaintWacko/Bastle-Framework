@@ -63,6 +63,12 @@ namespace TitanFramework
         /// <summary>Flat market value added, in silver. See marketValuePercent.</summary>
         public float? marketValueOffset;
 
+        /// <summary>Multiplies the creature's health (every body part's hit points) on top
+        /// of the per-point bonus from the mod settings. 1.5 = half again as tough, 0.7 =
+        /// frail. Applies before the trait is discovered. Each trait's total health effect
+        /// is floored at 0.25, and so is the creature's.</summary>
+        public float healthScaleFactor = 1f;
+
         /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
         public List<string> exclusionTags;
 

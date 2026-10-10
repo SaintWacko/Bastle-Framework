@@ -92,6 +92,30 @@ namespace TitanFramework
             }
         }
 
+        [Unsaved] private float healthFactor = 1f;
+        [Unsaved] private HediffStage healthBuiltFor;
+
+        /// <summary>Multiplier on the creature's health scale from every trait, hidden ones
+        /// included. Rebuilt with the stage, like Diet. Read by Pawn.HealthScale.</summary>
+        public float HealthFactor
+        {
+            get
+            {
+                if (stageDirty || cachedStage == null)
+                {
+                    cachedStage = BuildStage();
+                    stageDirty = false;
+                    cardStage = null;
+                }
+                if (healthBuiltFor != cachedStage)
+                {
+                    healthFactor = TitanHealth.Factor(traits);
+                    healthBuiltFor = cachedStage;
+                }
+                return healthFactor;
+            }
+        }
+
         /// <summary>Made of a material: no pain, blood or rot.</summary>
         public bool IsConstruct => material != null;
 
@@ -354,13 +378,37 @@ namespace TitanFramework
             glower?.Remove();
             glower = null;
             CleanupEffecters(keepTracked: true);
-            if (material != null)
+            // The health-per-point slider changes every titan, flesh or not.
+            materialStage = null;
+            stageDirty = true;
+            if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
             {
-                materialStage = null;
-                stageDirty = true;
-                if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
-                    pawn.health.Notify_HediffChanged(this);
+                SyncInjuries();
+                pawn.health.Notify_HediffChanged(this);
             }
+        }
+
+        /// <summary>The health factor the creature's injuries are currently sized for.
+        /// Saved, so a slider change made while the save wasn't loaded is caught on load.</summary>
+        private float appliedHealth = 1f;
+
+        /// <summary>Injury severity is in absolute hit points. When the health factor
+        /// changes, scale every injury so each part keeps the same fraction of its
+        /// health: otherwise a lower factor can kill a wounded titan on the spot, and a
+        /// round trip down and up would heal it for free. Call after marking the stage
+        /// dirty.</summary>
+        private void SyncInjuries()
+        {
+            float newFactor = HealthFactor;
+            if (appliedHealth > 0f && Mathf.Abs(newFactor - appliedHealth) > 0.0001f)
+            {
+                float scale = newFactor / appliedHealth;
+                // Copy: raising a staged injury's severity can notify the health tracker.
+                foreach (var h in pawn.health.hediffSet.hediffs.ToList())
+                    if (h is Hediff_Injury injury)
+                        injury.Severity *= scale;
+            }
+            appliedHealth = newFactor;
         }
 
         internal void CleanupEffecters(bool keepTracked = false)
@@ -380,6 +428,7 @@ namespace TitanFramework
             nameDirty = true;
             RecalcTicking();
             if (pawn?.health?.hediffSet == null || !pawn.health.hediffSet.hediffs.Contains(this)) return;
+            SyncInjuries();
             pawn.health.Notify_HediffChanged(this);
 
             // Vanilla only refreshes needs and disabled work when a hediff is added or
@@ -669,6 +718,8 @@ namespace TitanFramework
                         foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
                             if (e.ShouldDisplay())
                                 sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
+                    string health = TitanHealth.Describe(t);
+                    if (health != null) sb.AppendLine("  - " + health);
                     foreach (string line in TitanDiet.Describe(t.def.diet))
                         sb.AppendLine("  - " + line);
                     string extra = t.TipStringExtra;
@@ -696,6 +747,15 @@ namespace TitanFramework
                 t.PreRemoved();
                 RemoveEffects(t);
             }
+            // Health is back to the race's, so size the injuries back down with it.
+            if (appliedHealth > 0f && Mathf.Abs(appliedHealth - 1f) > 0.0001f && pawn?.health?.hediffSet != null)
+            {
+                float scale = 1f / appliedHealth;
+                foreach (var h in pawn.health.hediffSet.hediffs.ToList())
+                    if (h is Hediff_Injury injury)
+                        injury.Severity *= scale;
+            }
+            appliedHealth = 1f;
             base.PostRemoved();
             TitanUtility.Unregister(pawn);
             VisualsChanged();
@@ -800,6 +860,9 @@ namespace TitanFramework
             base.ExposeData();
             Scribe_Collections.Look(ref traits, "traits", LookMode.Deep);
             Scribe_Defs.Look(ref material, "material");
+            // Default 0, not 1: saves from before this field have injuries already sized
+            // for the current factor, and 0 makes SyncInjuries record it without scaling.
+            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 materialStage = null;
@@ -810,6 +873,16 @@ namespace TitanFramework
                 nameDirty = true;
                 RecalcTicking();
                 TitanUtility.Register(pawn, this);
+                // After the load finishes, so the whole pawn is resolved. Outside a long
+                // event ExecuteWhenFinished would run right now, mid-load, so skip it
+                // then: the next trait or settings change syncs from the saved value.
+                if (LongEventHandler.AnyEventNowOrWaiting)
+                    LongEventHandler.ExecuteWhenFinished(() =>
+                    {
+                        if (pawn?.health?.hediffSet == null || !pawn.health.hediffSet.hediffs.Contains(this)) return;
+                        SyncInjuries();
+                        pawn.health.Notify_HediffChanged(this);
+                    });
             }
         }
     }
