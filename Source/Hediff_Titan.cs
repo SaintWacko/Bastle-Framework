@@ -378,13 +378,30 @@ namespace TitanFramework
             glower?.Remove();
             glower = null;
             CleanupEffecters(keepTracked: true);
-            if (material != null)
+            // The health-per-point slider changes every titan, flesh or not.
+            float oldHealth = HealthFactor;
+            materialStage = null;
+            stageDirty = true;
+            if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
             {
-                materialStage = null;
-                stageDirty = true;
-                if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
-                    pawn.health.Notify_HediffChanged(this);
+                KeepInjuryFractions(oldHealth);
+                pawn.health.Notify_HediffChanged(this);
             }
+        }
+
+        /// <summary>Injury severity is in absolute hit points, so a lower health factor
+        /// would leave a wounded titan with less health than it had, and
+        /// Notify_HediffChanged could then kill it on the spot. Scale injuries down so
+        /// every part keeps the same fraction of its health. Call after marking the
+        /// stage dirty, with the factor read before.</summary>
+        private void KeepInjuryFractions(float oldFactor)
+        {
+            float newFactor = HealthFactor;
+            if (newFactor >= oldFactor || oldFactor <= 0f) return;
+            float scale = newFactor / oldFactor;
+            foreach (var h in pawn.health.hediffSet.hediffs)
+                if (h is Hediff_Injury injury)
+                    injury.Severity *= scale;
         }
 
         internal void CleanupEffecters(bool keepTracked = false)
@@ -400,10 +417,12 @@ namespace TitanFramework
         {
             if (changed.HasVisuals) VisualsChanged(changed);
             var oldStage = cachedStage;
+            float oldHealth = healthBuiltFor != null ? healthFactor : 1f;
             stageDirty = true;
             nameDirty = true;
             RecalcTicking();
             if (pawn?.health?.hediffSet == null || !pawn.health.hediffSet.hediffs.Contains(this)) return;
+            KeepInjuryFractions(oldHealth);
             pawn.health.Notify_HediffChanged(this);
 
             // Vanilla only refreshes needs and disabled work when a hediff is added or

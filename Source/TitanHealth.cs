@@ -22,7 +22,8 @@ namespace TitanFramework
         public static float TraitFactor(TitanTrait t)
         {
             float perPoint = t.fromMaterial ? 1f : 1f + TitanFrameworkMod.Settings.healthPerPoint * t.def.pointCost;
-            return Mathf.Max(0f, perPoint) * t.def.healthScaleFactor;
+            // Clamped per trait, so one harsh drawback can't zero out every other bonus.
+            return Mathf.Max(MinFactor, perPoint * t.def.healthScaleFactor);
         }
 
         public static float Factor(List<TitanTrait> traits)
