@@ -877,7 +877,11 @@ namespace TitanFramework
                 materialStage = null;
                 traits = traits ?? new List<TitanTrait>();
                 traits.RemoveAll(t => t?.def == null);
-                foreach (var t in traits) t.titan = this;
+                foreach (var t in traits)
+                {
+                    t.titan = this;
+                    t.ClampLoadedRarity();
+                }
                 stageDirty = true;
                 nameDirty = true;
                 RecalcTicking();

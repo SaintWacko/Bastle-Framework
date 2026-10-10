@@ -38,6 +38,13 @@ namespace TitanFramework
             internal set { rarityValue = (int)def.ClampRarity(value); scaledStage = null; }
         }
 
+        /// <summary>After load, before effects are synced: a def update may have changed
+        /// which rarities the trait can be.</summary>
+        internal void ClampLoadedRarity()
+        {
+            if (rarityValue >= 0) Rarity = (TitanRarity)rarityValue;
+        }
+
         /// <summary>The rarity override in effect, or null.</summary>
         public TitanRarityOverride Override => def.OverrideAt(Rarity);
 
@@ -69,9 +76,6 @@ namespace TitanFramework
                 return f == 1f ? 1f : Mathf.Max(0f, 1f + (f - 1f) * def.StrengthAt(Rarity));
             }
         }
-
-        public float? MarketValuePercent => Override?.marketValuePercent ?? def.marketValuePercent;
-        public float? MarketValueOffset => Override?.marketValueOffset ?? def.marketValueOffset;
 
         public List<TitanTraitHediff> Hediffs => Override?.hediffs ?? def.hediffs;
         public List<AbilityDef> Abilities => Override?.abilities ?? def.abilities;

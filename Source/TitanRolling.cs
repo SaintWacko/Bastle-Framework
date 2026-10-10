@@ -70,8 +70,12 @@ namespace TitanFramework
             float strictness = Math.Max(0f, request.overshootStrictness ?? s.overshootStrictness);
             int cap = Math.Max(1, request.maxTraits ?? s.maxTraits);
             int drawbacksLeft = Rand.Chance(request.drawbackChance ?? s.drawbackChance) ? (request.maxDrawbacks ?? s.maxDrawbacks) : 0;
-            float[] weights = request.rarityWeights != null && request.rarityWeights.Length >= TitanRarityUtility.Count
-                ? request.rarityWeights : s.rarityWeights;
+            float[] weights = s.rarityWeights;
+            if (request.rarityWeights != null)
+            {
+                if (request.rarityWeights.Length >= TitanRarityUtility.Count) weights = request.rarityWeights;
+                else Log.WarningOnce($"[Titan Framework] TitanRollRequest.rarityWeights needs {TitanRarityUtility.Count} entries (one per rarity); using the settings' weights.", 0x7A11 ^ 0x5EED);
+            }
             var allowed = request.allowedRarities;
 
             bool hasRealTrait = false;

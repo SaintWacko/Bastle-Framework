@@ -26,15 +26,23 @@ namespace TitanFramework
         public static float TraitValue(TitanTrait t, float baseValue)
         {
             var o = t.Override;
-            if (o != null && (o.marketValuePercent != null || o.marketValueOffset != null))
+            float? pct = o?.marketValuePercent ?? t.def.marketValuePercent;
+            float? flat = o?.marketValueOffset ?? t.def.marketValueOffset;
+            if (pct != null || flat != null)
             {
-                // Written for the override's own rarity, so scaled from there.
-                float from = t.def.PointsAt(o.minRarity);
-                float scale = t.def.scalesWithRarity && Mathf.Abs(from) > 0.0001f ? t.Points / from : 1f;
-                return (baseValue * (o.marketValuePercent ?? 0f) + (o.marketValueOffset ?? 0f)) * scale;
+                // Each value grows with the points from the rarity it was written for: the
+                // override's minRarity when it came from the override, else the def's own.
+                float defScale = t.def.ValueScaleAt(t.Rarity);
+                float overScale = defScale;
+                if (o != null)
+                {
+                    float from = t.def.PointsAt(o.minRarity);
+                    overScale = t.def.scalesWithRarity && Mathf.Abs(from) > 0.0001f ? t.Points / from : 1f;
+                }
+                float p = (pct ?? 0f) * (o?.marketValuePercent != null ? overScale : defScale);
+                float f = (flat ?? 0f) * (o?.marketValueOffset != null ? overScale : defScale);
+                return baseValue * p + f;
             }
-            if (t.def.marketValuePercent != null || t.def.marketValueOffset != null)
-                return (baseValue * (t.def.marketValuePercent ?? 0f) + (t.def.marketValueOffset ?? 0f)) * t.def.ValueScaleAt(t.Rarity);
             var s = TitanFrameworkMod.Settings;
             return t.Points * (baseValue * s.valuePercentPerPoint + s.valueFlatPerPoint);
         }
