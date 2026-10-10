@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -124,7 +126,7 @@ namespace TitanFramework
 
         // ---- window --------------------------------------------------------------
 
-        private enum Tab { Lights, Traits, Materials }
+        private enum Tab { Lights, Traits, Generation, Materials }
         private static Tab tab = Tab.Lights;
 
         public void DoWindowContents(Rect inRect)
@@ -136,17 +138,22 @@ namespace TitanFramework
             {
                 new TabRecord("TF_Settings_LightsSection".Translate(), () => tab = Tab.Lights, tab == Tab.Lights),
                 new TabRecord("TF_Settings_TraitsSection".Translate(), () => tab = Tab.Traits, tab == Tab.Traits),
+                new TabRecord("TF_Settings_GenerationSection".Translate(), () => tab = Tab.Generation, tab == Tab.Generation),
                 new TabRecord("TF_Settings_MaterialsSection".Translate(), () => tab = Tab.Materials, tab == Tab.Materials),
             };
             Widgets.DrawMenuSection(body);
             TabDrawer.DrawTabs(body, tabs);
 
-            var l = new Listing_Standard();
-            l.Begin(body.ContractedBy(12f));
-            if (tab == Tab.Lights) DoLights(l);
-            else if (tab == Tab.Traits) DoTraits(l);
-            else DoMaterials(l);
-            l.End();
+            if (tab == Tab.Generation) DoGeneration(body.ContractedBy(12f));
+            else
+            {
+                var l = new Listing_Standard();
+                l.Begin(body.ContractedBy(12f));
+                if (tab == Tab.Lights) DoLights(l);
+                else if (tab == Tab.Traits) DoTraits(l);
+                else DoMaterials(l);
+                l.End();
+            }
 
             var reset = new Rect(inRect.xMax - 160f, inRect.yMax - 32f, 160f, 32f);
             if (Widgets.ButtonText(reset, "TF_Settings_Reset".Translate()))
@@ -172,6 +179,79 @@ namespace TitanFramework
             Slider(l, "TF_Settings_ValuePercent", ref valuePercentPerPoint, 0f, 1f, "+" + valuePercentPerPoint.ToStringPercent(), "TF_Settings_ValuePercentHint", 0.01f);
             Slider(l, "TF_Settings_ValueFlat", ref valueFlatPerPoint, 0f, 500f, "+" + valueFlatPerPoint.ToStringMoney(), "TF_Settings_ValueFlatHint", 5f);
             Slider(l, "TF_Settings_Mystery", ref mysteryTradeBonus, 0f, 1f, "+" + mysteryTradeBonus.ToStringPercent(), "TF_Settings_MysteryHint", 0.05f);
+        }
+
+        private static readonly Color[] RarityColors =
+        {
+            new Color(0.81f, 0.81f, 0.81f), new Color(0.48f, 0.82f, 0.48f), new Color(0.42f, 0.66f, 1f),
+            new Color(0.76f, 0.48f, 1f), new Color(1f, 0.70f, 0.28f),
+        };
+
+        // Two columns of generation controls, then one column per rarity table. Laid out
+        // side by side so the whole tab fits without a scroll view.
+        private void DoGeneration(Rect r)
+        {
+            const float gap = 18f;
+            float half = (r.width - gap) / 2f;
+
+            var left = new Listing_Standard();
+            left.Begin(new Rect(r.x, r.y, half, r.height));
+            var row = left.GetRect(Text.LineHeight);
+            Widgets.Label(row, "TF_Settings_PointTarget".Translate());
+            var rangeRect = left.GetRect(32f);
+            Widgets.FloatRange(rangeRect, "TF_Settings_PointTarget".GetHashCode(), ref pointTarget, 0f, 30f,
+                valueStyle: ToStringStyle.FloatMaxOne, sliderLabelFont: GameFont.Tiny, roundTo: 0.5f);
+            Hint(left, "TF_Settings_PointTargetHint".Translate());
+            Slider(left, "TF_Settings_Strictness", ref overshootStrictness, 0f, 4f, overshootStrictness.ToStringByStyle(ToStringStyle.FloatMaxOne), "TF_Settings_StrictnessHint", 0.1f);
+            float traits = maxTraits;
+            Slider(left, "TF_Settings_MaxTraits", ref traits, 1f, 10f, Mathf.RoundToInt(traits).ToString(), null, 1f);
+            maxTraits = Mathf.RoundToInt(traits);
+            float leftHeight = left.CurHeight;
+            left.End();
+
+            var right = new Listing_Standard();
+            right.Begin(new Rect(r.x + half + gap, r.y, half, r.height));
+            Slider(right, "TF_Settings_DrawbackChance", ref drawbackChance, 0f, 1f, drawbackChance.ToStringPercent(), null, 0.05f);
+            float drawbacks = maxDrawbacks;
+            Slider(right, "TF_Settings_MaxDrawbacks", ref drawbacks, 0f, 5f, Mathf.RoundToInt(drawbacks).ToString(), "TF_Settings_DrawbackHint", 1f);
+            maxDrawbacks = Mathf.RoundToInt(drawbacks);
+            Slider(right, "TF_Settings_RarityShift", ref rarityShiftChance, 0f, 1f, rarityShiftChance.ToStringPercent(), "TF_Settings_RarityShiftHint", 0.05f);
+            float rightHeight = right.CurHeight;
+            right.End();
+
+            float top = r.y + Mathf.Max(leftHeight, rightHeight) + 10f;
+            float third = (r.width - 2f * gap) / 3f;
+            var area = new Rect(r.x, top, third, r.yMax - top);
+            float totalWeight = rarityWeights.Sum();
+            RarityColumn(area, "TF_Settings_RarityWeights", "TF_Settings_RarityWeightsHint", rarityWeights, 0f, 100f, 1f,
+                v => Mathf.RoundToInt(v) + " (" + (totalWeight > 0f ? v / totalWeight : 0f).ToStringPercent() + ")");
+            area.x += third + gap;
+            RarityColumn(area, "TF_Settings_RarityStrength", "TF_Settings_RarityStrengthHint", rarityStrength, 0.1f, 5f, 0.05f,
+                v => "x" + v.ToStringByStyle(ToStringStyle.FloatMaxTwo));
+            area.x += third + gap;
+            RarityColumn(area, "TF_Settings_RarityPoints", "TF_Settings_RarityPointsHint", rarityPoints, 0.5f, 20f, 0.5f,
+                v => v.ToStringByStyle(ToStringStyle.FloatMaxOne));
+        }
+
+        private static void RarityColumn(Rect area, string titleKey, string hintKey, float[] values, float min, float max, float roundTo, Func<float, string> shown)
+        {
+            var l = new Listing_Standard();
+            l.Begin(area);
+            Text.Font = GameFont.Small;
+            l.Label("<b>" + titleKey.Translate() + "</b>");
+            Hint(l, hintKey.Translate());
+            for (int i = 0; i < TitanRarityUtility.Count; i++)
+            {
+                var row = l.GetRect(Text.LineHeight);
+                GUI.color = RarityColors[i];
+                Widgets.Label(row.LeftPart(0.6f), ((TitanRarity)i).Label().CapitalizeFirst());
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperRight;
+                Widgets.Label(row.RightPart(0.4f), shown(values[i]));
+                Text.Anchor = TextAnchor.UpperLeft;
+                values[i] = Mathf.Clamp(GenMath.RoundTo(l.Slider(values[i], min, max), roundTo), min, max);
+            }
+            l.End();
         }
 
         private void DoMaterials(Listing_Standard r)

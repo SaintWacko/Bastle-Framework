@@ -50,6 +50,24 @@
   <TF_Settings_ValueFlatHint>Added on top of the percentage, so small titans still count. Colony wealth, and so raid points, include every trait, known or not. Trade prices and the info card include only discovered traits.</TF_Settings_ValueFlatHint>
   <TF_Settings_Mystery>Trade bonus for unknown traits</TF_Settings_Mystery>
   <TF_Settings_MysteryHint>Traders pay this much more (of the creature's normal value) for a creature with any undiscovered trait.</TF_Settings_MysteryHint>
+
+  <TF_Settings_GenerationSection>Generation</TF_Settings_GenerationSection>
+  <TF_Settings_PointTarget>Points per titan (minimum)</TF_Settings_PointTarget>
+  <TF_Settings_PointTargetHint>Used when a mod rolls traits without its own target. Traits are rolled until their points reach the target; the last one may go over.</TF_Settings_PointTargetHint>
+  <TF_Settings_Strictness>Overshoot strictness</TF_Settings_Strictness>
+  <TF_Settings_StrictnessHint>How rarely a trait worth more than the points left still rolls. 0: the target is only a minimum. Higher keeps titans close to their target.</TF_Settings_StrictnessHint>
+  <TF_Settings_MaxTraits>Most traits per titan</TF_Settings_MaxTraits>
+  <TF_Settings_DrawbackChance>Drawback chance</TF_Settings_DrawbackChance>
+  <TF_Settings_MaxDrawbacks>Most drawbacks</TF_Settings_MaxDrawbacks>
+  <TF_Settings_DrawbackHint>A titan that rolls the chance can take drawbacks. Their negative points are paid back with more or better traits.</TF_Settings_DrawbackHint>
+  <TF_Settings_RarityShift>Rarity shift on inheritance</TF_Settings_RarityShift>
+  <TF_Settings_RarityShiftHint>Chance an inherited scaling trait is born one rarity higher or lower than its parent's (even odds either way).</TF_Settings_RarityShiftHint>
+  <TF_Settings_RarityWeights>Rarity chances</TF_Settings_RarityWeights>
+  <TF_Settings_RarityWeightsHint>Relative weight of each rarity when a trait is rolled.</TF_Settings_RarityWeightsHint>
+  <TF_Settings_RarityStrength>Rarity strength</TF_Settings_RarityStrength>
+  <TF_Settings_RarityStrengthHint>How much stronger a scaling trait's effects are at each rarity.</TF_Settings_RarityStrengthHint>
+  <TF_Settings_RarityPoints>Rarity points</TF_Settings_RarityPoints>
+  <TF_Settings_RarityPointsHint>What a trait is worth at each rarity: its cost when rolling, and its health and market value.</TF_Settings_RarityPointsHint>
   <TF_DietAdds>Also eats: {0}</TF_DietAdds>
   <TF_DietRemoves>Won't eat: {0}</TF_DietRemoves>
   <TF_DietRefuses>Refuses: {0}</TF_DietRefuses>
