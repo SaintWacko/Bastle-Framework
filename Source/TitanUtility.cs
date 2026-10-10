@@ -176,6 +176,57 @@ namespace TitanFramework
             }
         }
 
+        /// <summary>
+        /// Makes <paramref name="to"/> a copy of <paramref name="from"/>'s titan: the same
+        /// material and every trait at the same rarity, with each trait's own state copied
+        /// through TitanTrait.CopyStateFrom. Whatever titan state <paramref name="to"/> had is
+        /// replaced; if <paramref name="from"/> is not a titan, <paramref name="to"/> stops being one.
+        /// Traits are copied as they are, without the usual race and conflict checks, so the
+        /// copy matches even when the target is a different kind of creature.
+        /// </summary>
+        /// <param name="includeDiscovery">Also copy which traits are discovered. Otherwise
+        /// the copy starts with only visible traits known. No messages are sent either way.</param>
+        /// <returns>The copy's titan hediff, or null if there was nothing to copy.</returns>
+        public static Hediff_Titan CopyTitan(Pawn from, Pawn to, bool includeDiscovery = false)
+        {
+            if (to?.health == null || from == to) return GetTitan(to);
+            var source = GetTitan(from);
+            ClearTitan(to);
+            if (source == null || source.TraitsForReading.Count == 0 && source.Material == null) return null;
+
+            var titan = GetOrMakeTitan(to);
+            var copies = new List<(TitanTrait copy, TitanTrait src)>();
+
+            // Own traits before the material: a material trait that the source never got
+            // because one of these excludes it is then skipped on the copy as well.
+            foreach (var src in source.TraitsForReading)
+            {
+                if (src.fromMaterial || titan.HasTrait(src.def)) continue;
+                copies.Add((titan.AddTraitInternal(src.def, includeDiscovery && src.discovered, rarity: src.Rarity, exactRarity: true), src));
+            }
+
+            if (source.Material != null)
+            {
+                titan.SetMaterialInternal(source.Material);
+                foreach (var src in source.TraitsForReading)
+                {
+                    if (!src.fromMaterial) continue;
+                    var copy = titan.GetTrait(src.def);
+                    if (copy == null || !copy.fromMaterial) continue;
+                    // Material traits are always added at their def's rarity, on both creatures.
+                    if (includeDiscovery && src.discovered && !copy.discovered)
+                    {
+                        copy.discovered = true;
+                        titan.Notify_TraitDiscovered(copy);
+                    }
+                    copies.Add((copy, src));
+                }
+            }
+
+            foreach (var (copy, src) in copies) copy.CopyStateFrom(src);
+            return titan;
+        }
+
         /// <summary>A carrying parent's rarity (either one's when both carry it), shifted
         /// one step up or down at the settings' chance. Clamped to what the trait can be.</summary>
         private static TitanRarity InheritedRarity(TitanTraitDef def, List<TitanRarity> parents)

@@ -170,14 +170,17 @@ namespace TitanFramework
 
         // ---- trait list mutation (use TitanUtility from outside) ----------------
 
-        internal TitanTrait AddTraitInternal(TitanTraitDef def, bool discovered, bool fromMaterial = false, TitanRarity? rarity = null)
+        /// <param name="exactRarity">Keep the rarity as given instead of clamping it to
+        /// what the current settings allow (used when copying a titan).</param>
+        internal TitanTrait AddTraitInternal(TitanTraitDef def, bool discovered, bool fromMaterial = false, TitanRarity? rarity = null, bool exactRarity = false)
         {
             var trait = (TitanTrait)Activator.CreateInstance(def.traitClass);
             trait.def = def;
             trait.titan = this;
             trait.discovered = discovered || def.visible;
             trait.fromMaterial = fromMaterial;
-            trait.Rarity = rarity ?? def.rarity;
+            if (exactRarity && rarity != null) trait.SetRarityExact(rarity.Value);
+            else trait.Rarity = rarity ?? def.rarity;
             traits.Add(trait);
             ApplyEffects(trait);
             trait.PostAdded();

@@ -38,6 +38,12 @@ namespace TitanFramework
             internal set { rarityValue = (int)def.ClampRarity(value); scaledStage = null; }
         }
 
+        internal void SetRarityExact(TitanRarity r)
+        {
+            rarityValue = (int)r;
+            scaledStage = null;
+        }
+
         /// <summary>After load: keeps the saved rarity inside the def's fixed bounds (a def
         /// update may have raised its rarity or stopped it scaling). Deliberately not
         /// MaxRarity, which follows the settings and would quietly lower saved traits.</summary>
@@ -135,6 +141,12 @@ namespace TitanFramework
 
         /// <summary>After the trait is added (not on load).</summary>
         public virtual void PostAdded() { }
+
+        /// <summary>When TitanUtility.CopyTitan copies this trait onto another creature:
+        /// called on the new trait, after PostAdded, with the trait it was copied from.
+        /// Override to copy any per-creature state your subclass keeps (charges,
+        /// cooldowns, counters). The def, rarity and discovery are already copied.</summary>
+        public virtual void CopyStateFrom(TitanTrait source) { }
 
         /// <summary>Before the trait is removed or the titan hediff is removed.</summary>
         public virtual void PreRemoved() { }
