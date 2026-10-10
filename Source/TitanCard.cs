@@ -59,8 +59,6 @@ namespace TitanFramework
                     foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
                         if (e.ShouldDisplay())
                             sb.AppendLine(" - " + e.LabelCap + ": " + e.ValueString);
-                string health = TitanHealth.Describe(t);
-                if (health != null) sb.AppendLine(" - " + health);
                 foreach (string line in TitanDiet.Describe(t.def.diet))
                     sb.AppendLine(" - " + line);
                 string extra = t.TipStringExtra;
@@ -69,6 +67,8 @@ namespace TitanFramework
                 if (value != 0f)
                     sb.AppendLine(" - " + "TF_Card_TraitValue".Translate((value > 0f ? "+" : "") + value.ToStringMoney()));
             }
+            string health = TitanHealth.DescribeTotal(titan.Traits);
+            if (health != null) sb.AppendLine().AppendLine(health);
             if (anyHidden && TitanFrameworkMod.Settings.mysteryTradeBonus > 0f)
                 sb.AppendLine().AppendLine("TF_Card_Mystery".Translate(TitanFrameworkMod.Settings.mysteryTradeBonus.ToStringPercent()));
             return sb.ToString().TrimEndNewlines();

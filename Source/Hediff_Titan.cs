@@ -718,13 +718,13 @@ namespace TitanFramework
                         foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
                             if (e.ShouldDisplay())
                                 sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
-                    string health = TitanHealth.Describe(t);
-                    if (health != null) sb.AppendLine("  - " + health);
                     foreach (string line in TitanDiet.Describe(t.def.diet))
                         sb.AppendLine("  - " + line);
                     string extra = t.TipStringExtra;
                     if (!extra.NullOrEmpty()) sb.AppendLine("  " + extra);
                 }
+                string health = TitanHealth.DescribeTotal(traits);
+                if (health != null) sb.AppendLine().AppendLine(health);
                 return sb.ToString().TrimEndNewlines();
             }
         }
