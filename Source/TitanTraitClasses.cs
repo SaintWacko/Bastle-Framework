@@ -117,7 +117,7 @@ namespace TitanFramework
 
         private void Blink(Pawn pawn)
         {
-            if (!pawn.Spawned || pawn.Dead || pawn.Downed) return;
+            if (!pawn.Spawned || pawn.Dead || pawn.Downed || pawn.roping?.IsRoped == true) return;
             var map = pawn.Map;
             var from = pawn.Position;
             var p = P;
@@ -195,8 +195,9 @@ namespace TitanFramework
                     called++;
                 }
             }
+            if (called == 0) return;
             LifeStageUtility.PlayNearestLifestageSound(pawn, ls => ls.soundCall, g => null, m => null, 1.5f);
-            if (called > 0 && TitanUtility.PlayerCanObserve(pawn))
+            if (TitanUtility.PlayerCanObserve(pawn))
             {
                 if (!discovered) Discover();
                 Messages.Message("TF_PackCalled".Translate(pawn.Named("PAWN"), called), pawn, MessageTypeDefOf.NeutralEvent);

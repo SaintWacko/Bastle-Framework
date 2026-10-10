@@ -175,7 +175,6 @@
     <description>Its powerful legs let it leap up to 10 tiles to land beside its prey.</description>
     <namePrefix>leaping</namePrefix>
     <rarity>Uncommon</rarity>
-    <allowHumanlikes>false</allowHumanlikes>
     <discoverWhen>
       <li>UsesGrantedAbility</li>
       <li>Dies</li>
