@@ -55,7 +55,7 @@ namespace TitanFramework
             TitanDiet d = null;
             foreach (var t in traits)
             {
-                var p = t.def.diet;
+                var p = t.Diet;
                 if (p == null) continue;
                 d = d ?? new TitanDiet();
                 d.add |= p.addFoodTypes;

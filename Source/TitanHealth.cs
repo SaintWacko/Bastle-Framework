@@ -28,9 +28,9 @@ namespace TitanFramework
             foreach (var t in traits)
             {
                 if (discoveredOnly && !t.discovered) continue;
-                points += TitanFrameworkMod.Settings.healthPerPoint * t.def.pointCost;
+                points += TitanFrameworkMod.Settings.healthPerPoint * t.Points;
                 // Floored per trait, so one harsh trait can't wipe out every other bonus.
-                scale *= Mathf.Max(MinFactor, t.def.healthScaleFactor);
+                scale *= Mathf.Max(MinFactor, t.HealthScaleFactor);
             }
             return Mathf.Max(MinFactor, Mathf.Max(0f, 1f + points) * scale);
         }

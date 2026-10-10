@@ -23,6 +23,25 @@ namespace TitanFramework
         public float mysteryTradeBonus = 0.25f;
         public float healthPerPoint = 0.1f;
 
+        // Generation and rarity (indexed by TitanRarity)
+        public static readonly float[] DefaultRarityWeights = { 50f, 25f, 12f, 5f, 3f };
+        public static readonly float[] DefaultRarityStrength = { 1f, 1.25f, 1.5f, 2f, 3f };
+        public static readonly float[] DefaultRarityPoints = { 1f, 2f, 4f, 7f, 11f };
+        public static readonly FloatRange DefaultPointTarget = new FloatRange(2f, 6f);
+        public float[] rarityWeights = (float[])DefaultRarityWeights.Clone();
+        public float[] rarityStrength = (float[])DefaultRarityStrength.Clone();
+        public float[] rarityPoints = (float[])DefaultRarityPoints.Clone();
+        public FloatRange pointTarget = DefaultPointTarget;
+        public float overshootStrictness = 1f;
+        public int maxTraits = 5;
+        public float drawbackChance = 0.3f;
+        public int maxDrawbacks = 1;
+        public float rarityShiftChance = 0.2f;
+
+        /// <summary>Bumped whenever the settings are saved, so caches built from them
+        /// (each trait's scaled stage) know to rebuild.</summary>
+        public static int Version;
+
         // Materials
         public float materialArmorFactor = 0.5f;
         public float materialDamageStrength = 1f;
@@ -45,6 +64,15 @@ namespace TitanFramework
             valueFlatPerPoint = 100f;
             mysteryTradeBonus = 0.25f;
             healthPerPoint = 0.1f;
+            rarityWeights = (float[])DefaultRarityWeights.Clone();
+            rarityStrength = (float[])DefaultRarityStrength.Clone();
+            rarityPoints = (float[])DefaultRarityPoints.Clone();
+            pointTarget = DefaultPointTarget;
+            overshootStrictness = 1f;
+            maxTraits = 5;
+            drawbackChance = 0.3f;
+            maxDrawbacks = 1;
+            rarityShiftChance = 0.2f;
             materialArmorFactor = 0.5f;
             materialDamageStrength = 1f;
             fireWeaknessStrength = 1f;
@@ -68,6 +96,23 @@ namespace TitanFramework
             Scribe_Values.Look(ref valueFlatPerPoint, "valueFlatPerPoint", 100f);
             Scribe_Values.Look(ref mysteryTradeBonus, "mysteryTradeBonus", 0.25f);
             Scribe_Values.Look(ref healthPerPoint, "healthPerPoint", 0.1f);
+            for (int i = 0; i < TitanRarityUtility.Count; i++)
+            {
+                var r = (TitanRarity)i;
+                Scribe_Values.Look(ref rarityWeights[i], "rarityWeight" + r, DefaultRarityWeights[i]);
+                Scribe_Values.Look(ref rarityStrength[i], "rarityStrength" + r, DefaultRarityStrength[i]);
+                Scribe_Values.Look(ref rarityPoints[i], "rarityPoints" + r, DefaultRarityPoints[i]);
+                rarityWeights[i] = Mathf.Max(0f, rarityWeights[i]);
+                rarityStrength[i] = Mathf.Max(0.1f, rarityStrength[i]);
+                rarityPoints[i] = Mathf.Max(0.1f, rarityPoints[i]);
+            }
+            Scribe_Values.Look(ref pointTarget, "pointTarget", DefaultPointTarget);
+            Scribe_Values.Look(ref overshootStrictness, "overshootStrictness", 1f);
+            Scribe_Values.Look(ref maxTraits, "maxTraits", 5);
+            Scribe_Values.Look(ref drawbackChance, "drawbackChance", 0.3f);
+            Scribe_Values.Look(ref maxDrawbacks, "maxDrawbacks", 1);
+            Scribe_Values.Look(ref rarityShiftChance, "rarityShiftChance", 0.2f);
+            Version++;
             Scribe_Values.Look(ref materialArmorFactor, "materialArmorFactor", 0.5f);
             Scribe_Values.Look(ref materialDamageStrength, "materialDamageStrength", 1f);
             Scribe_Values.Look(ref fireWeaknessStrength, "fireWeaknessStrength", 1f);

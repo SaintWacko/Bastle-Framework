@@ -85,12 +85,14 @@ namespace TitanFramework
         /// Notify_PawnPostApplyDamage or PostDiscovered: vanilla is iterating the
         /// pawn's hediffs at that point and adding or removing one throws. Queue the
         /// change and apply it from TickInterval instead.</summary>
-        public static TitanTrait AddTrait(Pawn pawn, TitanTraitDef def, bool discovered = false, bool force = false)
+        /// <param name="rarity">For traits that scale with rarity; clamped to what the
+        /// trait can be. Null: the def's own rarity.</param>
+        public static TitanTrait AddTrait(Pawn pawn, TitanTraitDef def, bool discovered = false, bool force = false, TitanRarity? rarity = null)
         {
             if (pawn?.health == null || def == null) return null;
             if (!force && !CanAddTrait(pawn, def)) return null;
             if (force && GetTitan(pawn)?.HasTrait(def) == true) return null;
-            return GetOrMakeTitan(pawn).AddTraitInternal(def, discovered);
+            return GetOrMakeTitan(pawn).AddTraitInternal(def, discovered, rarity: rarity);
         }
 
         public static bool RemoveTrait(Pawn pawn, TitanTraitDef def)
@@ -116,32 +118,16 @@ namespace TitanFramework
             foreach (var t in titan.TraitsForReading.ToList()) t.Discover(notify);
         }
 
-        /// <summary>
-        /// Rolls traits weighted by commonality, spending pointBudget. Keeps rolling
-        /// while points remain and something fits; a drawback (negative cost) gives
-        /// points back. Existing traits on the pawn are kept and still block
-        /// conflicting rolls, but do not count against the budget.
-        /// </summary>
-        /// <param name="validator">Extra filter, e.g. d => d.tags.Contains("Fire").</param>
-        public static List<TitanTrait> RollTraits(Pawn pawn, float pointBudget, int maxTraits = 99,
-            Predicate<TitanTraitDef> validator = null)
-        {
-            var added = new List<TitanTrait>();
-            float remaining = pointBudget;
-            var all = DefDatabase<TitanTraitDef>.AllDefsListForReading;
-            while (remaining > 0f && added.Count < maxTraits)
-            {
-                float budget = remaining;
-                var candidates = all.Where(d => d.commonality > 0f && d.pointCost <= budget
-                    && (validator == null || validator(d)) && CanAddTrait(pawn, d));
-                if (!candidates.TryRandomElementByWeight(d => d.commonality, out var pick)) break;
-                var trait = AddTrait(pawn, pick);
-                if (trait == null) break;
-                added.Add(trait);
-                remaining -= pick.pointCost;
-            }
-            return added;
-        }
+        /// <summary>Rolls traits until the creature's new traits reach a point target
+        /// rolled from request.points (the settings' range by default). The target is a
+        /// minimum; see TitanRolling for how it is met. Traits the creature already has
+        /// are kept and block conflicting rolls, but don't count toward the target.</summary>
+        public static List<TitanTrait> RollTraits(Pawn pawn, TitanRollRequest request = null)
+            => TitanRolling.Roll(pawn, request ?? new TitanRollRequest(), null);
+
+        /// <summary>As RollTraits(pawn, request), with a fixed point target.</summary>
+        public static List<TitanTrait> RollTraits(Pawn pawn, float points, TitanRollRequest request = null)
+            => TitanRolling.Roll(pawn, request ?? new TitanRollRequest(), points);
 
         /// <summary>
         /// Gives a newborn traits from its parents. Each heritable trait carried by a
@@ -162,6 +148,7 @@ namespace TitanFramework
 
             var carriers = new Dictionary<TitanTraitDef, int>();
             var known = new HashSet<TitanTraitDef>();
+            var rarities = new Dictionary<TitanTraitDef, List<TitanRarity>>();
             void Count(Hediff_Titan t)
             {
                 if (t == null) return;
@@ -172,6 +159,8 @@ namespace TitanFramework
                     carriers.TryGetValue(tr.def, out int n);
                     carriers[tr.def] = n + 1;
                     if (tr.discovered) known.Add(tr.def);
+                    if (!rarities.TryGetValue(tr.def, out var list)) rarities[tr.def] = list = new List<TitanRarity>();
+                    list.Add(tr.Rarity);
                 }
             }
             Count(m);
@@ -183,8 +172,18 @@ namespace TitanFramework
             {
                 float chance = 1f - Mathf.Pow(1f - Mathf.Clamp01(kv.Key.inheritChance * TitanFrameworkMod.Settings.inheritChanceFactor), kv.Value);
                 if (Rand.Chance(chance))
-                    AddTrait(child, kv.Key, discovered: known.Contains(kv.Key));
+                    AddTrait(child, kv.Key, discovered: known.Contains(kv.Key), rarity: InheritedRarity(kv.Key, rarities[kv.Key]));
             }
+        }
+
+        /// <summary>A carrying parent's rarity (either one's when both carry it), shifted
+        /// one step up or down at the settings' chance. Clamped to what the trait can be.</summary>
+        private static TitanRarity InheritedRarity(TitanTraitDef def, List<TitanRarity> parents)
+        {
+            int r = (int)parents.RandomElement();
+            if (def.scalesWithRarity && Rand.Chance(TitanFrameworkMod.Settings.rarityShiftChance))
+                r += Rand.Bool ? 1 : -1;
+            return def.ClampRarity(TitanRarityUtility.Clamp(r));
         }
 
         // ---- materials -----------------------------------------------------------

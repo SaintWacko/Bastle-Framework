@@ -12,7 +12,7 @@
     <description>Its body burns without being consumed. Fire barely hurts it and it shrugs off the cold.</description>
     <visible>true</visible>
     <namePrefix>flaming</namePrefix>
-    <pointCost>2</pointCost>
+    <rarity>Uncommon</rarity>
     <exclusionTags><li>TF_Element</li></exclusionTags>
     <tags><li>Fire</li></tags>
     <!-- A faint warm tint, and flame licks, embers and smoke rising off it.
@@ -51,7 +51,8 @@
     <label>venomous</label>
     <description>Its bite carries a poison that builds up in the victim's body.</description>
     <namePrefix>venomous</namePrefix>
-    <pointCost>2</pointCost>
+    <!-- Scales with rarity; from Epic up its fangs are replaced by stronger ones. -->
+    <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen>
       <li>UsesGrantedVerb</li>
       <li>Dies</li>
@@ -59,6 +60,17 @@
     <hediffs>
       <li><hediff>TF_Example_VenomFangs</hediff></li>
     </hediffs>
+    <rarityOverrides>
+      <li>
+        <minRarity>Epic</minRarity>
+        <label>virulent</label>
+        <namePrefix>virulent</namePrefix>
+        <description>Its bite carries a virulent poison that overwhelms the victim within moments.</description>
+        <hediffs>
+          <li><hediff>TF_Example_VirulentFangs</hediff></li>
+        </hediffs>
+      </li>
+    </rarityOverrides>
   </TitanFramework.TitanTraitDef>
 
   <!-- Hidden defence: revealed when it takes a hit. -->
@@ -68,7 +80,8 @@
     <description>Its hide turns blades and dulls blows.</description>
     <namePrefix>ironhide</namePrefix>
     <nameOrder>10</nameOrder>
-    <pointCost>2</pointCost>
+    <!-- Armor grows with rarity: x1.25 at Uncommon up to x3 at Legendary. -->
+    <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags><li>TF_Toughness</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
@@ -85,7 +98,7 @@
     <label>of the deep</label>
     <description>It regrows lost flesh with unnatural speed.</description>
     <nameSuffix>of the deep</nameSuffix>
-    <pointCost>3</pointCost>
+    <rarity>Rare</rarity>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
       <regeneration>60</regeneration>
@@ -99,7 +112,6 @@
     <label>rockgut</label>
     <description>It grinds stone in its gut and lives on it when there is nothing better.</description>
     <namePrefix>rockgut</namePrefix>
-    <pointCost>1</pointCost>
     <visible>true</visible>
     <diet>
       <extraFoods>
@@ -118,7 +130,6 @@
     <label>bloodthirsty</label>
     <description>It has lost its taste for plants and hunts for meat instead.</description>
     <namePrefix>bloodthirsty</namePrefix>
-    <pointCost>1</pointCost>
     <visible>true</visible>
     <requiresFlesh>true</requiresFlesh>
     <diet>
@@ -136,7 +147,7 @@
     <namePrefix>brittle</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
-    <commonality>0.5</commonality>
+    <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags><li>TF_Toughness</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
@@ -284,6 +295,32 @@
     </comps>
   </HediffDef>
 
+  <HediffDef>
+    <defName>TF_Example_VirulentFangs</defName>
+    <label>virulent fangs</label>
+    <description>Fangs that inject a fast, overwhelming poison.</description>
+    <hediffClass>HediffWithComps</hediffClass>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <stages>
+      <li><becomeVisible>false</becomeVisible></li>
+    </stages>
+    <comps>
+      <li Class="HediffCompProperties_VerbGiver">
+        <tools>
+          <li>
+            <label>virulent fangs</label>
+            <capacities><li>ToxicBite</li></capacities>
+            <power>18</power>
+            <cooldownTime>2</cooldownTime>
+            <chanceFactor>3</chanceFactor>
+          </li>
+        </tools>
+      </li>
+    </comps>
+  </HediffDef>
+
   <!-- Hidden ability, cast by the AI in combat: revealed the first time it breathes fire.
        Biotech only (it borrows vanilla's fire spew effect). -->
   <TitanFramework.TitanTraitDef MayRequire="Ludeon.RimWorld.Biotech">
@@ -291,7 +328,7 @@
     <label>firebreather</label>
     <description>It can spit a stream of burning bile at anything that threatens it.</description>
     <nameSuffix>the firebreather</nameSuffix>
-    <pointCost>3</pointCost>
+    <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
     <discoverWhen>
       <li>UsesGrantedAbility</li>

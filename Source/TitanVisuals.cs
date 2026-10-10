@@ -103,11 +103,11 @@ namespace TitanFramework
             foreach (var trait in titan.TraitsForReading)
             {
                 if (!trait.VisualsActive) continue;
-                if (trait.def.flames != null)
-                    foreach (var flames in trait.def.flames)
+                if (trait.Flames != null)
+                    foreach (var flames in trait.Flames)
                         yield return (new PawnRenderNode_TitanFlames(pawn, flames.Props, tree), null);
-                if (trait.def.overlays == null) continue;
-                foreach (var overlay in trait.def.overlays)
+                if (trait.Overlays == null) continue;
+                foreach (var overlay in trait.Overlays)
                 {
                     yield return (new PawnRenderNode_TitanOverlay(pawn, overlay.PropsFor(false), tree), null);
                     if (pawn.RaceProps.Humanlike && overlay.includeHead && pawn.health.hediffSet.HasHead)

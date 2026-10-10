@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace TitanFramework
@@ -23,12 +25,77 @@ namespace TitanFramework
 
         public Pawn Pawn => titan?.pawn;
 
+        // Saved as an int; -1 (saves from before rarity) means the def's own rarity.
+        private int rarityValue = -1;
+
+        /// <summary>The rarity this trait rolled at. Only scaling traits differ from the def's.</summary>
+        public TitanRarity Rarity
+        {
+            get => rarityValue < 0 ? def.rarity : def.ClampRarity((TitanRarity)rarityValue);
+            internal set { rarityValue = (int)def.ClampRarity(value); scaledStage = null; }
+        }
+
+        /// <summary>The rarity override in effect, or null.</summary>
+        public TitanRarityOverride Override => def.OverrideAt(Rarity);
+
+        [Unsaved] private HediffStage scaledStage;
+        [Unsaved] private int scaledFor = -1;
+
+        /// <summary>This trait's stage at its rarity (override applied, numbers scaled).
+        /// Rebuilt when the settings change.</summary>
+        public HediffStage Stage
+        {
+            get
+            {
+                if (scaledFor != TitanSettings.Version || scaledStage == null)
+                {
+                    scaledStage = TitanStageScaler.Scale(def.StageAt(Rarity), def.StrengthAt(Rarity));
+                    scaledFor = TitanSettings.Version;
+                }
+                return scaledStage;
+            }
+        }
+
+        public float Points => def.PointsAt(Rarity);
+
+        public float HealthScaleFactor
+        {
+            get
+            {
+                float f = Override?.healthScaleFactor ?? def.healthScaleFactor;
+                return f == 1f ? 1f : Mathf.Max(0f, 1f + (f - 1f) * def.StrengthAt(Rarity));
+            }
+        }
+
+        public float? MarketValuePercent => Override?.marketValuePercent ?? def.marketValuePercent;
+        public float? MarketValueOffset => Override?.marketValueOffset ?? def.marketValueOffset;
+
+        public List<TitanTraitHediff> Hediffs => Override?.hediffs ?? def.hediffs;
+        public List<AbilityDef> Abilities => Override?.abilities ?? def.abilities;
+        public ThinkTreeDef AiThinkTree => Override?.aiThinkTree ?? def.aiThinkTree;
+        public TitanDietProps Diet => Override?.diet ?? def.diet;
+        public List<TitanOverlay> Overlays => Override?.overlays ?? def.overlays;
+        public List<EffecterDef> Effecters => Override?.effecters ?? def.effecters;
+        public List<TitanFlames> Flames => Override?.flames ?? def.flames;
+        public TitanGlow Glow => Override?.glow ?? def.glow;
+        public string NamePrefix => Override?.namePrefix ?? def.namePrefix;
+        public string NameSuffix => Override?.nameSuffix ?? def.nameSuffix;
+
+        public bool HasVisuals => !Overlays.NullOrEmpty() || !Effecters.NullOrEmpty() || !Flames.NullOrEmpty() || Glow != null;
+        public bool HasRenderVisuals => !Overlays.NullOrEmpty() || !Flames.NullOrEmpty();
+
         /// <summary>Whether this trait's overlays and effecters should show right now.</summary>
-        public virtual bool VisualsActive => def.HasVisuals && (discovered || def.showVisualsWhenHidden);
+        public virtual bool VisualsActive => HasVisuals && (discovered || def.showVisualsWhenHidden);
 
-        public virtual string Label => discovered ? def.LabelCap.ToString() : "TF_UnknownTrait".Translate().ToString();
+        /// <summary>Label without the rarity ("Flaming").</summary>
+        public string BaseLabelCap => (Override?.label ?? def.label).CapitalizeFirst();
 
-        public virtual string Description => discovered ? def.description : "TF_UnknownTraitDesc".Translate().ToString();
+        /// <summary>"Flaming (rare)" once discovered, "???" before.</summary>
+        public virtual string Label => discovered
+            ? "TF_TraitWithRarity".Translate(BaseLabelCap, Rarity.Label()).ToString()
+            : "TF_UnknownTrait".Translate().ToString();
+
+        public virtual string Description => discovered ? (Override?.description ?? def.description) : "TF_UnknownTraitDesc".Translate().ToString();
 
         /// <summary>Reveal this trait. With notify, the player gets a message (when the
         /// def allows it). Returns true if it was hidden before.</summary>
@@ -40,7 +107,7 @@ namespace TitanFramework
             titan?.Notify_TraitDiscovered(this);
             if (notify && def.discoveryMessage && TitanFrameworkMod.Settings.discoveryMessages && Pawn != null && Pawn.Spawned)
             {
-                Messages.Message("TF_TraitDiscovered".Translate(oldLabel, def.label),
+                Messages.Message("TF_TraitDiscovered".Translate(oldLabel, Label),
                     Pawn, MessageTypeDefOf.NeutralEvent, historical: false);
             }
             PostDiscovered();
@@ -80,6 +147,7 @@ namespace TitanFramework
             Scribe_Defs.Look(ref def, "def");
             Scribe_Values.Look(ref discovered, "discovered");
             Scribe_Values.Look(ref fromMaterial, "fromMaterial");
+            Scribe_Values.Look(ref rarityValue, "rarity", -1);
         }
     }
 }

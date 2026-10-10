@@ -23,12 +23,13 @@ namespace TitanFramework
         public const float MinFractionOfBase = 0.1f;
 
         /// <summary>One trait's price on a creature with this base value.</summary>
-        public static float TraitValue(TitanTraitDef def, float baseValue)
+        public static float TraitValue(TitanTrait t, float baseValue)
         {
-            if (def.marketValuePercent != null || def.marketValueOffset != null)
-                return baseValue * (def.marketValuePercent ?? 0f) + (def.marketValueOffset ?? 0f);
+            float? pct = t.MarketValuePercent, flat = t.MarketValueOffset;
+            if (pct != null || flat != null)
+                return (baseValue * (pct ?? 0f) + (flat ?? 0f)) * t.def.ValueScaleAt(t.Rarity);
             var s = TitanFrameworkMod.Settings;
-            return def.pointCost * (baseValue * s.valuePercentPerPoint + s.valueFlatPerPoint);
+            return t.Points * (baseValue * s.valuePercentPerPoint + s.valueFlatPerPoint);
         }
 
         /// <summary>Sum of trait prices. includeHidden=false leaves undiscovered traits out.</summary>
@@ -36,7 +37,7 @@ namespace TitanFramework
         {
             float sum = 0f;
             foreach (var t in titan.Traits)
-                if (includeHidden || t.discovered) sum += TraitValue(t.def, baseValue);
+                if (includeHidden || t.discovered) sum += TraitValue(t, baseValue);
             return sum;
         }
 
@@ -51,7 +52,7 @@ namespace TitanFramework
             if (titan == null) return 0f;
             float sum = 0f;
             foreach (var t in titan.Traits)
-                if (includeHidden || t.discovered) sum += t.def.pointCost;
+                if (includeHidden || t.discovered) sum += t.Points;
             return sum;
         }
 

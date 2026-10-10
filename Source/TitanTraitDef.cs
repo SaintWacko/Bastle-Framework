@@ -49,11 +49,27 @@ namespace TitanFramework
 
         // ---- generation ----------------------------------------------------------
 
-        /// <summary>Relative weight when rolling. 0 = never rolled, only added by code.</summary>
+        /// <summary>Relative weight among the traits that can roll at the same rarity.
+        /// 0 = never rolled, only added by code.</summary>
         public float commonality = 1f;
 
-        /// <summary>Budget cost. Negative values are drawbacks that give points back.</summary>
-        public float pointCost = 1f;
+        /// <summary>The trait's rarity. With scalesWithRarity it's the lowest it rolls at.</summary>
+        public TitanRarity rarity = TitanRarity.Common;
+
+        /// <summary>The trait can also roll at every higher rarity (up to MaxRarity), with
+        /// its stage numbers and health factor scaled by the rarity strength table in the
+        /// mod settings, relative to its own rarity. Its points and market value follow
+        /// the rarity points table. rarityOverrides can change anything else.</summary>
+        public bool scalesWithRarity;
+
+        /// <summary>Changes at higher rarities: a better ability, a different look.</summary>
+        public List<TitanRarityOverride> rarityOverrides;
+
+        /// <summary>Points at the trait's own rarity, counted against the point target when
+        /// rolling, and the base of its health and market value. Unset: the rarity's value
+        /// from the mod settings. Negative: a drawback, which gives points back and only
+        /// rolls through the drawback chance.</summary>
+        public float pointCost = float.NaN;
 
         /// <summary>Market value added, as a fraction of the creature's own value (0.3 =
         /// +30%). Setting this or marketValueOffset replaces the price the trait would
@@ -168,6 +184,85 @@ namespace TitanFramework
         public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty() || !flames.NullOrEmpty() || glow != null;
         public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty();
 
+        // ---- rarity --------------------------------------------------------------
+
+        public float BasePoints => float.IsNaN(pointCost) ? rarity.Points() : pointCost;
+
+        public bool IsDrawback => BasePoints < 0f;
+
+        /// <summary>Points when rolled at a rarity: a scaling trait follows the settings'
+        /// points table relative to its own rarity.</summary>
+        public float PointsAt(TitanRarity at)
+        {
+            float basePts = BasePoints;
+            if (!scalesWithRarity || at == rarity) return basePts;
+            float own = rarity.Points();
+            return own > 0.0001f ? basePts * at.Points() / own : basePts;
+        }
+
+        /// <summary>A fixed price (marketValuePercent/Offset) grows with the points.</summary>
+        public float ValueScaleAt(TitanRarity at)
+        {
+            float own = BasePoints;
+            return scalesWithRarity && Math.Abs(own) > 0.0001f ? PointsAt(at) / own : 1f;
+        }
+
+        /// <summary>The override in effect at a rarity, or null.</summary>
+        public TitanRarityOverride OverrideAt(TitanRarity at)
+        {
+            if (rarityOverrides == null) return null;
+            TitanRarityOverride best = null;
+            foreach (var o in rarityOverrides)
+                if (o.minRarity <= at && (best == null || o.minRarity > best.minRarity)) best = o;
+            return best;
+        }
+
+        /// <summary>Strength multiplier on the stage at a rarity, relative to the rarity the
+        /// stage was written for (the trait's own, or the override's minRarity).</summary>
+        public float StrengthAt(TitanRarity at)
+        {
+            if (!scalesWithRarity) return 1f;
+            var o = OverrideAt(at);
+            TitanRarity from = o?.stage != null ? o.minRarity : rarity;
+            float baseMult = from.Strength();
+            return baseMult > 0.0001f ? at.Strength() / baseMult : 1f;
+        }
+
+        public HediffStage StageAt(TitanRarity at) => OverrideAt(at)?.stage ?? stage;
+
+        // A rarity is offered only while no factor would be pushed onto the floor.
+        private bool FitsAt(TitanRarity at)
+        {
+            float s = StrengthAt(at);
+            if (1f + (TitanStageScaler.LowestFactor(StageAt(at)) - 1f) * s < TitanStageScaler.MinFactor) return false;
+            float h = OverrideAt(at)?.healthScaleFactor ?? healthScaleFactor;
+            return h >= 1f || 1f + (h - 1f) * s >= TitanStageScaler.MinFactor;
+        }
+
+        public TitanRarity MaxRarity
+        {
+            get
+            {
+                if (!scalesWithRarity) return rarity;
+                var best = rarity;
+                for (var r = rarity + 1; r <= TitanRarity.Legendary; r++)
+                {
+                    if (!FitsAt(r)) break;
+                    best = r;
+                }
+                return best;
+            }
+        }
+
+        public bool CanAppearAt(TitanRarity at) => scalesWithRarity ? at >= rarity && at <= MaxRarity : at == rarity;
+
+        public TitanRarity ClampRarity(TitanRarity at)
+        {
+            if (!scalesWithRarity) return rarity;
+            var max = MaxRarity;
+            return at < rarity ? rarity : (at > max ? max : at);
+        }
+
         // ---- cached --------------------------------------------------------------
 
         [Unsaved] private bool? ticksCached;
@@ -222,6 +317,18 @@ namespace TitanFramework
             if (traitClass == null || !typeof(TitanTrait).IsAssignableFrom(traitClass))
                 yield return $"traitClass {traitClass} is not a TitanTrait";
             if (commonality < 0f) yield return "commonality is negative";
+            if (rarityOverrides != null)
+            {
+                if (!scalesWithRarity) yield return "has rarityOverrides but doesn't scale with rarity, so it only ever rolls at its own rarity and the overrides are never used";
+                foreach (var o in rarityOverrides)
+                {
+                    if (o.minRarity <= rarity) yield return $"rarityOverride at {o.minRarity} is not above the trait's own rarity ({rarity}); set the base fields instead";
+                    if (o.hediffs != null && !visible)
+                        foreach (var h in o.hediffs)
+                            if (h.hediff != null && (h.hediff.stages.NullOrEmpty() || h.hediff.stages.Any(s => s.becomeVisible)))
+                                yield return $"rarityOverride hediff {h.hediff.defName} will show in the health tab before the trait is discovered. Give it a stage with <becomeVisible>false</becomeVisible>.";
+                }
+            }
             if (hediffs != null)
                 foreach (var h in hediffs)
                 {

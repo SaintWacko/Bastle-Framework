@@ -71,4 +71,12 @@
   <TF_Settings_EatMaterialHint>A hungry material creature with no other food eats its own material: {0} units fill 1 nutrition. Tamed ones eat from your stockpiles unless the stack is forbidden; wild ones eat any they find.</TF_Settings_EatMaterialHint>
   <TF_Settings_EatMaterialOffHint>Material creatures don't eat their material.</TF_Settings_EatMaterialOffHint>
   <TF_Settings_Reset>Reset to defaults</TF_Settings_Reset>
+
+  <TF_Rarity_Common>common</TF_Rarity_Common>
+  <TF_Rarity_Uncommon>uncommon</TF_Rarity_Uncommon>
+  <TF_Rarity_Rare>rare</TF_Rarity_Rare>
+  <TF_Rarity_Epic>epic</TF_Rarity_Epic>
+  <TF_Rarity_Legendary>legendary</TF_Rarity_Legendary>
+  <!-- {0}: trait label. {1}: rarity. -->
+  <TF_TraitWithRarity>{0} ({1})</TF_TraitWithRarity>
 </LanguageData>
