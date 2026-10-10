@@ -28,15 +28,18 @@ namespace TitanFramework
         }
     }
 
-    /// <summary>Deflection (TitanTraitDef.deflect). Runs after vanilla's own checks
-    /// (shield belts absorb first). Only on damage, so a plain lookup is fine.</summary>
-    [HarmonyPatch(typeof(Pawn), nameof(Pawn.PreApplyDamage))]
-    public static class Patch_Pawn_PreApplyDamage
+    /// <summary>Deflection (TitanTraitDef.deflect). Pawn.PreApplyDamage calls this base
+    /// method (thing comps) first and only runs the health tracker's step when nothing
+    /// absorbed the hit, so a deflected hit causes no stagger, stun, clamor or thoughts.
+    /// It also comes before shield belts, which are checked in that later step. Runs for
+    /// every damaged thing with comps, so non-pawns leave after one type check.</summary>
+    [HarmonyPatch(typeof(ThingWithComps), nameof(ThingWithComps.PreApplyDamage))]
+    public static class Patch_ThingWithComps_PreApplyDamage
     {
-        public static void Postfix(Pawn __instance, ref DamageInfo dinfo, ref bool absorbed)
+        public static void Postfix(ThingWithComps __instance, ref DamageInfo dinfo, ref bool absorbed)
         {
-            if (absorbed) return;
-            var titan = TitanUtility.GetTitan(__instance);
+            if (absorbed || !(__instance is Pawn pawn)) return;
+            var titan = TitanUtility.GetTitan(pawn);
             if (titan != null && TitanCombatUtility.TryDeflect(titan, dinfo)) absorbed = true;
         }
     }

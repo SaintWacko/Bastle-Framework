@@ -178,7 +178,7 @@ namespace TitanFramework
             foreach (var p in pawn.Map.mapPawns.AllPawnsSpawned.ToList())
             {
                 if (p == pawn || p.def != pawn.def || p.Faction != pawn.Faction) continue;
-                if (p.Dead || p.Downed || p.Drafted || p.InAggroMentalState || p.roping?.IsRoped == true) continue;
+                if (p.Dead || p.Downed || p.Drafted || p.InMentalState || p.roping?.IsRoped == true) continue;
                 if (!p.Position.InHorDistOf(pawn.Position, radius)) continue;
                 if (p.Faction == null && attacker.Faction != null)
                 {
@@ -279,6 +279,13 @@ namespace TitanFramework
         }
 
         public override string TipStringExtra => inLight ? "TF_LightsickActive".Translate().ToString() : null;
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            // Saved so the merged stage is right from the first tick after a load.
+            Scribe_Values.Look(ref inLight, "inLight");
+        }
     }
 
     // ---- Regrowth ----------------------------------------------------------------

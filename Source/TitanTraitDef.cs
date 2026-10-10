@@ -292,8 +292,6 @@ namespace TitanFramework
             return h >= 1f || Math.Abs(hs - 1f) < 0.0001f || 1f + (h - 1f) * hs >= TitanStageScaler.MinFactor;
         }
 
-        /// <summary>The highest rarity the trait can roll at. Lower ones may be skipped
-        /// (see FitsAt), so loop with CanAppearAt.</summary>
         /// <summary>Strength at a rarity relative to another (the rarity a value was written
         /// for). 1 for traits that don't scale.</summary>
         public float StrengthFrom(TitanRarity from, TitanRarity at)
@@ -312,6 +310,8 @@ namespace TitanFramework
             return StrengthFrom(o?.minRarity ?? rarity, at);
         }
 
+        /// <summary>The highest rarity the trait can roll at. Lower ones may be skipped
+        /// (see FitsAt), so loop with CanAppearAt.</summary>
         public TitanRarity MaxRarity
         {
             get

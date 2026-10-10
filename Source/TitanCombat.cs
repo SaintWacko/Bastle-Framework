@@ -85,10 +85,11 @@ namespace TitanFramework
             finally { retaliating = false; }
         }
 
-        /// <summary>Called from Pawn.PreApplyDamage. True when a trait deflected the hit.</summary>
+        /// <summary>Called from ThingWithComps.PreApplyDamage. True when a trait deflected the hit.</summary>
         internal static bool TryDeflect(Hediff_Titan titan, DamageInfo dinfo)
         {
-            if (dinfo.Def == null || !dinfo.Def.harmsHealth || dinfo.Def.consideredHelpful) return false;
+            // IgnoreArmor: surgery, executions and the like, which shield belts let through too.
+            if (dinfo.Def == null || !dinfo.Def.harmsHealth || dinfo.Def.consideredHelpful || dinfo.IgnoreArmor) return false;
             var traits = titan.TraitsForReading;
             for (int i = 0; i < traits.Count; i++)
             {

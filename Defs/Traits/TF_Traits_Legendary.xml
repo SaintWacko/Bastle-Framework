@@ -7,7 +7,7 @@
   <TitanFramework.TitanTraitDef>
     <defName>TF_Undying</defName>
     <label>undying</label>
-    <description>Death doesn't hold it. A few hours after it dies, it rises again, healed, unless its corpse has been destroyed or butchered first. Once it has risen, it stays dead if it dies again within fifteen days.</description>
+    <description>Death doesn't hold it. A few hours after it dies, it rises again, healed, unless its corpse has been destroyed or butchered first. It can only do this once every fifteen days.</description>
     <namePrefix>undying</namePrefix>
     <rarity>Epic</rarity>
     <traitClass>TitanFramework.TitanTrait_Undying</traitClass>
