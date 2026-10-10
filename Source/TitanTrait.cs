@@ -38,11 +38,14 @@ namespace TitanFramework
             internal set { rarityValue = (int)def.ClampRarity(value); scaledStage = null; }
         }
 
-        /// <summary>After load, before effects are synced: a def update may have changed
-        /// which rarities the trait can be.</summary>
+        /// <summary>After load: keeps the saved rarity inside the def's fixed bounds (a def
+        /// update may have raised its rarity or stopped it scaling). Deliberately not
+        /// MaxRarity, which follows the settings and would quietly lower saved traits.</summary>
         internal void ClampLoadedRarity()
         {
-            if (rarityValue >= 0) Rarity = (TitanRarity)rarityValue;
+            if (rarityValue < 0) return;
+            if (!def.scalesWithRarity) rarityValue = (int)def.rarity;
+            else rarityValue = Mathf.Clamp(rarityValue, (int)def.rarity, (int)TitanRarity.Legendary);
         }
 
         /// <summary>The rarity override in effect, or null.</summary>
