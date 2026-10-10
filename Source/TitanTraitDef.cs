@@ -279,13 +279,35 @@ namespace TitanFramework
         private bool ComputeFits(TitanRarity at)
         {
             float s = StrengthAt(at);
-            if (1f + (TitanStageScaler.LowestFactor(StageAt(at)) - 1f) * s < TitanStageScaler.MinFactor) return false;
-            float h = OverrideAt(at)?.healthScaleFactor ?? healthScaleFactor;
-            return h >= 1f || 1f + (h - 1f) * s >= TitanStageScaler.MinFactor;
+            // Unscaled (an override at its own rarity): the stage is used as written.
+            if (Math.Abs(s - 1f) >= 0.0001f
+                && 1f + (TitanStageScaler.LowestFactor(StageAt(at)) - 1f) * s < TitanStageScaler.MinFactor) return false;
+            var oh = OverrideAt(at)?.healthScaleFactor;
+            float h = oh ?? healthScaleFactor;
+            float hs = StrengthFor(oh != null, at);
+            return h >= 1f || Math.Abs(hs - 1f) < 0.0001f || 1f + (h - 1f) * hs >= TitanStageScaler.MinFactor;
         }
 
         /// <summary>The highest rarity the trait can roll at. Lower ones may be skipped
         /// (see FitsAt), so loop with CanAppearAt.</summary>
+        /// <summary>Strength at a rarity relative to another (the rarity a value was written
+        /// for). 1 for traits that don't scale.</summary>
+        public float StrengthFrom(TitanRarity from, TitanRarity at)
+        {
+            if (!scalesWithRarity) return 1f;
+            float b = from.Strength();
+            return b > 0.0001f ? at.Strength() / b : 1f;
+        }
+
+        /// <summary>Strength for a value that the override at this rarity either sets
+        /// (scaled from the override's minRarity) or leaves to the def (scaled from the
+        /// trait's own rarity).</summary>
+        public float StrengthFor(bool overrideSetsIt, TitanRarity at)
+        {
+            var o = overrideSetsIt ? OverrideAt(at) : null;
+            return StrengthFrom(o?.minRarity ?? rarity, at);
+        }
+
         public TitanRarity MaxRarity
         {
             get
@@ -311,8 +333,9 @@ namespace TitanFramework
         /// <summary>The trait's draw size factor at a rarity (1 = unchanged).</summary>
         public float DrawSizeAt(TitanRarity at)
         {
-            float f = OverrideAt(at)?.drawSizeFactor ?? drawSizeFactor;
-            return f == 1f ? 1f : UnityEngine.Mathf.Max(0.25f, 1f + (f - 1f) * StrengthAt(at));
+            var o = OverrideAt(at)?.drawSizeFactor;
+            float f = o ?? drawSizeFactor;
+            return f == 1f ? 1f : UnityEngine.Mathf.Max(0.25f, 1f + (f - 1f) * StrengthFor(o != null, at));
         }
 
         // ---- cached --------------------------------------------------------------
@@ -370,14 +393,21 @@ namespace TitanFramework
             else if (!allowOther) return false;
 
             if (requiresFlesh && !race.IsFlesh) return false;
-            if (products != null)
-            {
-                if (products.ChangesWool && pawn.def.GetCompProperties<CompProperties_Shearable>() == null) return false;
-                if (products.ChangesMilk && pawn.def.GetCompProperties<CompProperties_Milkable>() == null) return false;
-            }
+            if (!ProductsFit(products, pawn)) return false;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    if (!ProductsFit(o.products, pawn)) return false;
             if (race.baseBodySize < minBodySize || race.baseBodySize > maxBodySize) return false;
             if (allowedRaces != null && !allowedRaces.Contains(pawn.def)) return false;
             if (disallowedRaces != null && disallowedRaces.Contains(pawn.def)) return false;
+            return true;
+        }
+
+        private static bool ProductsFit(TitanProducts p, Pawn pawn)
+        {
+            if (p == null) return true;
+            if (p.ChangesWool && pawn.def.GetCompProperties<CompProperties_Shearable>() == null) return false;
+            if (p.ChangesMilk && pawn.def.GetCompProperties<CompProperties_Milkable>() == null) return false;
             return true;
         }
 

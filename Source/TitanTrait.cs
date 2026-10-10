@@ -81,14 +81,18 @@ namespace TitanFramework
         {
             get
             {
-                float f = Override?.healthScaleFactor ?? def.healthScaleFactor;
-                return f == 1f ? 1f : Mathf.Max(0f, 1f + (f - 1f) * def.StrengthAt(Rarity));
+                var o = Override?.healthScaleFactor;
+                float f = o ?? def.healthScaleFactor;
+                return f == 1f ? 1f : Mathf.Max(0f, 1f + (f - 1f) * def.StrengthFor(o != null, Rarity));
             }
         }
 
         public float DrawSizeFactor => def.DrawSizeAt(Rarity);
         public TitanRetaliation Retaliation => Override?.retaliation ?? def.retaliation;
         public TitanLifesteal Lifesteal => Override?.lifesteal ?? def.lifesteal;
+        /// <summary>Rarity strength for the retaliation amount (relative to where it was written).</summary>
+        public float RetaliationStrength => def.StrengthFor(Override?.retaliation != null, Rarity);
+        public float LifestealStrength => def.StrengthFor(Override?.lifesteal != null, Rarity);
         public TitanProducts Products => Override?.products ?? def.products;
 
         public List<TitanTraitHediff> Hediffs => Override?.hediffs ?? def.hediffs;

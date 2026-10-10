@@ -59,8 +59,9 @@ namespace TitanFramework
             attacker = dinfo.Instigator as Pawn;
             if (attacker == null || attacker == victim) return false;
             if (dinfo.Def.isRanged || dinfo.Def.isExplosive) return false;
-            return attacker.Spawned && victim.Spawned && attacker.Map == victim.Map
-                && attacker.Position.AdjacentTo8WayOrInside(victim.Position);
+            // Held position: a killing blow has already turned the victim into a corpse.
+            return attacker.Spawned && victim.MapHeld == attacker.Map
+                && attacker.Position.AdjacentTo8WayOrInside(victim.PositionHeld);
         }
 
         internal static void TryRetaliate(TitanTrait trait, DamageInfo dinfo)
@@ -84,7 +85,7 @@ namespace TitanFramework
             retaliating = true;
             try
             {
-                float amount = r.amount * trait.def.StrengthAt(trait.Rarity);
+                float amount = r.amount * trait.RetaliationStrength;
                 if (r.damageDef != null && amount > 0f)
                 {
                     var back = new DamageInfo(r.damageDef, amount, r.armorPenetration, -1f, victim,
@@ -103,10 +104,11 @@ namespace TitanFramework
         internal static float LifestealFrom(TitanTrait trait, Thing victim, DamageInfo dinfo, DamageWorker.DamageResult result)
         {
             var l = trait.Lifesteal;
-            if (l == null || result == null || result.totalDamageDealt <= 0f) return 0f;
+            // Thorns and burns dealt back don't feed it.
+            if (l == null || retaliating || result == null || result.totalDamageDealt <= 0f) return 0f;
             if (l.fleshOnly && !(victim is Pawn p && p.RaceProps.IsFlesh)) return 0f;
             if (l.meleeOnly && !(victim is Pawn vp && IsMelee(dinfo, vp, out _))) return 0f;
-            return result.totalDamageDealt * l.fraction * trait.def.StrengthAt(trait.Rarity);
+            return result.totalDamageDealt * l.fraction * trait.LifestealStrength;
         }
 
         /// <summary>Heals injuries, worst first, by up to this many hit points.</summary>
@@ -119,7 +121,7 @@ namespace TitanFramework
             {
                 Hediff_Injury worst = null;
                 for (int i = 0; i < hediffs.Count; i++)
-                    if (hediffs[i] is Hediff_Injury inj && !inj.IsPermanent() && (worst == null || inj.Severity > worst.Severity))
+                    if (hediffs[i] is Hediff_Injury inj && inj.Severity > 0f && !inj.IsPermanent() && (worst == null || inj.Severity > worst.Severity))
                         worst = inj;
                 if (worst == null) return;
                 float heal = Mathf.Min(amount, worst.Severity);

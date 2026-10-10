@@ -7,7 +7,8 @@
        TF_Speed        swift / sluggish / lame
        TF_Toughness    shelled / stonehide / brittle-type traits
        TF_Healing      regenerating and similar
-       TF_Hunger, TF_Rest  appetite and sleep, good or bad -->
+       TF_Hunger, TF_Rest  appetite and sleep, good or bad
+       TF_Size         colossal / elder -->
 
   <!-- Visible: identified from the start, and in the name from the start. -->
   <TitanFramework.TitanTraitDef>
