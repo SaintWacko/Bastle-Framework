@@ -851,10 +851,11 @@ namespace TitanFramework
         /// Also called by the non-food eating job, which doesn't go through Thing.Ingested.</summary>
         internal void Notify_Ate(ThingDef food)
         {
+            var removed = Diet?.remove ?? FoodTypeFlags.None;
             for (int i = 0; i < traits.Count; i++)
             {
                 var t = traits[i];
-                if (!t.discovered && t.def.DiscoveredBy(TitanDiscoveryTrigger.EatsAddedFood) && TitanDiet.TraitAdds(t.Diet, food, pawn))
+                if (!t.discovered && t.def.DiscoveredBy(TitanDiscoveryTrigger.EatsAddedFood) && TitanDiet.TraitAdds(t.Diet, food, pawn, removed))
                     t.TryDiscoverBy(TitanDiscoveryTrigger.EatsAddedFood);
             }
         }

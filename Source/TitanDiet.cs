@@ -111,13 +111,15 @@ namespace TitanFramework
 
         /// <summary>Whether this trait's diet is what lets the creature eat the food: an
         /// extraFoods thing, or an added food type its race doesn't already eat.</summary>
-        public static bool TraitAdds(TitanDietProps p, ThingDef food, Pawn pawn)
+        /// <param name="removed">The creature's merged diet's removed food types.</param>
+        public static bool TraitAdds(TitanDietProps p, ThingDef food, Pawn pawn, FoodTypeFlags removed)
         {
             if (p == null || food == null) return false;
             var type = food.ingestible?.foodType ?? FoodTypeFlags.None;
             // Ordinary food the race eats anyway says nothing about the trait. "Anyway" is
-            // after other traits' removals: an extraFoods entry can win back a removed type.
-            var raceTypes = pawn.RaceProps.foodType & ~(TitanUtility.PeekTitan(pawn)?.Diet?.remove ?? FoodTypeFlags.None);
+            // after every trait's removals (this one's included): an extraFoods entry can
+            // win back a removed type.
+            var raceTypes = pawn.RaceProps.foodType & ~removed;
             bool raceEats = food.IsNutritionGivingIngestible && (type & raceTypes) != 0;
             if (p.extraFoods != null && !raceEats)
                 foreach (var f in p.extraFoods)
