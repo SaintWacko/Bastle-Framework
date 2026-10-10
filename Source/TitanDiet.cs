@@ -115,8 +115,10 @@ namespace TitanFramework
         {
             if (p == null || food == null) return false;
             var type = food.ingestible?.foodType ?? FoodTypeFlags.None;
-            // Ordinary food the race eats anyway says nothing about the trait.
-            bool raceEats = food.IsNutritionGivingIngestible && (type & pawn.RaceProps.foodType) != 0;
+            // Ordinary food the race eats anyway says nothing about the trait. "Anyway" is
+            // after other traits' removals: an extraFoods entry can win back a removed type.
+            var raceTypes = pawn.RaceProps.foodType & ~(TitanUtility.PeekTitan(pawn)?.Diet?.remove ?? FoodTypeFlags.None);
+            bool raceEats = food.IsNutritionGivingIngestible && (type & raceTypes) != 0;
             if (p.extraFoods != null && !raceEats)
                 foreach (var f in p.extraFoods)
                     if (f.thing == food) return true;
