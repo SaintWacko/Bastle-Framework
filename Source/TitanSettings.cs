@@ -106,11 +106,12 @@ namespace TitanFramework
                 Scribe_Values.Look(ref rarityPoints[i], "rarityPoints" + r, DefaultRarityPoints[i]);
                 rarityWeights[i] = Mathf.Max(0f, rarityWeights[i]);
                 rarityStrength[i] = Mathf.Max(0.1f, rarityStrength[i]);
-                rarityPoints[i] = Mathf.Max(0.1f, rarityPoints[i]);
+                rarityPoints[i] = Mathf.Max(0.5f, rarityPoints[i]);
             }
             Scribe_Values.Look(ref pointTarget, "pointTarget", DefaultPointTarget);
             Scribe_Values.Look(ref overshootStrictness, "overshootStrictness", 1f);
             Scribe_Values.Look(ref maxTraits, "maxTraits", 5);
+            maxTraits = Mathf.Clamp(maxTraits, 1, 10);
             Scribe_Values.Look(ref drawbackChance, "drawbackChance", 0.3f);
             Scribe_Values.Look(ref maxDrawbacks, "maxDrawbacks", 1);
             Scribe_Values.Look(ref rarityShiftChance, "rarityShiftChance", 0.2f);
@@ -240,16 +241,24 @@ namespace TitanFramework
             Text.Font = GameFont.Small;
             l.Label("<b>" + titleKey.Translate() + "</b>");
             Hint(l, hintKey.Translate());
+            // One row per rarity: name, value, slider. Two rows each would not fit.
             for (int i = 0; i < TitanRarityUtility.Count; i++)
             {
-                var row = l.GetRect(Text.LineHeight);
+                var row = l.GetRect(24f);
+                l.Gap(2f);
+                var labelRect = new Rect(row.x, row.y, row.width * 0.3f, row.height);
+                var valueRect = new Rect(labelRect.xMax, row.y, row.width * 0.25f, row.height);
+                var sliderRect = new Rect(valueRect.xMax + 6f, row.y, row.xMax - valueRect.xMax - 6f, row.height);
+                Text.Anchor = TextAnchor.MiddleLeft;
                 GUI.color = RarityColors[i];
-                Widgets.Label(row.LeftPart(0.6f), ((TitanRarity)i).Label().CapitalizeFirst());
+                Widgets.Label(labelRect, ((TitanRarity)i).Label().CapitalizeFirst());
                 GUI.color = Color.white;
-                Text.Anchor = TextAnchor.UpperRight;
-                Widgets.Label(row.RightPart(0.4f), shown(values[i]));
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(valueRect, shown(values[i]));
+                Text.Font = GameFont.Small;
                 Text.Anchor = TextAnchor.UpperLeft;
-                values[i] = Mathf.Clamp(GenMath.RoundTo(l.Slider(values[i], min, max), roundTo), min, max);
+                float v = Widgets.HorizontalSlider(sliderRect, values[i], min, max, middleAlignment: true);
+                values[i] = Mathf.Clamp(GenMath.RoundTo(v, roundTo), min, max);
             }
             l.End();
         }
