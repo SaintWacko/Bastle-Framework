@@ -92,6 +92,30 @@ namespace TitanFramework
             }
         }
 
+        [Unsaved] private float healthFactor = 1f;
+        [Unsaved] private HediffStage healthBuiltFor;
+
+        /// <summary>Multiplier on the creature's health scale from every trait, hidden ones
+        /// included. Rebuilt with the stage, like Diet. Read by Pawn.HealthScale.</summary>
+        public float HealthFactor
+        {
+            get
+            {
+                if (stageDirty || cachedStage == null)
+                {
+                    cachedStage = BuildStage();
+                    stageDirty = false;
+                    cardStage = null;
+                }
+                if (healthBuiltFor != cachedStage)
+                {
+                    healthFactor = TitanHealth.Factor(traits);
+                    healthBuiltFor = cachedStage;
+                }
+                return healthFactor;
+            }
+        }
+
         /// <summary>Made of a material: no pain, blood or rot.</summary>
         public bool IsConstruct => material != null;
 
@@ -669,6 +693,8 @@ namespace TitanFramework
                         foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
                             if (e.ShouldDisplay())
                                 sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
+                    string health = TitanHealth.Describe(t);
+                    if (health != null) sb.AppendLine("  - " + health);
                     foreach (string line in TitanDiet.Describe(t.def.diet))
                         sb.AppendLine("  - " + line);
                     string extra = t.TipStringExtra;

@@ -56,6 +56,9 @@
   <TF_DietHunts>Hunts other creatures</TF_DietHunts>
   <TF_DietNoHunt>Never hunts</TF_DietNoHunt>
   <TF_DietCardNote>Changed by this creature's material and known titan traits.</TF_DietCardNote>
+  <TF_HealthLine>Health: {0}</TF_HealthLine>
+  <TF_Settings_HealthPerPoint>Health per trait point</TF_Settings_HealthPerPoint>
+  <TF_Settings_HealthPerPointHint>Each trait point makes every body part this much tougher. Traits can add more of their own.</TF_Settings_HealthPerPointHint>
   <TF_Card_Material>Material</TF_Card_Material>
   <TF_Card_Traits>Titan traits</TF_Card_Traits>
   <TF_Card_TraitsIntro>Rare traits this creature was born with. Unknown traits reveal themselves in time, and offspring can inherit any of them.</TF_Card_TraitsIntro>
