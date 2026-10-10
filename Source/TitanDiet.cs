@@ -118,7 +118,7 @@ namespace TitanFramework
             {
                 var labels = new List<string>();
                 foreach (var f in p.extraFoods)
-                    if (f.thing != null) labels.Add(f.thing.label);
+                    if (f.thing != null && (f.thing.IsNutritionGivingIngestible || f.nutrition > 0f)) labels.Add(f.thing.label);
                 if (labels.Count > 0) yield return "TF_DietAdds".Translate(string.Join(", ", labels));
             }
             if (!p.refuseFoods.NullOrEmpty())
