@@ -115,7 +115,9 @@ namespace TitanFramework
             var shooter = dinfo.Instigator;
             if (shooter == null || !shooter.Spawned || shooter.Map != pawn.Map) return;
             ThingDef proj = dinfo.Weapon?.Verbs?.FirstOrDefault(v => v.defaultProjectile != null)?.defaultProjectile;
-            if (proj == null) return;
+            // Modded weapons (Combat Extended) may fire something that isn't a vanilla
+            // Projectile; those hits are still deflected, just not sent back.
+            if (proj == null || !typeof(Projectile).IsAssignableFrom(proj.thingClass)) return;
             // Spawning mid-impact is what vanilla's own explosions do; the launch itself
             // waits a tick so nothing hits during this damage call.
             TitanScheduler.NextTick(() =>

@@ -81,19 +81,13 @@
   <TitanFramework.TitanTraitDef>
     <defName>TF_Kindling</defName>
     <label>kindling</label>
-    <description>Its wooden body takes 50% more damage from fire. While it burns, its melee strikes can set whatever they hit alight.</description>
+    <!-- The wood material itself already makes it weak to fire (Materials settings). -->
+    <description>Its wooden body burns easily, and while it burns, its melee strikes can set whatever they hit alight.</description>
     <visible>true</visible>
     <commonality>0</commonality>
     <pointCost>0</pointCost>
     <heritable>false</heritable>
     <traitClass>TitanFramework.TitanTrait_Kindling</traitClass>
-    <tags><li>Fire</li></tags>
-    <stage>
-      <damageFactors>
-        <Flame>1.5</Flame>
-        <Burn>1.5</Burn>
-      </damageFactors>
-    </stage>
   </TitanFramework.TitanTraitDef>
 
   <!-- Granite. -->

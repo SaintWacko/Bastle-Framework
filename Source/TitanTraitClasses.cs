@@ -179,6 +179,8 @@ namespace TitanFramework
             {
                 if (p == pawn || p.def != pawn.def || p.Faction != pawn.Faction) continue;
                 if (p.Dead || p.Downed || p.Drafted || p.InMentalState || p.roping?.IsRoped == true) continue;
+                // Never pull colonists, slaves or prisoners into a fight, whatever def reuses this.
+                if (p.RaceProps.Humanlike && (p.Faction == Faction.OfPlayer || p.IsPrisoner)) continue;
                 if (!p.Position.InHorDistOf(pawn.Position, radius)) continue;
                 if (p.Faction == null && attacker.Faction != null)
                 {
