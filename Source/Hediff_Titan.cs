@@ -837,6 +837,28 @@ namespace TitanFramework
             }
         }
 
+        /// <summary>Next tick a starving search for refused food may run (see
+        /// TitanDietUtility.TryDiscoverRefusal). Not saved: a reload only allows one early check.</summary>
+        [Unsaved] internal int nextRefusalCheck;
+
+        public override void Notify_IngestedThing(Thing thing, int amount)
+        {
+            base.Notify_IngestedThing(thing, amount);
+            if (thing != null) Notify_Ate(thing.def);
+        }
+
+        /// <summary>Reveals hidden traits whose diet is what let the creature eat this.
+        /// Also called by the non-food eating job, which doesn't go through Thing.Ingested.</summary>
+        internal void Notify_Ate(ThingDef food)
+        {
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var t = traits[i];
+                if (!t.discovered && t.def.DiscoveredBy(TitanDiscoveryTrigger.EatsAddedFood) && TitanDiet.TraitAdds(t.Diet, food, pawn))
+                    t.TryDiscoverBy(TitanDiscoveryTrigger.EatsAddedFood);
+            }
+        }
+
         public override void Notify_PawnUsedVerb(Verb verb, LocalTargetInfo target)
         {
             base.Notify_PawnUsedVerb(verb, target);

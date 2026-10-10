@@ -26,6 +26,12 @@ namespace TitanFramework
         TakesDamage,
         /// <summary>The creature dies.</summary>
         Dies,
+        /// <summary>The creature eats something only this trait's diet lets it eat (an
+        /// extraFoods thing, or a food type the trait adds that its race doesn't eat).</summary>
+        EatsAddedFood,
+        /// <summary>The creature is starving, finds nothing to eat, and food this trait's
+        /// diet refuses (one its race would otherwise eat) is within reach.</summary>
+        StarvesNearRefusedFood,
     }
 
     /// <summary>A hediff a trait adds to its creature, optionally on a body part.</summary>
@@ -280,6 +286,15 @@ namespace TitanFramework
                 }
                 return ticksCached.Value;
             }
+        }
+
+        public override void ResolveReferences()
+        {
+            base.ResolveReferences();
+            // Diet traits are revealed by what the creature eats unless the def says otherwise.
+            if (diet != null && !visible && discoverWhen == null)
+                discoverWhen = new List<TitanDiscoveryTrigger>
+                    { TitanDiscoveryTrigger.EatsAddedFood, TitanDiscoveryTrigger.StarvesNearRefusedFood };
         }
 
         public bool DiscoveredBy(TitanDiscoveryTrigger trigger)

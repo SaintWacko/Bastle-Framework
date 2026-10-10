@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -106,6 +107,27 @@ namespace TitanFramework
             foreach (var t in edible) labels.Add(t.label);
             foreach (var t in nonFood.Keys) labels.Add(t.label);
             return labels.Count > 0 ? string.Join(", ", labels) : null;
+        }
+
+        /// <summary>Whether this trait's diet is what lets the creature eat the food: an
+        /// extraFoods thing, or an added food type its race doesn't already eat.</summary>
+        public static bool TraitAdds(TitanDietProps p, ThingDef food, Pawn pawn)
+        {
+            if (p == null || food == null) return false;
+            if (p.extraFoods != null)
+                foreach (var f in p.extraFoods)
+                    if (f.thing == food) return true;
+            var type = food.ingestible?.foodType ?? FoodTypeFlags.None;
+            return (type & p.addFoodTypes & ~pawn.RaceProps.foodType) != 0;
+        }
+
+        /// <summary>Whether this trait's diet refuses a food the creature's race would eat.</summary>
+        public static bool TraitRefuses(TitanDietProps p, ThingDef food, Pawn pawn)
+        {
+            if (p == null || food?.ingestible == null) return false;
+            if ((food.ingestible.foodType & pawn.RaceProps.foodType) == 0) return false;
+            if (p.refuseFoods != null && p.refuseFoods.Contains(food)) return true;
+            return (food.ingestible.foodType & p.removeFoodTypes) != 0;
         }
 
         /// <summary>Tooltip lines for one trait's diet, without bullets.</summary>
@@ -237,11 +259,14 @@ namespace TitanFramework
         static void Postfix(JobGiver_GetFood __instance, Pawn pawn, ref Job __result)
         {
             if (__result != null || pawn?.Map == null) return;
-            var d = TitanUtility.PeekTitan(pawn)?.Diet;
-            if (d == null || d.nonFood.Count == 0) return;
+            var titan = TitanUtility.PeekTitan(pawn);
+            var d = titan?.Diet;
             var food = pawn.needs?.food;
-            if (food == null || food.CurCategory < MinCategory(__instance) || food.CurLevelPercentage > MaxLevelPercentage(__instance)) return;
-            __result = TitanDietUtility.EatNonFoodJob(pawn, d);
+            if (d == null || food == null) return;
+            if (d.nonFood.Count > 0 && food.CurCategory >= MinCategory(__instance) && food.CurLevelPercentage <= MaxLevelPercentage(__instance))
+                __result = TitanDietUtility.EatNonFoodJob(pawn, d);
+            if (__result == null && food.CurCategory == HungerCategory.Starving)
+                TitanDietUtility.TryDiscoverRefusal(pawn, titan);
         }
     }
 
@@ -261,6 +286,38 @@ namespace TitanFramework
         }
 
         internal static int MaxRegions(Pawn getter, bool forceScanWholeMap) => maxRegions(getter, forceScanWholeMap);
+
+        private const float RefusalRadius = 25f;
+        private const int RefusalCheckInterval = 250;
+
+        /// <summary>A starving titan that found nothing to eat: if food one of its hidden
+        /// traits refuses is within reach, that trait is revealed. Throttled per creature,
+        /// and only searched when some hidden trait could be revealed this way.</summary>
+        internal static void TryDiscoverRefusal(Pawn pawn, Hediff_Titan titan)
+        {
+            int now = Find.TickManager.TicksGame;
+            if (now < titan.nextRefusalCheck) return;
+            titan.nextRefusalCheck = now + RefusalCheckInterval;
+
+            List<TitanTrait> pending = null;
+            foreach (var t in titan.TraitsForReading)
+            {
+                var p = t.Diet;
+                if (t.discovered || p == null || !t.def.DiscoveredBy(TitanDiscoveryTrigger.StarvesNearRefusedFood)) continue;
+                if (p.refuseFoods.NullOrEmpty() && p.removeFoodTypes == 0) continue;
+                (pending ?? (pending = new List<TitanTrait>())).Add(t);
+            }
+            if (pending == null || !TitanUtility.PlayerCanObserve(pawn)) return;
+
+            Thing refused = GenClosest.ClosestThingReachable(pawn.Position, pawn.Map,
+                ThingRequest.ForGroup(ThingRequestGroup.FoodSource), PathEndMode.Touch, TraverseParms.For(pawn),
+                RefusalRadius, x => x.def.ingestible != null && !x.IsForbidden(pawn) && x.IngestibleNow
+                    && pending.Any(t => TitanDiet.TraitRefuses(t.Diet, x.def, pawn)));
+            if (refused == null) return;
+            foreach (var t in pending)
+                if (TitanDiet.TraitRefuses(t.Diet, refused.def, pawn))
+                    t.TryDiscoverBy(TitanDiscoveryTrigger.StarvesNearRefusedFood);
+        }
 
         /// <summary>Vanilla's food search keeps a roped animal within 8 cells of its anchor.</summary>
         public static bool WithinRope(Pawn getter, Thing t)
@@ -320,8 +377,10 @@ namespace TitanFramework
                     if (t == null || t.Destroyed || d == null || !d.nonFood.TryGetValue(t.def, out float per)) return;
                     int n = Math.Min(job.count, t.stackCount);
                     if (n <= 0) return;
+                    var eaten = t.def;
                     t.SplitOff(n).Destroy();
                     if (pawn.needs?.food != null) pawn.needs.food.CurLevel += n * per;
+                    TitanUtility.GetTitan(pawn)?.Notify_Ate(eaten);
                 },
                 defaultCompleteMode = ToilCompleteMode.Instant,
             };
