@@ -747,6 +747,15 @@ namespace TitanFramework
                 t.PreRemoved();
                 RemoveEffects(t);
             }
+            // Health is back to the race's, so size the injuries back down with it.
+            if (appliedHealth > 0f && Mathf.Abs(appliedHealth - 1f) > 0.0001f && pawn?.health?.hediffSet != null)
+            {
+                float scale = 1f / appliedHealth;
+                foreach (var h in pawn.health.hediffSet.hediffs.ToList())
+                    if (h is Hediff_Injury injury)
+                        injury.Severity *= scale;
+            }
+            appliedHealth = 1f;
             base.PostRemoved();
             TitanUtility.Unregister(pawn);
             VisualsChanged();
@@ -851,7 +860,9 @@ namespace TitanFramework
             base.ExposeData();
             Scribe_Collections.Look(ref traits, "traits", LookMode.Deep);
             Scribe_Defs.Look(ref material, "material");
-            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 1f);
+            // Default 0, not 1: saves from before this field have injuries already sized
+            // for the current factor, and 0 makes SyncInjuries record it without scaling.
+            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 materialStage = null;
@@ -862,12 +873,16 @@ namespace TitanFramework
                 nameDirty = true;
                 RecalcTicking();
                 TitanUtility.Register(pawn, this);
-                // After the load finishes, so the whole pawn is resolved.
-                LongEventHandler.ExecuteWhenFinished(() =>
-                {
-                    if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
+                // After the load finishes, so the whole pawn is resolved. Outside a long
+                // event ExecuteWhenFinished would run right now, mid-load, so skip it
+                // then: the next trait or settings change syncs from the saved value.
+                if (LongEventHandler.AnyEventNowOrWaiting)
+                    LongEventHandler.ExecuteWhenFinished(() =>
+                    {
+                        if (pawn?.health?.hediffSet == null || !pawn.health.hediffSet.hediffs.Contains(this)) return;
                         SyncInjuries();
-                });
+                        pawn.health.Notify_HediffChanged(this);
+                    });
             }
         }
     }

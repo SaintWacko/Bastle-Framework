@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "buildId": 59,
+  "buildIdNote": null,
+  "reviewedAt": "2026-10-10T03:45:07.115Z",
+  "conversationId": "01a10d5a-2b03-747c-aab3-f6f3a08ea74c",
+  "focus": "SyncInjuries / appliedHealth save field / ExecuteWhenFinished at PostLoadInit",
+  "diffSource": "since build 58 (2026-10-10T03:41:20Z), the last reviewed build, from the build log",
+  "parsed": true,
+  "problem": null,
+  "stoppedBecause": null,
+  "counts": {
+    "must": 1,
+    "should": 1,
+    "note": 2
+  },
+  "findings": [
+    {
+      "severity": "must",
+      "title": "appliedHealth save default of 1f inflates every injury on titans in existing saves on first load",
+      "detail": "Saves from build 58 and earlier have no appliedHealth node, so Scribe_Values.Look gives 1f. The PostLoadInit ExecuteWhenFinished then calls SyncInjuries, which multiplies every Hediff_Injury by HealthFactor/1. Those injuries are already absolute HP against the current factor (Pawn.HealthScale postfix, TitanHealth.cs:53; the old KeepInjuryFractions only ever scaled down), so a titan at 1.8x gets wounds 1.8x worse. Raising severity calls Notify_HediffChanged, which runs CheckForStateChange (Hediff.Severity setter), so a titan with a badly damaged vital part can die on load. Factor < 1 titans get healed instead. Change the default in this one Scribe_Values.Look to 0f: the existing `appliedHealth > 0f` guard then records the current factor without scaling. Keep the 1f field initializer for fresh hediffs.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:854"
+      }
+    },
+    {
+      "severity": "should",
+      "title": "ExecuteWhenFinished runs immediately when no long event is active, i.e. inside PostLoadInit",
+      "detail": "LongEventHandler.ExecuteWhenFinished only defers while currentEvent is non-null; otherwise it executes at once. A pawn deep-loaded outside a long event (pawn import or copy by another mod) would build the stage and raise injury severities, triggering CheckForStateChange, while the pawn is still mid-load. Guard the queueing on LongEventHandler.currentEvent != null, or defer to the first tick otherwise. That a corpus mod actually does this is unverified.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Verse/LongEventHandler.cs:298"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "Load-path SyncInjuries does not dirty the HediffSet cache when it scales injuries down",
+      "detail": "The Severity setter only calls Notify_HediffChanged on increases or stage changes. The SettingsChanged and TraitsChanged paths follow SyncInjuries with pawn.health.Notify_HediffChanged(this), but the ExecuteWhenFinished closure does not, so cached pain and bleed rate can be stale until something else dirties the set. Adding the same call in the closure makes the three paths uniform.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:866"
+      }
+    },
+    {
+      "severity": "note",
+      "title": "PostRemoved drops the health factor to 1 without rescaling injuries (pre-existing)",
+      "detail": "Removing the titan hediff clears its traits, so Pawn.HealthScale loses the factor while the injuries stay sized in absolute HP for it. A wounded high-factor titan can be killed by removal. Not introduced by this diff.",
+      "evidence": {
+        "kind": "index",
+        "ref": "Source/Hediff_Titan.cs:740"
+      }
+    }
+  ],
+  "checked": [
+    "SyncInjuries reads HealthFactor after stageDirty is set, so when scaling up, part max HP is already raised before each injury's severity rises (no transient lethal state); when scaling down, the sett…",
+    "Iterating hediffs.ToList() is safe against Notify_HediffChanged/CheckForStateChange mutating the list mid-loop",
+    "GetOrMakeTitan adds the hediff before AddTraitInternal, so TraitsChanged's SyncInjuries tracks every trait added on a new titan (TitanUtility.cs:63-64,93)",
+    "SetMaterialInternal and RemoveTraitInternal route through TraitsChanged, so material trait changes are synced",
+    "Severity setter's mood access is short-circuited for dead pawns (Hediff.Severity)",
+    "TitanTraitDef healthScaleFactor doc matches the per-trait and total MinFactor 0.25 clamps in TitanHealth.cs",
+    "The diff declares no Harmony patch, so verify_patches/precedents not needed",
+    "pyxis_mod_errors not available: no Pyxis token is configured"
+  ],
+  "unreviewed": [],
+  "outOfScope": [],
+  "reviewed": [
+    "Source/Hediff_Titan.cs",
+    "Source/TitanTraitDef.cs",
+    "Assemblies/TitanFramework.dll",
+    "Assemblies/TitanFramework.pdb"
+  ],
+  "parts": 1,
+  "buildCommit": "064958661a7f2d39704ca5b6b7059fd67332aeda",
+  "partial": false
+}
