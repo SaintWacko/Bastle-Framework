@@ -31,8 +31,8 @@ namespace TitanFramework
         public HashSet<TitanRarity> allowedRarities;
 
         /// <summary>Extra filter, e.g. d => d.tags != null && d.tags.Contains("Fire").
-        /// Applies to both the main roll and the utility roll. When it leaves the main roll
-        /// with nothing, the utility roll always happens, on the full target.</summary>
+        /// Applies to both the main roll and the utility roll. When it passes no trait
+        /// outside the utility set, the utility roll always happens, on the full target.</summary>
         public Predicate<TitanTraitDef> validator;
 
         /// <summary>Chance of the separate utility roll (traits tagged Utility), made after

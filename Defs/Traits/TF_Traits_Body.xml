@@ -2,7 +2,7 @@
 <Defs>
 
   <!-- Body and defence traits. Exclusion tags used across the suite:
-       TF_Element      one elemental body (flaming, frostfur, stormborn)
+       TF_Element      one elemental body (flaming, frostfur in Utility, stormborn)
        TF_FireAffinity one relationship with fire (flaming, emberborn, tinderhide)
        TF_Speed        swift / sluggish / lame
        TF_Toughness    shelled / stonehide / brittle-type traits
