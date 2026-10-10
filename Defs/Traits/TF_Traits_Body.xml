@@ -150,45 +150,6 @@
   </TitanFramework.TitanTraitDef>
 
   <TitanFramework.TitanTraitDef>
-    <defName>TF_Frostfur</defName>
-    <label>frostfur</label>
-    <description>A thick, frost-white coat keeps it comfortable in bitter cold.</description>
-    <namePrefix>frostfur</namePrefix>
-    <scalesWithRarity>true</scalesWithRarity>
-    <requiresFlesh>true</requiresFlesh>
-    <disallowConstructs>true</disallowConstructs>
-    <exclusionTags><li>TF_Element</li></exclusionTags>
-    <tags><li>Cold</li></tags>
-    <discoverWhen>
-      <li>JoinsColony</li>
-      <li>Dies</li>
-    </discoverWhen>
-    <stage>
-      <statOffsets>
-        <ComfyTemperatureMin>-25</ComfyTemperatureMin>
-      </statOffsets>
-    </stage>
-  </TitanFramework.TitanTraitDef>
-
-  <TitanFramework.TitanTraitDef>
-    <defName>TF_Sunhardened</defName>
-    <label>sunhardened</label>
-    <description>It is comfortable in heat that would kill others of its kind.</description>
-    <namePrefix>sunhardened</namePrefix>
-    <scalesWithRarity>true</scalesWithRarity>
-    <tags><li>Heat</li></tags>
-    <discoverWhen>
-      <li>JoinsColony</li>
-      <li>Dies</li>
-    </discoverWhen>
-    <stage>
-      <statOffsets>
-        <ComfyTemperatureMax>25</ComfyTemperatureMax>
-      </statOffsets>
-    </stage>
-  </TitanFramework.TitanTraitDef>
-
-  <TitanFramework.TitanTraitDef>
     <defName>TF_Unfeeling</defName>
     <label>unfeeling</label>
     <description>It feels no pain, and keeps fighting through wounds that would drop others.</description>
