@@ -86,6 +86,11 @@ namespace TitanFramework
             }
         }
 
+        public float DrawSizeFactor => def.DrawSizeAt(Rarity);
+        public TitanRetaliation Retaliation => Override?.retaliation ?? def.retaliation;
+        public TitanLifesteal Lifesteal => Override?.lifesteal ?? def.lifesteal;
+        public TitanProducts Products => Override?.products ?? def.products;
+
         public List<TitanTraitHediff> Hediffs => Override?.hediffs ?? def.hediffs;
         public List<AbilityDef> Abilities => Override?.abilities ?? def.abilities;
         public ThinkTreeDef AiThinkTree => Override?.aiThinkTree ?? def.aiThinkTree;
@@ -163,6 +168,11 @@ namespace TitanFramework
         public virtual void Notify_PawnPostApplyDamage(DamageInfo dinfo, float totalDamageDealt) { }
 
         public virtual void Notify_PawnUsedVerb(Verb verb, LocalTargetInfo target) { }
+
+        /// <summary>The creature damaged something. Called inside vanilla's foreach over
+        /// the creature's hediffs, so don't add or remove hediffs here (healing an injury
+        /// to zero removes it): queue it for TickInterval.</summary>
+        public virtual void Notify_PawnDamagedThing(Thing thing, DamageInfo dinfo, DamageWorker.DamageResult result) { }
 
         public virtual void Notify_PawnDied(DamageInfo? dinfo) { }
 

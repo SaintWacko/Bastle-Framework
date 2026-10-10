@@ -117,6 +117,31 @@
     </stage>
   </TitanFramework.TitanTraitDef>
 
+  <!-- Visible: the gold sheen gives it away. Only on races that are shorn. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_GoldenFleeced</defName>
+    <label>golden-fleeced</label>
+    <description>Its fleece grows as fine gold thread. Shearing it gives gold instead of wool, about half as many units.</description>
+    <namePrefix>golden-fleeced</namePrefix>
+    <rarity>Rare</rarity>
+    <visible>true</visible>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <allowHumanlikes>false</allowHumanlikes>
+    <tags><li>Utility</li></tags>
+    <overlays>
+      <li>
+        <color>(1.0, 0.82, 0.3, 0.3)</color>
+        <pulseSpeed>0.3</pulseSpeed>
+        <pulseMin>0.6</pulseMin>
+      </li>
+    </overlays>
+    <products>
+      <woolDef>Gold</woolDef>
+      <woolAmountFactor>0.5</woolAmountFactor>
+    </products>
+  </TitanFramework.TitanTraitDef>
+
   <!-- Cosmetic light. Cheap, since it does nothing else. -->
   <TitanFramework.TitanTraitDef>
     <defName>TF_Luminous</defName>

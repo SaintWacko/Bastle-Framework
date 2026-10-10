@@ -10,7 +10,9 @@
     <nameSuffix>the elder</nameSuffix>
     <rarity>Legendary</rarity>
     <allowMechanoids>false</allowMechanoids>
+    <exclusionTags><li>TF_Size</li></exclusionTags>
     <healthScaleFactor>2</healthScaleFactor>
+    <drawSizeFactor>1.2</drawSizeFactor>
     <discoverWhen>
       <li>Attacks</li>
       <li>TakesDamage</li>

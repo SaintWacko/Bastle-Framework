@@ -37,38 +37,4 @@
     </stage>
   </TitanFramework.TitanTraitDef>
 
-  <!-- Diet: turns any animal into a meat-eating hunter that won't touch plants.
-       Hidden; revealed when a plant-eater eats meat, or starves beside plants. -->
-  <TitanFramework.TitanTraitDef>
-    <defName>TF_Example_Bloodthirsty</defName>
-    <label>bloodthirsty</label>
-    <description>It has lost its taste for plants and hunts for meat instead.</description>
-    <namePrefix>bloodthirsty</namePrefix>
-    <requiresFlesh>true</requiresFlesh>
-    <diet>
-      <addFoodTypes>Meat, Corpse</addFoodTypes>
-      <removeFoodTypes>VegetableOrFruit, Plant, Tree, Seed</removeFoodTypes>
-      <hunts>true</hunts>
-    </diet>
-  </TitanFramework.TitanTraitDef>
-
-  <!-- Drawback: negative cost gives budget back. -->
-  <TitanFramework.TitanTraitDef>
-    <defName>TF_Example_Brittle</defName>
-    <label>brittle</label>
-    <description>Something about it is fragile. It takes more damage from every hit.</description>
-    <namePrefix>brittle</namePrefix>
-    <nameOrder>-10</nameOrder>
-    <pointCost>-1</pointCost>
-    <commonality>0.5</commonality>
-    <scalesWithRarity>true</scalesWithRarity>
-    <exclusionTags><li>TF_Toughness</li></exclusionTags>
-    <discoverWhen><li>TakesDamage</li></discoverWhen>
-    <stage>
-      <statFactors>
-        <IncomingDamageFactor>1.3</IncomingDamageFactor>
-      </statFactors>
-    </stage>
-  </TitanFramework.TitanTraitDef>
-
 </Defs>

@@ -20,6 +20,7 @@ namespace TitanFramework
                 // A scaling trait gets one entry per rarity it can roll at.
                 for (var r = def.rarity; r <= def.MaxRarity; r++)
                 {
+                    if (!def.CanAppearAt(r)) continue;
                     var rarity = r;
                     string label = def.scalesWithRarity ? $"{def.defName} ({r})" : def.defName;
                     list.Add(new DebugActionNode(label, DebugActionType.ToolMapForPawns, null, p =>

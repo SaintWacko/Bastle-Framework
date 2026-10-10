@@ -5,6 +5,24 @@
        drawback chance in the mod settings. -->
 
   <TitanFramework.TitanTraitDef>
+    <defName>TF_Brittle</defName>
+    <label>brittle</label>
+    <description>Something about it is fragile. It takes more damage from every hit.</description>
+    <namePrefix>brittle</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-1</pointCost>
+    <commonality>0.5</commonality>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>TF_Toughness</li></exclusionTags>
+    <discoverWhen><li>TakesDamage</li></discoverWhen>
+    <stage>
+      <statFactors>
+        <IncomingDamageFactor>1.3</IncomingDamageFactor>
+      </statFactors>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
     <defName>TF_Tinderhide</defName>
     <label>tinderhide</label>
     <description>Its body catches fire easily. It takes double damage from flames.</description>

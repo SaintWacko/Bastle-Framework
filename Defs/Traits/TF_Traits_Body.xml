@@ -17,6 +17,9 @@
     <visible>true</visible>
     <namePrefix>flaming</namePrefix>
     <rarity>Uncommon</rarity>
+    <!-- Its fire resistance can't scale past Uncommon, so it rolls at Uncommon or,
+         through the override, Legendary. -->
+    <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags>
       <li>TF_Element</li>
       <li>TF_FireAffinity</li>
@@ -47,6 +50,32 @@
         <Burn>0.2</Burn>
       </damageFactors>
     </stage>
+    <rarityOverrides>
+      <li>
+        <minRarity>Legendary</minRarity>
+        <label>infernal</label>
+        <namePrefix>infernal</namePrefix>
+        <description>Its body is a living blaze. Fire can't hurt it, and anything that strikes it in melee is burned and may catch fire.</description>
+        <glow>
+          <radius>8</radius>
+          <color>(255,120,40,0)</color>
+        </glow>
+        <retaliation>
+          <damageDef>Flame</damageDef>
+          <amount>3</amount>
+          <igniteChance>0.5</igniteChance>
+        </retaliation>
+        <stage>
+          <statOffsets>
+            <ComfyTemperatureMin>-60</ComfyTemperatureMin>
+          </statOffsets>
+          <damageFactors>
+            <Flame>0</Flame>
+            <Burn>0</Burn>
+          </damageFactors>
+        </stage>
+      </li>
+    </rarityOverrides>
   </TitanFramework.TitanTraitDef>
 
   <TitanFramework.TitanTraitDef>
@@ -213,6 +242,43 @@
         <ToxicResistance>0.3</ToxicResistance>
         <ToxicEnvironmentResistance>0.3</ToxicEnvironmentResistance>
       </statOffsets>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Thorned</defName>
+    <label>thorned</label>
+    <description>Sharp barbs cover its body. Anything that strikes it in melee is cut.</description>
+    <namePrefix>thorned</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>TakesDamage</li></discoverWhen>
+    <retaliation>
+      <damageDef>Stab</damageDef>
+      <amount>4</amount>
+      <armorPenetration>0.1</armorPenetration>
+    </retaliation>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Visible: you can see the size. Not applied to humanlikes, which draw through a
+       fixed-size render cache. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Colossal</defName>
+    <label>colossal</label>
+    <description>It is far bigger than others of its kind: tougher and harder-hitting, but a little slower.</description>
+    <namePrefix>colossal</namePrefix>
+    <rarity>Rare</rarity>
+    <visible>true</visible>
+    <scalesWithRarity>true</scalesWithRarity>
+    <allowHumanlikes>false</allowHumanlikes>
+    <exclusionTags><li>TF_Size</li></exclusionTags>
+    <drawSizeFactor>1.3</drawSizeFactor>
+    <healthScaleFactor>1.25</healthScaleFactor>
+    <stage>
+      <statFactors>
+        <MeleeDamageFactor>1.15</MeleeDamageFactor>
+        <MoveSpeed>0.92</MoveSpeed>
+      </statFactors>
     </stage>
   </TitanFramework.TitanTraitDef>
 

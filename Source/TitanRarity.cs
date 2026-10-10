@@ -57,6 +57,10 @@ namespace TitanFramework
         public List<TitanFlames> flames;
         public TitanGlow glow;
         public float? healthScaleFactor;
+        public float? drawSizeFactor;
+        public TitanRetaliation retaliation;
+        public TitanLifesteal lifesteal;
+        public TitanProducts products;
         public float? marketValuePercent;
         public float? marketValueOffset;
     }
@@ -65,8 +69,8 @@ namespace TitanFramework
     /// Scales a trait's stage for its rarity, the same way Entad Framework scales its
     /// ranges: offsets are multiplied by the strength, factors move away from 1 by it
     /// (f becomes 1 + (f - 1) x strength), so a x0.8 damage factor at strength 2 is x0.6.
-    /// Factors never go below MinFactor; TitanTraitDef.MaxRarity stops a trait at the
-    /// last rarity where that floor isn't hit.
+    /// Factors never go below MinFactor; TitanTraitDef.FitsAt leaves out every rarity
+    /// where that floor would be hit.
     /// </summary>
     public static class TitanStageScaler
     {

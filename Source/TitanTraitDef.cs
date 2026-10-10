@@ -94,6 +94,22 @@ namespace TitanFramework
         /// 0.25, and so is the creature's total.</summary>
         public float healthScaleFactor = 1f;
 
+        /// <summary>Draws the creature this much bigger (1.3 = 30% larger). Scales with
+        /// rarity like healthScaleFactor. Drawing only: body size, hit box and food are
+        /// unchanged. Applies before the trait is discovered (you can see the size).
+        /// Not applied to humanlikes, whose zoomed-out drawing goes through a fixed-size
+        /// render cache.</summary>
+        public float drawSizeFactor = 1f;
+
+        /// <summary>Damage dealt back to whoever hits the creature in melee.</summary>
+        public TitanRetaliation retaliation;
+
+        /// <summary>Heals the creature by part of the damage it deals.</summary>
+        public TitanLifesteal lifesteal;
+
+        /// <summary>Changes what it gives when shorn or milked.</summary>
+        public TitanProducts products;
+
         /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
         public List<string> exclusionTags;
 
@@ -239,8 +255,28 @@ namespace TitanFramework
 
         public HediffStage StageAt(TitanRarity at) => OverrideAt(at)?.stage ?? stage;
 
-        // A rarity is offered only while no factor would be pushed onto the floor.
-        private bool FitsAt(TitanRarity at)
+        [Unsaved] private bool[] fitsCache;
+        [Unsaved] private int fitsFor = -1;
+
+        /// <summary>A rarity is offered only when no factor would be pushed onto the floor.
+        /// There can be gaps: a trait whose factors run out at Rare can still roll at a
+        /// Legendary override, whose stage is scaled from its own rarity.</summary>
+        public bool FitsAt(TitanRarity at)
+        {
+            if (!scalesWithRarity) return at == rarity;
+            if (at < rarity) return false;
+            if (at == rarity) return true;
+            if (fitsFor != TitanSettings.Version || fitsCache == null)
+            {
+                fitsCache = new bool[TitanRarityUtility.Count];
+                for (var r = rarity; r <= TitanRarity.Legendary; r++)
+                    fitsCache[(int)r] = r == rarity || ComputeFits(r);
+                fitsFor = TitanSettings.Version;
+            }
+            return fitsCache[(int)at];
+        }
+
+        private bool ComputeFits(TitanRarity at)
         {
             float s = StrengthAt(at);
             if (1f + (TitanStageScaler.LowestFactor(StageAt(at)) - 1f) * s < TitanStageScaler.MinFactor) return false;
@@ -248,28 +284,35 @@ namespace TitanFramework
             return h >= 1f || 1f + (h - 1f) * s >= TitanStageScaler.MinFactor;
         }
 
+        /// <summary>The highest rarity the trait can roll at. Lower ones may be skipped
+        /// (see FitsAt), so loop with CanAppearAt.</summary>
         public TitanRarity MaxRarity
         {
             get
             {
                 if (!scalesWithRarity) return rarity;
-                var best = rarity;
-                for (var r = rarity + 1; r <= TitanRarity.Legendary; r++)
-                {
-                    if (!FitsAt(r)) break;
-                    best = r;
-                }
-                return best;
+                for (var r = TitanRarity.Legendary; r > rarity; r--)
+                    if (FitsAt(r)) return r;
+                return rarity;
             }
         }
 
-        public bool CanAppearAt(TitanRarity at) => scalesWithRarity ? at >= rarity && at <= MaxRarity : at == rarity;
+        public bool CanAppearAt(TitanRarity at) => FitsAt(at);
 
+        /// <summary>The nearest rarity at or below this one that the trait can roll at.</summary>
         public TitanRarity ClampRarity(TitanRarity at)
         {
-            if (!scalesWithRarity) return rarity;
-            var max = MaxRarity;
-            return at < rarity ? rarity : (at > max ? max : at);
+            if (!scalesWithRarity || at <= rarity) return rarity;
+            for (var r = at; r > rarity; r--)
+                if (FitsAt(r)) return r;
+            return rarity;
+        }
+
+        /// <summary>The trait's draw size factor at a rarity (1 = unchanged).</summary>
+        public float DrawSizeAt(TitanRarity at)
+        {
+            float f = OverrideAt(at)?.drawSizeFactor ?? drawSizeFactor;
+            return f == 1f ? 1f : UnityEngine.Mathf.Max(0.25f, 1f + (f - 1f) * StrengthAt(at));
         }
 
         // ---- cached --------------------------------------------------------------
@@ -327,6 +370,11 @@ namespace TitanFramework
             else if (!allowOther) return false;
 
             if (requiresFlesh && !race.IsFlesh) return false;
+            if (products != null)
+            {
+                if (products.ChangesWool && pawn.def.GetCompProperties<CompProperties_Shearable>() == null) return false;
+                if (products.ChangesMilk && pawn.def.GetCompProperties<CompProperties_Milkable>() == null) return false;
+            }
             if (race.baseBodySize < minBodySize || race.baseBodySize > maxBodySize) return false;
             if (allowedRaces != null && !allowedRaces.Contains(pawn.def)) return false;
             if (disallowedRaces != null && disallowedRaces.Contains(pawn.def)) return false;
@@ -367,6 +415,7 @@ namespace TitanFramework
                     else if (!f.thing.IsNutritionGivingIngestible && f.nutrition <= 0f)
                         yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
+            if (retaliation != null && retaliation.damageDef == null) yield return "retaliation has no damageDef";
             if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(TitanTrait))
                 yield return "not visible and has no discoverWhen: only code can ever reveal it (add <li>Manual</li> to discoverWhen to silence this)";
         }

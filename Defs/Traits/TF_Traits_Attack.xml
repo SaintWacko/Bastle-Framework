@@ -169,6 +169,37 @@
     </abilities>
   </TitanFramework.TitanTraitDef>
 
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Vampiric</defName>
+    <label>vampiric</label>
+    <description>Its wounds close as it feeds. Part of the damage it deals in melee to living flesh heals it.</description>
+    <namePrefix>vampiric</namePrefix>
+    <rarity>Rare</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <exclusionTags><li>TF_Healing</li></exclusionTags>
+    <discoverWhen><li>Attacks</li></discoverWhen>
+    <lifesteal>
+      <fraction>0.25</fraction>
+    </lifesteal>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Diet: turns any animal into a meat-eating hunter that won't touch plants.
+       Hidden; revealed when a plant-eater eats meat, or starves beside plants. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Bloodthirsty</defName>
+    <label>bloodthirsty</label>
+    <description>It has lost its taste for plants and hunts for meat instead.</description>
+    <namePrefix>bloodthirsty</namePrefix>
+    <requiresFlesh>true</requiresFlesh>
+    <diet>
+      <addFoodTypes>Meat, Corpse</addFoodTypes>
+      <removeFoodTypes>VegetableOrFruit, Plant, Tree, Seed</removeFoodTypes>
+      <hunts>true</hunts>
+    </diet>
+  </TitanFramework.TitanTraitDef>
+
   <!-- Dangerous in a dungeon, a liability as a pet. -->
   <TitanFramework.TitanTraitDef>
     <defName>TF_Volatile</defName>

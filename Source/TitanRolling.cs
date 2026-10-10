@@ -145,6 +145,7 @@ namespace TitanFramework
                 var hi = d.MaxRarity;
                 for (var r = d.rarity; r <= hi; r++)
                 {
+                    if (!d.CanAppearAt(r)) continue;
                     if (allowed != null && allowed.Count > 0 && !allowed.Contains(r)) continue;
                     if (weights[(int)r] <= 0f) continue;
                     pairs.Add(new Pair { def = d, rarity = r });

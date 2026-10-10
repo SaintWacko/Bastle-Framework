@@ -387,6 +387,7 @@ namespace TitanFramework
             glower?.Remove();
             glower = null;
             CleanupEffecters(keepTracked: true);
+            RecalcTicking();
             // The health-per-point slider changes every titan, flesh or not.
             materialStage = null;
             stageDirty = true;
@@ -469,9 +470,24 @@ namespace TitanFramework
         private void RecalcTicking()
         {
             anyTicking = false;
+            float scale = 1f;
             for (int i = 0; i < traits.Count; i++)
-                if (traits[i].def.Ticks) { anyTicking = true; break; }
+            {
+                if (traits[i].def.Ticks) anyTicking = true;
+                scale *= traits[i].DrawSizeFactor;
+            }
+            // Read every frame when the draw matrix is built, so no render refresh is needed.
+            drawScale = scale;
         }
+
+        /// <summary>Product of every trait's draw size factor. Kept as a plain field so the
+        /// parallel pre-draw threads can read it (see Patch_PawnRenderer_GetDrawParms).</summary>
+        [Unsaved] private float drawScale = 1f;
+        public float DrawScale => drawScale;
+
+        // Lifesteal healing waits for the next tick: it is earned inside vanilla's
+        // foreach over this pawn's hediffs.
+        [Unsaved] private float pendingHeal;
 
         // ---- stage ---------------------------------------------------------------
 
@@ -791,6 +807,12 @@ namespace TitanFramework
                 statueChecked = true;
                 ApplyStatue(dirty: true);
             }
+            if (pendingHeal > 0f)
+            {
+                float heal = pendingHeal;
+                pendingHeal = 0f;
+                TitanCombatUtility.HealInjuries(pawn, heal);
+            }
             if (anyTicking)
             {
                 for (int i = traits.Count - 1; i >= 0; i--)
@@ -812,6 +834,18 @@ namespace TitanFramework
                 var t = traits[i];
                 t.Notify_PawnPostApplyDamage(dinfo, totalDamageDealt);
                 t.TryDiscoverBy(TitanDiscoveryTrigger.TakesDamage);
+                if (t.Retaliation != null) TitanCombatUtility.TryRetaliate(t, dinfo);
+            }
+        }
+
+        public override void Notify_PawnDamagedThing(Thing thing, DamageInfo dinfo, DamageWorker.DamageResult result)
+        {
+            base.Notify_PawnDamagedThing(thing, dinfo, result);
+            for (int i = traits.Count - 1; i >= 0; i--)
+            {
+                var t = traits[i];
+                t.Notify_PawnDamagedThing(thing, dinfo, result);
+                if (t.Lifesteal != null) pendingHeal += TitanCombatUtility.LifestealFrom(t, thing, dinfo, result);
             }
         }
 
