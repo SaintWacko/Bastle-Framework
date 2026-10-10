@@ -31,7 +31,8 @@ namespace TitanFramework
             foreach (var t in traits)
             {
                 points += PointShare(t);
-                scale *= t.def.healthScaleFactor;
+                // Floored per trait, so one harsh trait can't wipe out every other bonus.
+                scale *= Mathf.Max(MinFactor, t.def.healthScaleFactor);
             }
             return Mathf.Max(MinFactor, Mathf.Max(0f, 1f + points) * scale);
         }

@@ -862,7 +862,7 @@ namespace TitanFramework
             Scribe_Defs.Look(ref material, "material");
             // Default 0, not 1: saves from before this field have injuries already sized
             // for the current factor, and 0 makes SyncInjuries record it without scaling.
-            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f);
+            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f, forceSave: true);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 materialStage = null;
