@@ -42,7 +42,7 @@ namespace TitanFramework
         public static string Describe(TitanTrait t)
         {
             float share = PointShare(t);
-            float scale = t.def.healthScaleFactor;
+            float scale = Mathf.Max(MinFactor, t.def.healthScaleFactor);
             bool hasShare = Mathf.Abs(share) >= 0.005f, hasScale = Mathf.Abs(scale - 1f) >= 0.005f;
             if (!hasShare && !hasScale) return null;
             string text = hasShare ? (share > 0f ? "+" : "") + share.ToStringPercent() : null;
