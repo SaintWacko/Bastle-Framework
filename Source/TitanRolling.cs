@@ -60,7 +60,8 @@ namespace TitanFramework
     /// Utility traits (tagged Utility) are kept out of that roll. Afterwards, with
     /// utilityChance, the same roller runs again over utility traits alone, on a smaller
     /// target and only in the slots the main roll left, so they never cost a creature
-    /// combat strength.
+    /// combat strength. Drawbacks tagged Utility roll there too, with their own drawback
+    /// chance, so a drawback with no effect in a fight never buys a combat trait.
     /// </summary>
     public static class TitanRolling
     {
@@ -80,7 +81,9 @@ namespace TitanFramework
 
             float budget = fixedPoints ?? (request.points ?? s.pointTarget).RandomInRange;
             int cap = Math.Max(1, request.maxTraits ?? s.maxTraits);
-            int drawbacks = Rand.Chance(request.drawbackChance ?? s.drawbackChance) ? (request.maxDrawbacks ?? s.maxDrawbacks) : 0;
+            float drawbackChance = request.drawbackChance ?? s.drawbackChance;
+            int maxDrawbacks = request.maxDrawbacks ?? s.maxDrawbacks;
+            int drawbacks = Rand.Chance(drawbackChance) ? maxDrawbacks : 0;
             var validator = request.validator;
 
             RollPool(pawn, request, budget, cap, drawbacks, d => !d.IsUtility && (validator == null || validator(d)), added);
@@ -94,7 +97,10 @@ namespace TitanFramework
                 float utilityBudget = onlyUtility ? budget
                     : Math.Max(budget * Math.Max(0f, request.utilityBudget ?? s.utilityBudget), TitanRarity.Common.Points());
                 var utility = new List<TitanTrait>();
-                RollPool(pawn, request, utilityBudget, cap - added.Count, 0, d => d.IsUtility && (validator == null || validator(d)), utility);
+                // Utility drawbacks (Restless, Barren...) get their own chance, and the
+                // points they pay back only buy utility traits, never combat strength.
+                int utilityDrawbacks = Rand.Chance(drawbackChance) ? maxDrawbacks : 0;
+                RollPool(pawn, request, utilityBudget, cap - added.Count, utilityDrawbacks, d => d.IsUtility && (validator == null || validator(d)), utility);
                 added.AddRange(utility);
             }
             return added;

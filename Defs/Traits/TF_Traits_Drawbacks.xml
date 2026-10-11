@@ -68,6 +68,7 @@
     <pointCost>-1</pointCost>
     <allowMechanoids>false</allowMechanoids>
     <exclusionTags><li>TF_Hunger</li></exclusionTags>
+    <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>JoinsColony</li>
       <li>Dies</li>
@@ -86,6 +87,7 @@
     <pointCost>-1</pointCost>
     <requiresFlesh>true</requiresFlesh>
     <disallowConstructs>true</disallowConstructs>
+    <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>JoinsColony</li>
       <li>Dies</li>
@@ -167,6 +169,7 @@
     <pointCost>-1</pointCost>
     <allowMechanoids>false</allowMechanoids>
     <exclusionTags><li>TF_Rest</li></exclusionTags>
+    <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>JoinsColony</li>
       <li>Dies</li>
@@ -216,6 +219,7 @@
     <heritable>false</heritable>
     <requiresFlesh>true</requiresFlesh>
     <allowHumanlikes>false</allowHumanlikes>
+    <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>JoinsColony</li>
       <li>Dies</li>
@@ -234,6 +238,7 @@
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
     <allowMechanoids>false</allowMechanoids>
+    <tags><li>Utility</li></tags>
     <diet>
       <extraFoods>
         <li><thing>Steel</thing><nutrition>0.05</nutrition></li>
