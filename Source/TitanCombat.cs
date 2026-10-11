@@ -124,9 +124,42 @@ namespace TitanFramework
             TitanScheduler.NextTick(() =>
             {
                 if (!pawn.Spawned || shooter.Destroyed || !shooter.Spawned || shooter.Map != pawn.Map) return;
-                var p = (Projectile)GenSpawn.Spawn(proj, pawn.Position, pawn.Map);
-                p.Launch(pawn, pawn.DrawPos, shooter, shooter, ProjectileHitFlags.IntendedTarget);
+                LaunchReflected(pawn, shooter, proj);
             });
+        }
+
+        // Accuracy of a reflected shot, as a ShootingAccuracyPawn-style per-tile value.
+        // 0.95 is roughly a middling colonist: about 60% on target at 10 tiles.
+        private const float ReflectAccuracy = 0.95f;
+
+        /// <summary>Fires the shot back as if the titan had aimed it, following vanilla's
+        /// Verb_LaunchProjectile: miss wild, else hit the shooter's cover, else hit.</summary>
+        private static void LaunchReflected(Pawn pawn, Thing shooter, ThingDef proj)
+        {
+            var map = pawn.Map;
+            var p = (Projectile)GenSpawn.Spawn(proj, pawn.Position, map);
+            float dist = (shooter.Position - pawn.Position).LengthHorizontal;
+            float size = shooter is Pawn sp ? Mathf.Clamp(sp.BodySize, 0.5f, 2f) : 1f;
+            float aim = ShotReport.HitFactorFromShooter(null, dist, ReflectAccuracy) * size;
+
+            if (!Rand.Chance(aim))
+            {
+                // Wild miss: lands near the shooter and can hit whatever is there.
+                IntVec3 cell = shooter.Position + GenRadial.RadialPattern[Rand.Range(1, GenRadial.NumCellsInRadius(2.9f))];
+                if (!cell.InBounds(map)) cell = shooter.Position;
+                var flags = ProjectileHitFlags.NonTargetWorld;
+                if (Rand.Chance(0.5f)) flags |= ProjectileHitFlags.NonTargetPawns;
+                p.Launch(pawn, pawn.DrawPos, cell, shooter, flags);
+                return;
+            }
+            if (Rand.Chance(CoverUtility.CalculateOverallBlockChance(shooter, pawn.Position, map))
+                && CoverUtility.CalculateCoverGiverSet(shooter, pawn.Position, map)
+                    .TryRandomElementByWeight(c => c.BlockChance, out var cover))
+            {
+                p.Launch(pawn, pawn.DrawPos, cover.Thing, shooter, ProjectileHitFlags.NonTargetWorld);
+                return;
+            }
+            p.Launch(pawn, pawn.DrawPos, shooter, shooter, ProjectileHitFlags.IntendedTarget);
         }
 
         public static bool IsMelee(DamageInfo dinfo, Thing victim, out Pawn attacker)
