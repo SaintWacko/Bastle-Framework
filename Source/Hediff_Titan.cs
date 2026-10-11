@@ -35,6 +35,7 @@ namespace TitanFramework
         [Unsaved] private string prefixCache;
         [Unsaved] private string suffixCache;
         [Unsaved] private bool nameDirty = true;
+        [Unsaved] private int nameVersion = -1;
 
         // Visuals. Overlays live in the pawn's render tree (DynamicPawnRenderNodeSetup_Titan);
         // effecters are ticked by MapComponent_TitanVisuals while the pawn is on its map.
@@ -738,7 +739,7 @@ namespace TitanFramework
         /// <summary>Applies discovered traits' prefixes and suffixes to a kind label.</summary>
         public string DecorateKindLabel(string kindLabel)
         {
-            if (nameDirty) RebuildNameCache();
+            if (nameDirty || nameVersion != TitanSettings.Version) RebuildNameCache();
             if (prefixCache == null && suffixCache == null) return kindLabel;
             return prefixCache + kindLabel + suffixCache;
         }
@@ -746,14 +747,34 @@ namespace TitanFramework
         private void RebuildNameCache()
         {
             nameDirty = false;
+            nameVersion = TitanSettings.Version;
             prefixCache = null;
             suffixCache = null;
-            var known = traits.Where(t => t.discovered).OrderBy(t => t.def.nameOrder).ToList();
-            var pre = known.Where(t => !t.NamePrefix.NullOrEmpty()).Select(t => t.NamePrefix).ToList();
+
+            // Pick which known traits get a word: highest namePriority first, then the
+            // trait worth the most points, up to the setting's limit. Only one trait may
+            // add a suffix; a later trait with both keeps just its prefix, and one with
+            // only a suffix gives its place to the next trait.
+            int limit = TitanFrameworkMod.Settings.maxNameTraits;
+            var shown = new List<(TitanTrait trait, bool prefix, bool suffix)>();
+            bool suffixTaken = false;
+            foreach (var t in traits.Where(t => t.discovered)
+                         .OrderByDescending(t => t.def.namePriority).ThenByDescending(t => t.Points))
+            {
+                if (shown.Count >= limit) break;
+                bool prefix = !t.NamePrefix.NullOrEmpty();
+                bool suffix = !t.NameSuffix.NullOrEmpty() && !suffixTaken;
+                if (!prefix && !suffix) continue;
+                suffixTaken |= suffix;
+                shown.Add((t, prefix, suffix));
+            }
+
+            var known = shown.OrderBy(s => s.trait.def.nameOrder).ToList();
+            var pre = known.Where(s => s.prefix).Select(s => s.trait.NamePrefix).ToList();
             // The material always shows and sits next to the kind: "flaming jade bear".
             if (material != null) pre.Add(TitanMaterialUtility.Adjective(material));
             // Suffixes read outward from the kind label, so the lowest nameOrder goes last.
-            var suf = known.Where(t => !t.NameSuffix.NullOrEmpty()).Select(t => t.NameSuffix).Reverse().ToList();
+            var suf = known.Where(s => s.suffix).Select(s => s.trait.NameSuffix).Reverse().ToList();
             if (pre.Count > 0) prefixCache = string.Join(" ", pre) + " ";
             if (suf.Count > 0) suffixCache = " " + string.Join(" ", suf);
         }
