@@ -34,7 +34,7 @@
   <TitanFramework.TitanTraitDef>
     <defName>TF_MirrorScaled</defName>
     <label>mirror-scaled</label>
-    <description>Polished, mirror-bright scales cover its body. A third of the shots that hit it glance off in a random direction, and some of those fly straight back at the shooter.</description>
+    <description>Polished, mirror-bright scales cover its body. A third of the shots that hit it glance off in a random direction, where they can strike anyone nearby, and some of those fly straight back at the shooter.</description>
     <namePrefix>mirror-scaled</namePrefix>
     <rarity>Legendary</rarity>
     <visible>true</visible>
