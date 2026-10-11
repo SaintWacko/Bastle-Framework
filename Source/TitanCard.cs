@@ -59,6 +59,8 @@ namespace TitanFramework
                     foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.Stage, null))
                         if (e.ShouldDisplay())
                             sb.AppendLine(" - " + e.LabelCap + ": " + e.ValueString);
+                string traitHealth = TitanHealth.DescribeTrait(t);
+                if (traitHealth != null) sb.AppendLine(" - " + traitHealth);
                 foreach (string line in TitanDiet.Describe(t.Diet))
                     sb.AppendLine(" - " + line);
                 string extra = t.TipStringExtra;

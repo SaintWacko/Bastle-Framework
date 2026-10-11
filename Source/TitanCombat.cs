@@ -59,9 +59,10 @@ namespace TitanFramework
         /// <summary>Only shots (isRanged damage), not melee or explosions.</summary>
         public bool rangedOnly = true;
 
-        /// <summary>Fire a deflected shot back at the shooter, as the weapon's own
-        /// projectile. Shots with no known projectile are just deflected.</summary>
-        public bool reflect = true;
+        /// <summary>Chance a deflected shot flies back at the shooter, as the weapon's own
+        /// projectile. Not scaled by rarity. The rest just glance off, and so do shots
+        /// with no known projectile.</summary>
+        public float reflectChance = 0.4f;
     }
 
     public static class TitanCombatUtility
@@ -102,7 +103,7 @@ namespace TitanFramework
                 if (pawn.Spawned)
                 {
                     FleckMaker.ThrowMicroSparks(pawn.DrawPos, pawn.Map);
-                    if (d.reflect && dinfo.Def.isRanged) Reflect(pawn, dinfo);
+                    if (dinfo.Def.isRanged && Rand.Chance(d.reflectChance)) Reflect(pawn, dinfo);
                 }
                 if (!t.discovered && TitanUtility.PlayerCanObserve(pawn)) t.Discover();
                 return true;

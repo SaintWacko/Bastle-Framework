@@ -12,7 +12,8 @@
     <rarity>Epic</rarity>
     <traitClass>TitanFramework.TitanTrait_Undying</traitClass>
     <exclusionTags><li>TF_Death</li></exclusionTags>
-    <discoverWhen><li>Dies</li></discoverWhen>
+    <!-- Revealed only when it rises (TitanTrait_Undying.Rise), so its death gives nothing away. -->
+    <discoverWhen><li>Manual</li></discoverWhen>
   </TitanFramework.TitanTraitDef>
 
   <TitanFramework.TitanTraitDef>
@@ -33,7 +34,7 @@
   <TitanFramework.TitanTraitDef>
     <defName>TF_MirrorScaled</defName>
     <label>mirror-scaled</label>
-    <description>Polished, mirror-bright scales cover its body. A third of the shots that hit it glance off, and some fly straight back at the shooter.</description>
+    <description>Polished, mirror-bright scales cover its body. A third of the shots that hit it glance off, and some of those fly straight back at the shooter.</description>
     <namePrefix>mirror-scaled</namePrefix>
     <rarity>Legendary</rarity>
     <visible>true</visible>
