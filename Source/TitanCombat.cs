@@ -60,8 +60,8 @@ namespace TitanFramework
         public bool rangedOnly = true;
 
         /// <summary>Chance a deflected shot flies back at the shooter, as the weapon's own
-        /// projectile. Not scaled by rarity. The rest just glance off, and so do shots
-        /// with no known projectile.</summary>
+        /// projectile. Not scaled by rarity. The rest glance off in a random direction
+        /// and can hit whatever is in their path. Shots with no known projectile just stop.</summary>
         public float reflectChance = 0.4f;
     }
 
@@ -103,7 +103,7 @@ namespace TitanFramework
                 if (pawn.Spawned)
                 {
                     FleckMaker.ThrowMicroSparks(pawn.DrawPos, pawn.Map);
-                    if (dinfo.Def.isRanged && Rand.Chance(d.reflectChance)) Reflect(pawn, dinfo);
+                    if (dinfo.Def.isRanged) Redirect(pawn, dinfo, Rand.Chance(d.reflectChance));
                 }
                 if (!t.discovered && TitanUtility.PlayerCanObserve(pawn)) t.Discover();
                 return true;
@@ -111,21 +111,39 @@ namespace TitanFramework
             return false;
         }
 
-        private static void Reflect(Pawn pawn, DamageInfo dinfo)
+        /// <summary>Sends a deflected shot back at the shooter, or off at a random angle.</summary>
+        private static void Redirect(Pawn pawn, DamageInfo dinfo, bool reflect)
         {
             var shooter = dinfo.Instigator;
-            if (shooter == null || !shooter.Spawned || shooter.Map != pawn.Map) return;
+            // No shooter on this map to aim at: it glances off instead.
+            if (shooter == null || !shooter.Spawned || shooter.Map != pawn.Map) reflect = false;
             ThingDef proj = dinfo.Weapon?.Verbs?.FirstOrDefault(v => v.defaultProjectile != null)?.defaultProjectile;
             // Modded weapons (Combat Extended) may fire something that isn't a vanilla
-            // Projectile; those hits are still deflected, just not sent back.
+            // Projectile; those hits are still deflected, just not sent anywhere.
             if (proj == null || !typeof(Projectile).IsAssignableFrom(proj.thingClass)) return;
             // Spawning mid-impact is what vanilla's own explosions do; the launch itself
             // waits a tick so nothing hits during this damage call.
             TitanScheduler.NextTick(() =>
             {
-                if (!pawn.Spawned || shooter.Destroyed || !shooter.Spawned || shooter.Map != pawn.Map) return;
-                LaunchReflected(pawn, shooter, proj);
+                if (!pawn.Spawned) return;
+                if (reflect && !shooter.Destroyed && shooter.Spawned && shooter.Map == pawn.Map)
+                    LaunchReflected(pawn, shooter, proj);
+                else
+                    LaunchGlancing(pawn, proj);
             });
+        }
+
+        /// <summary>Fires the shot off at a random angle, 4 to 12 tiles. It can hit any
+        /// pawn or object along the way, the titan's allies and the player's colonists included.</summary>
+        private static void LaunchGlancing(Pawn pawn, ThingDef proj)
+        {
+            var map = pawn.Map;
+            Vector3 dir = Quaternion.AngleAxis(Rand.Range(0f, 360f), Vector3.up) * Vector3.forward;
+            IntVec3 cell = (pawn.DrawPos + dir * Rand.Range(4f, 12f)).ToIntVec3().ClampInsideMap(map);
+            if (cell == pawn.Position) return;
+            var p = (Projectile)GenSpawn.Spawn(proj, pawn.Position, map);
+            p.Launch(pawn, pawn.DrawPos, cell, cell,
+                ProjectileHitFlags.NonTargetWorld | ProjectileHitFlags.NonTargetPawns);
         }
 
         // Accuracy of a reflected shot, as a ShootingAccuracyPawn-style per-tile value.
