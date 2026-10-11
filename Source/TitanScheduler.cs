@@ -50,6 +50,7 @@ namespace TitanFramework
         {
             // A new game or a load: drop anything queued in the previous one.
             TitanScheduler.Clear();
+            TitanUtility.ClearRegistry();
         }
 
         public static TitanGameComponent Instance => Current.Game?.GetComponent<TitanGameComponent>();
@@ -64,6 +65,7 @@ namespace TitanFramework
         public override void GameComponentTick()
         {
             TitanScheduler.Run();
+            if (Find.TickManager.TicksGame % 2500 == 0) TitanUtility.PruneRegistry();
             if (risingPawns.Count == 0) return;
             int now = Find.TickManager.TicksGame;
             for (int i = risingPawns.Count - 1; i >= 0; i--)

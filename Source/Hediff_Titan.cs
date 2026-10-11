@@ -92,6 +92,48 @@ namespace TitanFramework
             }
         }
 
+        // Where this hediff last sat in the pawn's hediff list. Checking that slot first
+        // makes StillIn O(1) almost always; the list only shifts when an earlier hediff
+        // goes. Racing pre-draw threads may both rewrite it with the same answer.
+        [Unsaved] private int setIndex = -1;
+
+        /// <summary>Still in this pawn's hediff list. Safe from any thread.</summary>
+        internal bool StillIn(Pawn p)
+        {
+            if (pawn != p) return false;
+            var list = p.health?.hediffSet?.hediffs;
+            if (list == null) return false;
+            int i = setIndex;
+            if ((uint)i < (uint)list.Count && list[i] == this) return true;
+            i = list.IndexOf(this);
+            setIndex = i;
+            return i >= 0;
+        }
+
+        [Unsaved] private bool abilityAI;
+        [Unsaved] private HediffStage abilityAIBuiltFor;
+
+        /// <summary>Some trait grants an ability or an AI think tree, so the ability job
+        /// giver has something to try. Rebuilt with the stage.</summary>
+        public bool HasAbilityAI
+        {
+            get
+            {
+                if (stageDirty || cachedStage == null)
+                {
+                    cachedStage = BuildStage();
+                    stageDirty = false;
+                    cardStage = null;
+                }
+                if (abilityAIBuiltFor != cachedStage)
+                {
+                    abilityAI = traits.Any(t => t.AiThinkTree != null || !t.Abilities.NullOrEmpty());
+                    abilityAIBuiltFor = cachedStage;
+                }
+                return abilityAI;
+            }
+        }
+
         [Unsaved] private float healthFactor = 1f;
         [Unsaved] private HediffStage healthBuiltFor;
 

@@ -14,21 +14,59 @@ namespace TitanFramework
     /// </summary>
     public static class TitanUtility
     {
-        // Pawn -> titan hediff. Weak keys, so destroyed pawns are collected normally.
-        // Kept so the name patch (called every time a label is drawn) never has to
-        // walk the hediff list.
-        private static readonly ConditionalWeakTable<Pawn, Hediff_Titan> registry = new ConditionalWeakTable<Pawn, Hediff_Titan>();
+        // Pawn -> titan hediff, so hot patches (Pawn.HealthScale runs hundreds of times a
+        // frame, labels every draw) never walk the hediff list.
+        // Copy-on-write: writes (rare: a titan gained, lost or loaded) build a new
+        // dictionary and swap the reference; reads never lock and never see a dictionary
+        // mid-change, so the parallel pre-draw threads can read it too. It replaced a
+        // ConditionalWeakTable, whose reads take a lock under Mono and were most of the
+        // HealthScale postfix's cost. Keys are compared by reference: Thing's hash is its
+        // ID, which two games' pawns can share.
+        // The keys are strong, so entries are dropped on PostRemoved, pruned by
+        // TitanGameComponent, and cleared when a game starts or loads.
+        private static volatile Dictionary<Pawn, Hediff_Titan> registry = NewRegistry(null);
+
+        private sealed class RefComparer : IEqualityComparer<Pawn>
+        {
+            public bool Equals(Pawn a, Pawn b) => ReferenceEquals(a, b);
+            public int GetHashCode(Pawn p) => RuntimeHelpers.GetHashCode(p);
+        }
+        private static readonly RefComparer Comparer = new RefComparer();
+
+        private static Dictionary<Pawn, Hediff_Titan> NewRegistry(Dictionary<Pawn, Hediff_Titan> from) =>
+            from == null ? new Dictionary<Pawn, Hediff_Titan>(Comparer) : new Dictionary<Pawn, Hediff_Titan>(from, Comparer);
 
         internal static void Register(Pawn pawn, Hediff_Titan titan)
         {
             if (pawn == null) return;
-            registry.Remove(pawn);
-            registry.Add(pawn, titan);
+            if (registry.TryGetValue(pawn, out var old) && old == titan) return;
+            var next = NewRegistry(registry);
+            next[pawn] = titan;
+            registry = next;
         }
 
         internal static void Unregister(Pawn pawn)
         {
-            if (pawn != null) registry.Remove(pawn);
+            if (pawn == null || !registry.ContainsKey(pawn)) return;
+            var next = NewRegistry(registry);
+            next.Remove(pawn);
+            registry = next;
+        }
+
+        /// <summary>A new game or a load: the previous game's pawns go.</summary>
+        internal static void ClearRegistry() => registry = NewRegistry(null);
+
+        /// <summary>Drops destroyed pawns and stale entries. Main thread only.</summary>
+        internal static void PruneRegistry()
+        {
+            List<Pawn> dead = null;
+            foreach (var kv in registry)
+                if (kv.Key.Discarded || !kv.Value.StillIn(kv.Key))
+                    (dead ?? (dead = new List<Pawn>())).Add(kv.Key);
+            if (dead == null) return;
+            var next = NewRegistry(registry);
+            foreach (var p in dead) next.Remove(p);
+            registry = next;
         }
 
         public static Hediff_Titan GetTitan(Pawn pawn)
@@ -37,7 +75,7 @@ namespace TitanFramework
             // Pawn_HealthTracker.Reset (pawn generation retries) clears the hediff set
             // without calling PostRemoved, which can leave a stale entry behind. The
             // check only runs for registered titans, so ordinary pawns never pay it.
-            if (!pawn.health.hediffSet.hediffs.Contains(t))
+            if (!t.StillIn(pawn))
             {
                 Unregister(pawn);
                 return null;
@@ -53,7 +91,7 @@ namespace TitanFramework
         internal static Hediff_Titan PeekTitan(Pawn pawn)
         {
             if (pawn == null || !registry.TryGetValue(pawn, out var t)) return null;
-            return t.pawn == pawn && t.pawn.health?.hediffSet?.hediffs.Contains(t) == true ? t : null;
+            return t.StillIn(pawn) ? t : null;
         }
 
         public static Hediff_Titan GetOrMakeTitan(Pawn pawn)
