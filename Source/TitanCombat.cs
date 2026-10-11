@@ -136,8 +136,9 @@ namespace TitanFramework
         /// <summary>Fires the shot off at a random angle, 4 to 12 tiles. It can hit any
         /// pawn or object along the way, the titan's allies and the player's colonists included.</summary>
         /// The original shooter stays the intended target (as with vanilla's wild misses),
-        /// so a stray hit on a bystander counts as crossfire and costs no goodwill. The
-        /// flags leave out IntendedTarget, so the shot never homes in on the shooter.
+        /// so a stray hit on a bystander hostile to that shooter counts as crossfire and
+        /// costs no goodwill. The flags leave out IntendedTarget, so the shot never homes
+        /// in on the shooter, and Projectile.CanHit also lets it pass through the shooter.
         private static void LaunchGlancing(Pawn pawn, ThingDef proj, Thing shooter)
         {
             var map = pawn.Map;

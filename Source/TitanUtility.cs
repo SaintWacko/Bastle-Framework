@@ -24,14 +24,15 @@ namespace TitanFramework
         // ID, which two games' pawns can share.
         // The keys are strong, so entries are dropped on PostRemoved, pruned by
         // TitanGameComponent, and cleared when a game starts or loads.
-        private static volatile Dictionary<Pawn, Hediff_Titan> registry = NewRegistry(null);
-
         private sealed class RefComparer : IEqualityComparer<Pawn>
         {
             public bool Equals(Pawn a, Pawn b) => ReferenceEquals(a, b);
             public int GetHashCode(Pawn p) => RuntimeHelpers.GetHashCode(p);
         }
+        // Declared before registry: static initialisers run in source order.
         private static readonly RefComparer Comparer = new RefComparer();
+
+        private static volatile Dictionary<Pawn, Hediff_Titan> registry = NewRegistry(null);
 
         private static Dictionary<Pawn, Hediff_Titan> NewRegistry(Dictionary<Pawn, Hediff_Titan> from) =>
             from == null ? new Dictionary<Pawn, Hediff_Titan>(Comparer) : new Dictionary<Pawn, Hediff_Titan>(from, Comparer);
@@ -86,8 +87,8 @@ namespace TitanFramework
         public static bool IsTitan(Pawn pawn) => GetTitan(pawn) != null;
 
         /// <summary>GetTitan without the stale-entry cleanup, safe to call from the
-        /// parallel pre-draw threads (ConditionalWeakTable reads are thread-safe; the
-        /// Remove in GetTitan is not safe to race).</summary>
+        /// parallel pre-draw threads: it only reads the current registry snapshot, while
+        /// GetTitan may Unregister, which swaps the snapshot and belongs on the main thread.</summary>
         internal static Hediff_Titan PeekTitan(Pawn pawn)
         {
             if (pawn == null || !registry.TryGetValue(pawn, out var t)) return null;
