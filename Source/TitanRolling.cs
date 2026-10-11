@@ -20,7 +20,9 @@ namespace TitanFramework
         /// <summary>Most traits to add.</summary>
         public int? maxTraits;
 
-        /// <summary>Chance the creature may take drawbacks (negative-point traits), and how many.</summary>
+        /// <summary>Chance the creature may take drawbacks (negative-point traits), and how many.
+        /// Both apply per roll: the main roll and the utility roll each check the chance, so a
+        /// creature can end up with up to twice maxDrawbacks.</summary>
         public float? drawbackChance;
         public int? maxDrawbacks;
 

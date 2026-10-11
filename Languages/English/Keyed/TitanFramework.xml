@@ -58,7 +58,7 @@
   <TF_Settings_StrictnessHint>How rarely a trait worth more than the points left still rolls. 0: the target is only a minimum. Higher keeps titans close to their target.</TF_Settings_StrictnessHint>
   <TF_Settings_MaxTraits>Most traits per titan</TF_Settings_MaxTraits>
   <TF_Settings_DrawbackChance>Drawback chance</TF_Settings_DrawbackChance>
-  <TF_Settings_MaxDrawbacks>Most drawbacks</TF_Settings_MaxDrawbacks>
+  <TF_Settings_MaxDrawbacks>Most drawbacks per roll</TF_Settings_MaxDrawbacks>
   <TF_Settings_DrawbackHint>A titan that rolls the chance can take drawbacks. Their negative points are paid back with more or better traits. The combat and utility rolls each make this check, and a utility drawback is only paid back with utility traits.</TF_Settings_DrawbackHint>
   <TF_Settings_RarityShift>Rarity shift on inheritance</TF_Settings_RarityShift>
   <TF_Settings_UtilityChance>Utility trait chance</TF_Settings_UtilityChance>
