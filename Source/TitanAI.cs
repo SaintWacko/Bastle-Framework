@@ -40,7 +40,7 @@ namespace TitanFramework
             // 1. Per-trait think trees.
             for (int i = 0; i < traits.Count; i++)
             {
-                var tree = traits[i].def.aiThinkTree;
+                var tree = traits[i].AiThinkTree;
                 if (tree?.thinkRoot == null) continue;
                 var result = tree.thinkRoot.TryIssueJobPackage(pawn, default);
                 if (result.IsValid) return result.Job;
@@ -57,7 +57,7 @@ namespace TitanFramework
             // 2. Offensive abilities at the enemy.
             for (int i = 0; i < traits.Count; i++)
             {
-                var defs = traits[i].def.abilities;
+                var defs = traits[i].Abilities;
                 if (defs == null) continue;
                 for (int j = 0; j < defs.Count; j++)
                 {
@@ -73,7 +73,7 @@ namespace TitanFramework
             // 3. Self-targeted abilities while fighting.
             for (int i = 0; i < traits.Count; i++)
             {
-                var defs = traits[i].def.abilities;
+                var defs = traits[i].Abilities;
                 if (defs == null) continue;
                 for (int j = 0; j < defs.Count; j++)
                 {
@@ -164,7 +164,8 @@ namespace TitanFramework
     }
 
     /// <summary>Runs the titan ability job giver whenever the constant think tree has
-    /// nothing to do. Ordinary pawns cost one registry lookup per 30 ticks.</summary>
+    /// nothing to do. Ordinary pawns cost one registry lookup per 30 ticks, and titans
+    /// with no abilities or AI trees one cached bool more.</summary>
     [HarmonyPatch(typeof(Pawn_JobTracker), "DetermineNextConstantThinkTreeJob")]
     internal static class Patch_TitanAbilityAI
     {
@@ -173,8 +174,11 @@ namespace TitanFramework
             // Vanilla starts these jobs against the constant tree and saves the job giver's
             // key in it; with no constant tree a saved job would throw on load.
             // ConstantThinkNodeRoot itself throws when the race has no constant tree.
+            if (__result.IsValid || !TitanFrameworkMod.Settings.abilityAI) return;
+            var titan = TitanUtility.PeekTitan(___pawn);
+            if (titan == null || !titan.HasAbilityAI) return;
             var root = ___pawn.thinker?.ConstantThinkTree?.thinkRoot;
-            if (__result.IsValid || root == null || TitanUtility.PeekTitan(___pawn) == null) return;
+            if (root == null) return;
             try
             {
                 var r = JobGiver_TitanAbilities.Instance.TryIssueJobPackage(___pawn, default);

@@ -61,7 +61,7 @@ namespace TitanFramework
 
         public bool HasTrait(TitanTraitDef def) => GetTrait(def) != null;
 
-        public float TotalPointCost => traits.Sum(t => t.def.pointCost);
+        public float TotalPointCost => traits.Sum(t => t.Points);
 
         public List<TitanTrait> Traits => traits;
 
@@ -89,6 +89,48 @@ namespace TitanFramework
                     dietBuiltFor = cachedStage;
                 }
                 return diet;
+            }
+        }
+
+        // Where this hediff last sat in the pawn's hediff list. Checking that slot first
+        // makes StillIn O(1) almost always; the list only shifts when an earlier hediff
+        // goes. Racing pre-draw threads may both rewrite it with the same answer.
+        [Unsaved] private int setIndex = -1;
+
+        /// <summary>Still in this pawn's hediff list. Safe from any thread.</summary>
+        internal bool StillIn(Pawn p)
+        {
+            if (pawn != p) return false;
+            var list = p.health?.hediffSet?.hediffs;
+            if (list == null) return false;
+            int i = setIndex;
+            if ((uint)i < (uint)list.Count && list[i] == this) return true;
+            i = list.IndexOf(this);
+            setIndex = i;
+            return i >= 0;
+        }
+
+        [Unsaved] private bool abilityAI;
+        [Unsaved] private HediffStage abilityAIBuiltFor;
+
+        /// <summary>Some trait grants an ability or an AI think tree, so the ability job
+        /// giver has something to try. Rebuilt with the stage.</summary>
+        public bool HasAbilityAI
+        {
+            get
+            {
+                if (stageDirty || cachedStage == null)
+                {
+                    cachedStage = BuildStage();
+                    stageDirty = false;
+                    cardStage = null;
+                }
+                if (abilityAIBuiltFor != cachedStage)
+                {
+                    abilityAI = traits.Any(t => t.AiThinkTree != null || !t.Abilities.NullOrEmpty());
+                    abilityAIBuiltFor = cachedStage;
+                }
+                return abilityAI;
             }
         }
 
@@ -170,17 +212,21 @@ namespace TitanFramework
 
         // ---- trait list mutation (use TitanUtility from outside) ----------------
 
-        internal TitanTrait AddTraitInternal(TitanTraitDef def, bool discovered, bool fromMaterial = false)
+        /// <param name="exactRarity">Keep the rarity as given instead of clamping it to
+        /// what the current settings allow (used when copying a titan).</param>
+        internal TitanTrait AddTraitInternal(TitanTraitDef def, bool discovered, bool fromMaterial = false, TitanRarity? rarity = null, bool exactRarity = false)
         {
             var trait = (TitanTrait)Activator.CreateInstance(def.traitClass);
             trait.def = def;
             trait.titan = this;
             trait.discovered = discovered || def.visible;
             trait.fromMaterial = fromMaterial;
+            if (exactRarity && rarity != null) trait.SetRarityExact(rarity.Value);
+            else trait.Rarity = rarity ?? def.rarity;
             traits.Add(trait);
             ApplyEffects(trait);
             trait.PostAdded();
-            TraitsChanged(def);
+            TraitsChanged(trait);
             return trait;
         }
 
@@ -190,15 +236,16 @@ namespace TitanFramework
             trait.PreRemoved();
             traits.Remove(trait);
             RemoveEffects(trait);
-            TraitsChanged(trait.def);
+            TraitsChanged(trait);
         }
 
         private void ApplyEffects(TitanTrait trait)
         {
-            var def = trait.def;
-            if (def.hediffs != null)
+            var hediffs = trait.Hediffs;
+            var abilities = trait.Abilities;
+            if (hediffs != null)
             {
-                foreach (var th in def.hediffs)
+                foreach (var th in hediffs)
                 {
                     // Another trait already added this hediff: adding it again would
                     // merge into it and stack the severity.
@@ -217,20 +264,21 @@ namespace TitanFramework
                     pawn.health.AddHediff(h, part);
                 }
             }
-            if (!def.abilities.NullOrEmpty())
+            if (!abilities.NullOrEmpty())
             {
                 TitanUtility.EnsureAbilityTracker(pawn);
-                foreach (var ab in def.abilities)
+                foreach (var ab in abilities)
                     pawn.abilities.GainAbility(ab);
             }
         }
 
         private void RemoveEffects(TitanTrait trait)
         {
-            var def = trait.def;
-            if (def.hediffs != null)
+            var hediffs = trait.Hediffs;
+            var abilities = trait.Abilities;
+            if (hediffs != null)
             {
-                foreach (var th in def.hediffs)
+                foreach (var th in hediffs)
                 {
                     // Another trait may add the same hediff; leave it if so.
                     if (OtherTraitHasHediff(trait, th)) continue;
@@ -239,11 +287,11 @@ namespace TitanFramework
                     if (existing != null) pawn.health.RemoveHediff(existing);
                 }
             }
-            if (!def.abilities.NullOrEmpty() && pawn.abilities != null)
+            if (!abilities.NullOrEmpty() && pawn.abilities != null)
             {
-                foreach (var ab in def.abilities)
+                foreach (var ab in abilities)
                 {
-                    if (traits.Any(t => t.def.abilities != null && t.def.abilities.Contains(ab))) continue;
+                    if (traits.Any(t => t != trait && t.Abilities != null && t.Abilities.Contains(ab))) continue;
                     pawn.abilities.RemoveAbility(ab);
                 }
             }
@@ -253,8 +301,8 @@ namespace TitanFramework
         {
             foreach (var t in traits)
             {
-                if (t == self || t.def.hediffs == null) continue;
-                foreach (var o in t.def.hediffs)
+                if (t == self || t.Hediffs == null) continue;
+                foreach (var o in t.Hediffs)
                     if (o.hediff == th.hediff && o.part == th.part) return true;
             }
             return false;
@@ -271,8 +319,8 @@ namespace TitanFramework
                 {
                     activeEffecterDefs = new List<EffecterDef>();
                     foreach (var t in traits)
-                        if (t.VisualsActive && t.def.effecters != null)
-                            foreach (var e in t.def.effecters)
+                        if (t.VisualsActive && t.Effecters != null)
+                            foreach (var e in t.Effecters)
                                 if (!activeEffecterDefs.Contains(e)) activeEffecterDefs.Add(e);
                 }
                 return activeEffecterDefs.Count > 0;
@@ -291,8 +339,11 @@ namespace TitanFramework
                     glowResolved = true;
                     activeGlow = null;
                     foreach (var t in traits)
-                        if (t.def.glow != null && (activeGlow == null || t.def.glow.radius > activeGlow.radius))
-                            activeGlow = t.def.glow;
+                    {
+                        var g = t.Glow;
+                        if (g != null && (activeGlow == null || g.radius > activeGlow.radius))
+                            activeGlow = g;
+                    }
                 }
                 return activeGlow;
             }
@@ -302,7 +353,7 @@ namespace TitanFramework
         public bool HasMapVisuals => HasActiveEffecters || ActiveGlow != null;
 
         /// <summary>Call when which visuals should show may have changed.</summary>
-        public void VisualsChanged(TitanTraitDef cause = null)
+        public void VisualsChanged(TitanTrait cause = null)
         {
             activeEffecterDefs = null;
             glowResolved = false;
@@ -345,7 +396,7 @@ namespace TitanFramework
         private bool EffecterScaled(EffecterDef def)
         {
             foreach (var t in traits)
-                if (t.def.effecters != null && t.def.effecters.Contains(def))
+                if (t.Effecters != null && t.Effecters.Contains(def))
                     return t.def.scaleEffectersWithBodySize;
             return true;
         }
@@ -378,6 +429,7 @@ namespace TitanFramework
             glower?.Remove();
             glower = null;
             CleanupEffecters(keepTracked: true);
+            RecalcTicking();
             // The health-per-point slider changes every titan, flesh or not.
             materialStage = null;
             stageDirty = true;
@@ -420,7 +472,7 @@ namespace TitanFramework
             if (!keepTracked) trackedMap = null;
         }
 
-        private void TraitsChanged(TitanTraitDef changed)
+        private void TraitsChanged(TitanTrait changed)
         {
             if (changed.HasVisuals) VisualsChanged(changed);
             var oldStage = cachedStage;
@@ -442,13 +494,24 @@ namespace TitanFramework
                 pawn.Notify_DisabledWorkTypesChanged();
         }
 
+        /// <summary>A trait's Stage now returns something different (a trait that switches
+        /// its stage on and off). Rebuilds the merged stage and refreshes the pawn's
+        /// stats and capacities. Not for changes that alter needs: use the trait list.</summary>
+        public void StageChanged()
+        {
+            stageDirty = true;
+            cardStage = null;
+            if (pawn?.health?.hediffSet != null && pawn.health.hediffSet.hediffs.Contains(this))
+                pawn.health.Notify_HediffChanged(this);
+        }
+
         internal void Notify_TraitDiscovered(TitanTrait trait)
         {
             nameDirty = true;
             cardStage = null;
-            if (trait.def.HasVisuals) VisualsChanged(trait.def);
-            if (trait.def.hediffs == null) return;
-            foreach (var th in trait.def.hediffs)
+            if (trait.HasVisuals) VisualsChanged(trait);
+            if (trait.Hediffs == null) return;
+            foreach (var th in trait.Hediffs)
                 foreach (var h in pawn.health.hediffSet.hediffs.ToList())
                     if (h.def == th.hediff && (th.part == null || h.Part?.def == th.part))
                     {
@@ -460,9 +523,24 @@ namespace TitanFramework
         private void RecalcTicking()
         {
             anyTicking = false;
+            float scale = 1f;
             for (int i = 0; i < traits.Count; i++)
-                if (traits[i].def.Ticks) { anyTicking = true; break; }
+            {
+                if (traits[i].def.Ticks) anyTicking = true;
+                scale *= traits[i].DrawSizeFactor;
+            }
+            // Read every frame when the draw matrix is built, so no render refresh is needed.
+            drawScale = scale;
         }
+
+        /// <summary>Product of every trait's draw size factor. Kept as a plain field so the
+        /// parallel pre-draw threads can read it (see Patch_PawnRenderer_GetDrawParms).</summary>
+        [Unsaved] private float drawScale = 1f;
+        public float DrawScale => drawScale;
+
+        // Lifesteal healing waits for the next tick: it is earned inside vanilla's
+        // foreach over this pawn's hediffs.
+        [Unsaved] private float pendingHeal;
 
         // ---- stage ---------------------------------------------------------------
 
@@ -490,8 +568,8 @@ namespace TitanFramework
             for (int i = 0; i < traits.Count; i++)
             {
                 var t = traits[i];
-                if (t.discovered || t.def.hediffs == null) continue;
-                foreach (var th in t.def.hediffs)
+                if (t.discovered || t.Hediffs == null) continue;
+                foreach (var th in t.Hediffs)
                 {
                     if (DiscoveredTraitGrants(th)) continue;
                     for (int j = 0; j < hediffs.Count; j++)
@@ -505,8 +583,8 @@ namespace TitanFramework
             for (int i = 0; i < traits.Count; i++)
             {
                 var t = traits[i];
-                if (!t.discovered || t.def.hediffs == null) continue;
-                foreach (var x in t.def.hediffs)
+                if (!t.discovered || t.Hediffs == null) continue;
+                foreach (var x in t.Hediffs)
                     if (x.hediff == th.hediff && x.part == th.part) return true;
             }
             return false;
@@ -519,7 +597,7 @@ namespace TitanFramework
             for (int i = 0; i < traits.Count; i++)
             {
                 var t = traits[i];
-                if (t.def.abilities == null || !t.def.abilities.Contains(abilityDef)) continue;
+                if (t.Abilities == null || !t.Abilities.Contains(abilityDef)) continue;
                 if (t.discovered) return false;
                 any = true;
             }
@@ -570,7 +648,10 @@ namespace TitanFramework
 
             var stages = new List<HediffStage>(traits.Count + 1);
             foreach (var trait in traits)
-                if (trait.def.stage != null && (!discoveredOnly || trait.discovered)) stages.Add(trait.def.stage);
+            {
+                var st = trait.Stage;
+                if (st != null && (!discoveredOnly || trait.discovered)) stages.Add(st);
+            }
             if (MaterialStage != null) stages.Add(MaterialStage);
 
             foreach (var t in stages)
@@ -668,11 +749,11 @@ namespace TitanFramework
             prefixCache = null;
             suffixCache = null;
             var known = traits.Where(t => t.discovered).OrderBy(t => t.def.nameOrder).ToList();
-            var pre = known.Where(t => !t.def.namePrefix.NullOrEmpty()).Select(t => t.def.namePrefix).ToList();
+            var pre = known.Where(t => !t.NamePrefix.NullOrEmpty()).Select(t => t.NamePrefix).ToList();
             // The material always shows and sits next to the kind: "flaming jade bear".
             if (material != null) pre.Add(TitanMaterialUtility.Adjective(material));
             // Suffixes read outward from the kind label, so the lowest nameOrder goes last.
-            var suf = known.Where(t => !t.def.nameSuffix.NullOrEmpty()).Select(t => t.def.nameSuffix).Reverse().ToList();
+            var suf = known.Where(t => !t.NameSuffix.NullOrEmpty()).Select(t => t.NameSuffix).Reverse().ToList();
             if (pre.Count > 0) prefixCache = string.Join(" ", pre) + " ";
             if (suf.Count > 0) suffixCache = " " + string.Join(" ", suf);
         }
@@ -714,17 +795,19 @@ namespace TitanFramework
                     sb.AppendLine(t.Label.Colorize(t.discovered ? ColoredText.TipSectionTitleColor : ColoredText.SubtleGrayColor));
                     if (!t.Description.NullOrEmpty()) sb.AppendLine("  " + t.Description);
                     if (!t.discovered) continue;
-                    if (t.def.stage != null)
-                        foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
+                    if (t.Stage != null)
+                        foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.Stage, null))
                             if (e.ShouldDisplay())
                                 sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
-                    string health = TitanHealth.Describe(t);
-                    if (health != null) sb.AppendLine("  - " + health);
-                    foreach (string line in TitanDiet.Describe(t.def.diet))
+                    string traitHealth = TitanHealth.DescribeTrait(t);
+                    if (traitHealth != null) sb.AppendLine("  - " + traitHealth);
+                    foreach (string line in TitanDiet.Describe(t.Diet))
                         sb.AppendLine("  - " + line);
                     string extra = t.TipStringExtra;
                     if (!extra.NullOrEmpty()) sb.AppendLine("  " + extra);
                 }
+                string health = TitanHealth.DescribeTotal(traits);
+                if (health != null) sb.AppendLine().AppendLine(health);
                 return sb.ToString().TrimEndNewlines();
             }
         }
@@ -779,6 +862,12 @@ namespace TitanFramework
                 statueChecked = true;
                 ApplyStatue(dirty: true);
             }
+            if (pendingHeal > 0f)
+            {
+                float heal = pendingHeal;
+                pendingHeal = 0f;
+                TitanCombatUtility.HealInjuries(pawn, heal);
+            }
             if (anyTicking)
             {
                 for (int i = traits.Count - 1; i >= 0; i--)
@@ -800,6 +889,18 @@ namespace TitanFramework
                 var t = traits[i];
                 t.Notify_PawnPostApplyDamage(dinfo, totalDamageDealt);
                 t.TryDiscoverBy(TitanDiscoveryTrigger.TakesDamage);
+                if (t.Retaliation != null) TitanCombatUtility.TryRetaliate(t, dinfo);
+            }
+        }
+
+        public override void Notify_PawnDamagedThing(Thing thing, DamageInfo dinfo, DamageWorker.DamageResult result)
+        {
+            base.Notify_PawnDamagedThing(thing, dinfo, result);
+            for (int i = traits.Count - 1; i >= 0; i--)
+            {
+                var t = traits[i];
+                t.Notify_PawnDamagedThing(thing, dinfo, result);
+                if (t.Lifesteal != null) pendingHeal += TitanCombatUtility.LifestealFrom(t, thing, dinfo, result);
             }
         }
 
@@ -807,7 +908,7 @@ namespace TitanFramework
         internal bool HasHiddenTraitGranting(AbilityDef abilityDef)
         {
             for (int i = 0; i < traits.Count; i++)
-                if (!traits[i].discovered && traits[i].def.abilities != null && traits[i].def.abilities.Contains(abilityDef))
+                if (!traits[i].discovered && traits[i].Abilities != null && traits[i].Abilities.Contains(abilityDef))
                     return true;
             return false;
         }
@@ -820,8 +921,31 @@ namespace TitanFramework
             for (int i = traits.Count - 1; i >= 0; i--)
             {
                 var t = traits[i];
-                if (!t.discovered && t.def.abilities != null && t.def.abilities.Contains(abilityDef))
+                if (!t.discovered && t.Abilities != null && t.Abilities.Contains(abilityDef))
                     t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedAbility);
+            }
+        }
+
+        /// <summary>Next tick a starving search for refused food may run (see
+        /// TitanDietUtility.TryDiscoverRefusal). Not saved: a reload only allows one early check.</summary>
+        internal int nextRefusalCheck;
+
+        public override void Notify_IngestedThing(Thing thing, int amount)
+        {
+            base.Notify_IngestedThing(thing, amount);
+            if (thing != null) Notify_Ate(thing.def);
+        }
+
+        /// <summary>Reveals hidden traits whose diet is what let the creature eat this.
+        /// Also called by the non-food eating job, which doesn't go through Thing.Ingested.</summary>
+        internal void Notify_Ate(ThingDef food)
+        {
+            var removed = Diet?.remove ?? FoodTypeFlags.None;
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var t = traits[i];
+                if (!t.discovered && t.def.DiscoveredBy(TitanDiscoveryTrigger.EatsAddedFood) && TitanDiet.TraitAdds(t.Diet, food, pawn, removed))
+                    t.TryDiscoverBy(TitanDiscoveryTrigger.EatsAddedFood);
             }
         }
 
@@ -837,9 +961,9 @@ namespace TitanFramework
                 t.Notify_PawnUsedVerb(verb, target);
                 if (t.discovered) continue;
                 t.TryDiscoverBy(TitanDiscoveryTrigger.Attacks);
-                if (abilityDef != null && t.def.abilities != null && t.def.abilities.Contains(abilityDef))
+                if (abilityDef != null && t.Abilities != null && t.Abilities.Contains(abilityDef))
                     t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedAbility);
-                if (verbHediff != null && t.def.hediffs != null && t.def.hediffs.Any(h => h.hediff == verbHediff))
+                if (verbHediff != null && t.Hediffs != null && t.Hediffs.Any(h => h.hediff == verbHediff))
                     t.TryDiscoverBy(TitanDiscoveryTrigger.UsesGrantedVerb);
             }
         }
@@ -862,13 +986,17 @@ namespace TitanFramework
             Scribe_Defs.Look(ref material, "material");
             // Default 0, not 1: saves from before this field have injuries already sized
             // for the current factor, and 0 makes SyncInjuries record it without scaling.
-            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f);
+            Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f, forceSave: true);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 materialStage = null;
                 traits = traits ?? new List<TitanTrait>();
                 traits.RemoveAll(t => t?.def == null);
-                foreach (var t in traits) t.titan = this;
+                foreach (var t in traits)
+                {
+                    t.titan = this;
+                    t.ClampLoadedRarity();
+                }
                 stageDirty = true;
                 nameDirty = true;
                 RecalcTicking();

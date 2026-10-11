@@ -54,21 +54,23 @@ namespace TitanFramework
                     sb.AppendLine(t.Description);
                     continue;
                 }
-                if (!t.def.description.NullOrEmpty()) sb.AppendLine(t.def.description);
-                if (t.def.stage != null)
-                    foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.def.stage, null))
+                if (!t.Description.NullOrEmpty()) sb.AppendLine(t.Description);
+                if (t.Stage != null)
+                    foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.Stage, null))
                         if (e.ShouldDisplay())
                             sb.AppendLine(" - " + e.LabelCap + ": " + e.ValueString);
-                string health = TitanHealth.Describe(t);
-                if (health != null) sb.AppendLine(" - " + health);
-                foreach (string line in TitanDiet.Describe(t.def.diet))
+                string traitHealth = TitanHealth.DescribeTrait(t);
+                if (traitHealth != null) sb.AppendLine(" - " + traitHealth);
+                foreach (string line in TitanDiet.Describe(t.Diet))
                     sb.AppendLine(" - " + line);
                 string extra = t.TipStringExtra;
                 if (!extra.NullOrEmpty()) sb.AppendLine(" - " + extra);
-                float value = TitanValueUtility.TraitValue(t.def, baseValue);
+                float value = TitanValueUtility.TraitValue(t, baseValue);
                 if (value != 0f)
                     sb.AppendLine(" - " + "TF_Card_TraitValue".Translate((value > 0f ? "+" : "") + value.ToStringMoney()));
             }
+            string health = TitanHealth.DescribeTotal(titan.Traits);
+            if (health != null) sb.AppendLine().AppendLine(health);
             if (anyHidden && TitanFrameworkMod.Settings.mysteryTradeBonus > 0f)
                 sb.AppendLine().AppendLine("TF_Card_Mystery".Translate(TitanFrameworkMod.Settings.mysteryTradeBonus.ToStringPercent()));
             return sb.ToString().TrimEndNewlines();

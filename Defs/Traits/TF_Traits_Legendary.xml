@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Signature traits: Legendary (and a few Epic) traits with their own code.
+       TF_Death: one trick on dying (undying, hydra-blooded). -->
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Undying</defName>
+    <label>undying</label>
+    <description>Death doesn't hold it. A few hours after it dies, it rises again, healed, unless its corpse has been destroyed or butchered first. It can only do this once every fifteen days.</description>
+    <namePrefix>undying</namePrefix>
+    <rarity>Epic</rarity>
+    <traitClass>TitanFramework.TitanTrait_Undying</traitClass>
+    <exclusionTags><li>TF_Death</li></exclusionTags>
+    <!-- Revealed only when it rises (TitanTrait_Undying.Rise), so its death gives nothing away. -->
+    <discoverWhen><li>Manual</li></discoverWhen>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_HydraBlooded</defName>
+    <label>hydra-blooded</label>
+    <description>Cut it down and more grow back. When it dies, two young copies of it spring up beside the corpse, with every other trait it had.</description>
+    <namePrefix>hydra-blooded</namePrefix>
+    <rarity>Legendary</rarity>
+    <traitClass>TitanFramework.TitanTrait_Hydra</traitClass>
+    <requiresFlesh>true</requiresFlesh>
+    <allowHumanlikes>false</allowHumanlikes>
+    <allowMechanoids>false</allowMechanoids>
+    <exclusionTags><li>TF_Death</li></exclusionTags>
+    <discoverWhen><li>Dies</li></discoverWhen>
+  </TitanFramework.TitanTraitDef>
+
+  <!-- Visible: the mirror sheen gives it away. -->
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_MirrorScaled</defName>
+    <label>mirror-scaled</label>
+    <description>Polished, mirror-bright scales cover its body. A third of the shots that hit it glance off. Most fly off in a random direction and can strike anyone nearby. The rest fly straight back at the shooter.</description>
+    <namePrefix>mirror-scaled</namePrefix>
+    <rarity>Legendary</rarity>
+    <visible>true</visible>
+    <overlays>
+      <li>
+        <color>(0.85, 0.92, 1.0, 0.3)</color>
+        <pulseSpeed>1.6</pulseSpeed>
+        <pulseMin>0.4</pulseMin>
+      </li>
+    </overlays>
+    <deflect>
+      <chance>0.35</chance>
+    </deflect>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Phasing</defName>
+    <label>phasing</label>
+    <description>It slips through space when hurt. Each hit has a chance to make it blink up to 8 tiles away, at most once every 10 seconds.</description>
+    <namePrefix>phasing</namePrefix>
+    <rarity>Legendary</rarity>
+    <traitClass>TitanFramework.TitanTrait_Phasing</traitClass>
+    <discoverWhen><li>Dies</li></discoverWhen>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_PackCaller</defName>
+    <label>pack-caller</label>
+    <description>When something attacks it, it calls out, and others of its kind within 35 tiles come to fight for it.</description>
+    <nameSuffix>the pack-caller</nameSuffix>
+    <rarity>Epic</rarity>
+    <traitClass>TitanFramework.TitanTrait_PackCaller</traitClass>
+    <allowHumanlikes>false</allowHumanlikes>
+    <allowMechanoids>false</allowMechanoids>
+    <discoverWhen><li>Dies</li></discoverWhen>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_DreadAura</defName>
+    <label>dread aura</label>
+    <description>An aura of dread surrounds it. Living enemies within 8 tiles are less aware and move more slowly. Mechanoids and entities don't feel it.</description>
+    <namePrefix>dreadful</namePrefix>
+    <rarity>Legendary</rarity>
+    <traitClass>TitanFramework.TitanTrait_DreadAura</traitClass>
+    <discoverWhen><li>Dies</li></discoverWhen>
+  </TitanFramework.TitanTraitDef>
+
+  <TitanFramework.TitanTraitDef>
+    <defName>TF_Elder</defName>
+    <label>elder</label>
+    <description>An ancient of its kind. It is bigger, tougher and stronger than any other, and its wounds close quickly.</description>
+    <nameSuffix>the elder</nameSuffix>
+    <rarity>Legendary</rarity>
+    <allowMechanoids>false</allowMechanoids>
+    <exclusionTags><li>TF_Size</li></exclusionTags>
+    <healthScaleFactor>2</healthScaleFactor>
+    <drawSizeFactor>1.2</drawSizeFactor>
+    <discoverWhen>
+      <li>Attacks</li>
+      <li>TakesDamage</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <stage>
+      <naturalHealingFactor>1.5</naturalHealingFactor>
+      <statOffsets>
+        <ComfyTemperatureMin>-10</ComfyTemperatureMin>
+        <ComfyTemperatureMax>10</ComfyTemperatureMax>
+      </statOffsets>
+      <statFactors>
+        <MoveSpeed>1.1</MoveSpeed>
+        <MeleeDamageFactor>1.25</MeleeDamageFactor>
+        <IncomingDamageFactor>0.85</IncomingDamageFactor>
+      </statFactors>
+    </stage>
+  </TitanFramework.TitanTraitDef>
+
+</Defs>

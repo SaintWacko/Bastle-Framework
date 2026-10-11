@@ -92,4 +92,23 @@ namespace TitanFramework
             TitanUtility.InheritTraits(pawn, BirthContext.mother, BirthContext.father);
         }
     }
+
+    /// <summary>JoinsColony discovery: taming, recruiting, most purchases and rescues end
+    /// in SetFaction (a pawn generated straight into the colony doesn't). The creature
+    /// is the player's own from here, so this skips the observe check: an animal bought
+    /// from an orbital trader joins while still unspawned. Rare, so a plain lookup is fine.</summary>
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.SetFaction))]
+    public static class Patch_Pawn_SetFaction
+    {
+        public static void Postfix(Pawn __instance, Faction newFaction)
+        {
+            if (newFaction == null || !newFaction.IsPlayer) return;
+            var titan = TitanUtility.PeekTitan(__instance);
+            if (titan == null) return;
+            var traits = titan.TraitsForReading;
+            for (int i = traits.Count - 1; i >= 0; i--)
+                if (!traits[i].discovered && traits[i].def.DiscoveredBy(TitanDiscoveryTrigger.JoinsColony))
+                    traits[i].Discover();
+        }
+    }
 }

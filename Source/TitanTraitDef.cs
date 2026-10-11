@@ -26,6 +26,15 @@ namespace TitanFramework
         TakesDamage,
         /// <summary>The creature dies.</summary>
         Dies,
+        /// <summary>The creature eats something only this trait's diet lets it eat (an
+        /// extraFoods thing, or a food type the trait adds that its race doesn't eat).</summary>
+        EatsAddedFood,
+        /// <summary>The creature is starving, finds nothing to eat, and food this trait's
+        /// diet refuses (one its race would otherwise eat) is within reach.</summary>
+        StarvesNearRefusedFood,
+        /// <summary>The creature joins the player's faction: tamed, recruited, bought or
+        /// rescued. For traits that only show once you live with it (meat yield, hunger).</summary>
+        JoinsColony,
     }
 
     /// <summary>A hediff a trait adds to its creature, optionally on a body part.</summary>
@@ -49,11 +58,27 @@ namespace TitanFramework
 
         // ---- generation ----------------------------------------------------------
 
-        /// <summary>Relative weight when rolling. 0 = never rolled, only added by code.</summary>
+        /// <summary>Relative weight among the traits that can roll at the same rarity.
+        /// 0 = never rolled, only added by code.</summary>
         public float commonality = 1f;
 
-        /// <summary>Budget cost. Negative values are drawbacks that give points back.</summary>
-        public float pointCost = 1f;
+        /// <summary>The trait's rarity. With scalesWithRarity it's the lowest it rolls at.</summary>
+        public TitanRarity rarity = TitanRarity.Common;
+
+        /// <summary>The trait can also roll at every higher rarity (up to MaxRarity), with
+        /// its stage numbers and health factor scaled by the rarity strength table in the
+        /// mod settings, relative to its own rarity. Its points and market value follow
+        /// the rarity points table. rarityOverrides can change anything else.</summary>
+        public bool scalesWithRarity;
+
+        /// <summary>Changes at higher rarities: a better ability, a different look.</summary>
+        public List<TitanRarityOverride> rarityOverrides;
+
+        /// <summary>Points at the trait's own rarity, counted against the point target when
+        /// rolling, and the base of its health and market value. Unset: the rarity's value
+        /// from the mod settings. Negative: a drawback, which gives points back and only
+        /// rolls through the drawback chance.</summary>
+        public float pointCost = float.NaN;
 
         /// <summary>Market value added, as a fraction of the creature's own value (0.3 =
         /// +30%). Setting this or marketValueOffset replaces the price the trait would
@@ -65,9 +90,29 @@ namespace TitanFramework
 
         /// <summary>Multiplies the creature's health (every body part's hit points) on top
         /// of the per-point bonus from the mod settings. 1.5 = half again as tough, 0.7 =
-        /// frail. Applies before the trait is discovered. Each trait's total health effect
-        /// is floored at 0.25, and so is the creature's.</summary>
+        /// frail. Applies before the trait is discovered. Each trait's factor is floored at
+        /// 0.25, and so is the creature's total.</summary>
         public float healthScaleFactor = 1f;
+
+        /// <summary>Draws the creature this much bigger (1.3 = 30% larger). Scales with
+        /// rarity like healthScaleFactor. Drawing only: body size, hit box and food are
+        /// unchanged. Applies before the trait is discovered (you can see the size).
+        /// Not applied to humanlikes, whose zoomed-out drawing goes through a fixed-size
+        /// render cache.</summary>
+        public float drawSizeFactor = 1f;
+
+        /// <summary>Damage dealt back to whoever hits the creature in melee.</summary>
+        public TitanRetaliation retaliation;
+
+        /// <summary>Heals the creature by part of the damage it deals.</summary>
+        public TitanLifesteal lifesteal;
+
+        /// <summary>Changes what it gives when shorn or milked.</summary>
+        public TitanProducts products;
+
+        /// <summary>A chance to shrug off a hit completely, and optionally send a shot
+        /// back at whoever fired it.</summary>
+        public TitanDeflect deflect;
 
         /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
         public List<string> exclusionTags;
@@ -168,6 +213,150 @@ namespace TitanFramework
         public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty() || !flames.NullOrEmpty() || glow != null;
         public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty();
 
+        // ---- rarity --------------------------------------------------------------
+
+        public float BasePoints => float.IsNaN(pointCost) ? rarity.Points() : pointCost;
+
+        /// <summary>Abilities (and the AI to use them) are all this trait does: no stage,
+        /// hediffs, code, combat effects, diet, size, health, visuals or rarity overrides.
+        /// Such a trait isn't added where other traits already grant every one of its
+        /// abilities (TitanUtility.CanAddTrait).</summary>
+        public bool OnlyGrantsAbilities =>
+            !abilities.NullOrEmpty() && stage == null && hediffs.NullOrEmpty() && traitClass == typeof(TitanTrait)
+            && rarityOverrides.NullOrEmpty() && retaliation == null && lifesteal == null && products == null
+            && deflect == null && diet == null && healthScaleFactor == 1f && drawSizeFactor == 1f && !HasVisuals;
+
+        public bool IsDrawback => BasePoints < 0f;
+
+        /// <summary>Tag for traits worth something mainly once the creature is tamed. They
+        /// get their own roll (TitanRolling) and their points add no health.</summary>
+        public const string UtilityTag = "Utility";
+
+        public bool IsUtility => tags != null && tags.Contains(UtilityTag);
+
+        /// <summary>Points when rolled at a rarity: a scaling trait follows the settings'
+        /// points table relative to its own rarity.</summary>
+        public float PointsAt(TitanRarity at)
+        {
+            float basePts = BasePoints;
+            if (!scalesWithRarity || at == rarity) return basePts;
+            float own = rarity.Points();
+            return own > 0.0001f ? basePts * at.Points() / own : basePts;
+        }
+
+        /// <summary>A fixed price (marketValuePercent/Offset) grows with the points.</summary>
+        public float ValueScaleAt(TitanRarity at)
+        {
+            float own = BasePoints;
+            return scalesWithRarity && Math.Abs(own) > 0.0001f ? PointsAt(at) / own : 1f;
+        }
+
+        /// <summary>The override in effect at a rarity, or null.</summary>
+        public TitanRarityOverride OverrideAt(TitanRarity at)
+        {
+            if (rarityOverrides == null) return null;
+            TitanRarityOverride best = null;
+            foreach (var o in rarityOverrides)
+                if (o.minRarity <= at && (best == null || o.minRarity > best.minRarity)) best = o;
+            return best;
+        }
+
+        /// <summary>Strength multiplier on the stage at a rarity, relative to the rarity the
+        /// stage was written for (the trait's own, or the override's minRarity).</summary>
+        public float StrengthAt(TitanRarity at)
+        {
+            if (!scalesWithRarity) return 1f;
+            var o = OverrideAt(at);
+            TitanRarity from = o?.stage != null ? o.minRarity : rarity;
+            float baseMult = from.Strength();
+            return baseMult > 0.0001f ? at.Strength() / baseMult : 1f;
+        }
+
+        public HediffStage StageAt(TitanRarity at) => OverrideAt(at)?.stage ?? stage;
+
+        [Unsaved] private bool[] fitsCache;
+        [Unsaved] private int fitsFor = -1;
+
+        /// <summary>A rarity is offered only when no factor would be pushed onto the floor.
+        /// There can be gaps: a trait whose factors run out at Rare can still roll at a
+        /// Legendary override, whose stage is scaled from its own rarity.</summary>
+        public bool FitsAt(TitanRarity at)
+        {
+            if (!scalesWithRarity) return at == rarity;
+            if (at < rarity) return false;
+            if (at == rarity) return true;
+            if (fitsFor != TitanSettings.Version || fitsCache == null)
+            {
+                fitsCache = new bool[TitanRarityUtility.Count];
+                for (var r = rarity; r <= TitanRarity.Legendary; r++)
+                    fitsCache[(int)r] = r == rarity || ComputeFits(r);
+                fitsFor = TitanSettings.Version;
+            }
+            return fitsCache[(int)at];
+        }
+
+        private bool ComputeFits(TitanRarity at)
+        {
+            float s = StrengthAt(at);
+            // Unscaled (an override at its own rarity): the stage is used as written.
+            if (Math.Abs(s - 1f) >= 0.0001f
+                && 1f + (TitanStageScaler.LowestFactor(StageAt(at)) - 1f) * s < TitanStageScaler.MinFactor) return false;
+            var oh = OverrideAt(at)?.healthScaleFactor;
+            float h = oh ?? healthScaleFactor;
+            float hs = StrengthFor(oh != null, at);
+            return h >= 1f || Math.Abs(hs - 1f) < 0.0001f || 1f + (h - 1f) * hs >= TitanStageScaler.MinFactor;
+        }
+
+        /// <summary>Strength at a rarity relative to another (the rarity a value was written
+        /// for). 1 for traits that don't scale.</summary>
+        public float StrengthFrom(TitanRarity from, TitanRarity at)
+        {
+            if (!scalesWithRarity) return 1f;
+            float b = from.Strength();
+            return b > 0.0001f ? at.Strength() / b : 1f;
+        }
+
+        /// <summary>Strength for a value that the override at this rarity either sets
+        /// (scaled from the override's minRarity) or leaves to the def (scaled from the
+        /// trait's own rarity).</summary>
+        public float StrengthFor(bool overrideSetsIt, TitanRarity at)
+        {
+            var o = overrideSetsIt ? OverrideAt(at) : null;
+            return StrengthFrom(o?.minRarity ?? rarity, at);
+        }
+
+        /// <summary>The highest rarity the trait can roll at. Lower ones may be skipped
+        /// (see FitsAt), so loop with CanAppearAt.</summary>
+        public TitanRarity MaxRarity
+        {
+            get
+            {
+                if (!scalesWithRarity) return rarity;
+                for (var r = TitanRarity.Legendary; r > rarity; r--)
+                    if (FitsAt(r)) return r;
+                return rarity;
+            }
+        }
+
+        public bool CanAppearAt(TitanRarity at) => FitsAt(at);
+
+        /// <summary>The nearest rarity at or below this one that the trait can roll at.</summary>
+        public TitanRarity ClampRarity(TitanRarity at)
+        {
+            if (!scalesWithRarity || at <= rarity) return rarity;
+            for (var r = at; r > rarity; r--)
+                if (FitsAt(r)) return r;
+            return rarity;
+        }
+
+        /// <summary>The trait's draw size factor at a rarity (1 = unchanged).</summary>
+        public float DrawSizeAt(TitanRarity at)
+        {
+            var o = OverrideAt(at)?.drawSizeFactor;
+            float f = o ?? drawSizeFactor;
+            return f == 1f ? 1f : UnityEngine.Mathf.Max(0.25f, 1f + (f - 1f) * StrengthFor(o != null, at));
+        }
+
         // ---- cached --------------------------------------------------------------
 
         [Unsaved] private bool? ticksCached;
@@ -185,6 +374,19 @@ namespace TitanFramework
                 }
                 return ticksCached.Value;
             }
+        }
+
+        public override void ResolveReferences()
+        {
+            base.ResolveReferences();
+            // Diet traits are revealed by what the creature eats unless the def says otherwise.
+            bool hasDiet = diet != null;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    hasDiet |= o?.diet != null;
+            if (hasDiet && !visible && discoverWhen == null)
+                discoverWhen = new List<TitanDiscoveryTrigger>
+                    { TitanDiscoveryTrigger.EatsAddedFood, TitanDiscoveryTrigger.StarvesNearRefusedFood };
         }
 
         public bool DiscoveredBy(TitanDiscoveryTrigger trigger)
@@ -210,9 +412,21 @@ namespace TitanFramework
             else if (!allowOther) return false;
 
             if (requiresFlesh && !race.IsFlesh) return false;
+            if (!ProductsFit(products, pawn)) return false;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    if (!ProductsFit(o.products, pawn)) return false;
             if (race.baseBodySize < minBodySize || race.baseBodySize > maxBodySize) return false;
             if (allowedRaces != null && !allowedRaces.Contains(pawn.def)) return false;
             if (disallowedRaces != null && disallowedRaces.Contains(pawn.def)) return false;
+            return true;
+        }
+
+        private static bool ProductsFit(TitanProducts p, Pawn pawn)
+        {
+            if (p == null) return true;
+            if (p.ChangesWool && pawn.def.GetCompProperties<CompProperties_Shearable>() == null) return false;
+            if (p.ChangesMilk && pawn.def.GetCompProperties<CompProperties_Milkable>() == null) return false;
             return true;
         }
 
@@ -222,6 +436,18 @@ namespace TitanFramework
             if (traitClass == null || !typeof(TitanTrait).IsAssignableFrom(traitClass))
                 yield return $"traitClass {traitClass} is not a TitanTrait";
             if (commonality < 0f) yield return "commonality is negative";
+            if (rarityOverrides != null)
+            {
+                if (!scalesWithRarity) yield return "has rarityOverrides but doesn't scale with rarity, so it only ever rolls at its own rarity and the overrides are never used";
+                foreach (var o in rarityOverrides)
+                {
+                    if (o.minRarity <= rarity) yield return $"rarityOverride at {o.minRarity} is not above the trait's own rarity ({rarity}); set the base fields instead";
+                    if (o.hediffs != null && !visible)
+                        foreach (var h in o.hediffs)
+                            if (h.hediff != null && (h.hediff.stages.NullOrEmpty() || h.hediff.stages.Any(s => s.becomeVisible)))
+                                yield return $"rarityOverride hediff {h.hediff.defName} will show in the health tab before the trait is discovered. Give it a stage with <becomeVisible>false</becomeVisible>.";
+                }
+            }
             if (hediffs != null)
                 foreach (var h in hediffs)
                 {
@@ -238,6 +464,7 @@ namespace TitanFramework
                     else if (!f.thing.IsNutritionGivingIngestible && f.nutrition <= 0f)
                         yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
+            if (retaliation != null && retaliation.damageDef == null) yield return "retaliation has no damageDef";
             if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(TitanTrait))
                 yield return "not visible and has no discoverWhen: only code can ever reveal it (add <li>Manual</li> to discoverWhen to silence this)";
         }
