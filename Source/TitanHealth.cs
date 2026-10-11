@@ -36,13 +36,13 @@ namespace TitanFramework
             return Mathf.Max(MinFactor, Mathf.Max(0f, 1f + points) * scale);
         }
 
-        /// <summary>The trait's own healthScaleFactor as a line ("Health: +30%"), or
-        /// null when it has none. Its points' share of the bonus only shows in the total.</summary>
+        /// <summary>The trait's own healthScaleFactor as a line ("Health multiplier: x1.3"),
+        /// or null when it has none. Worded apart from the total, which also counts points.</summary>
         public static string DescribeTrait(TitanTrait t)
         {
-            float change = Mathf.Max(MinFactor, t.HealthScaleFactor) - 1f;
-            if (Mathf.Abs(change) < 0.005f) return null;
-            return "TF_HealthLine".Translate((change > 0f ? "+" : "") + change.ToStringPercent());
+            float f = Mathf.Max(MinFactor, t.HealthScaleFactor);
+            if (Mathf.Abs(f - 1f) < 0.005f) return null;
+            return "TF_TraitHealthLine".Translate("x" + f.ToStringByStyle(ToStringStyle.FloatMaxTwo));
         }
 
         /// <summary>One tooltip line for the whole titan ("Health: +30%"), counting
