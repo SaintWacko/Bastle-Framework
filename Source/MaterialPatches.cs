@@ -3,7 +3,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace TitanFramework
+namespace BastleFramework
 {
     // Construct bodies. Every patch here starts with a registry lookup, which is a
     // single weak-table miss for ordinary pawns.
@@ -12,13 +12,13 @@ namespace TitanFramework
     [HarmonyPatch(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.DropBloodFilth))]
     public static class Patch_Pawn_HealthTracker_DropBloodFilth
     {
-        public static bool Prefix(Pawn ___pawn) => !TitanUtility.IsConstruct(___pawn);
+        public static bool Prefix(Pawn ___pawn) => !BastleUtility.IsConstruct(___pawn);
     }
 
     [HarmonyPatch(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.DropBloodSmear))]
     public static class Patch_Pawn_HealthTracker_DropBloodSmear
     {
-        public static bool Prefix(Pawn ___pawn) => !TitanUtility.IsConstruct(___pawn);
+        public static bool Prefix(Pawn ___pawn) => !BastleUtility.IsConstruct(___pawn);
     }
 
     /// <summary>A construct's corpse doesn't rot. CompRottable.disabled is public and
@@ -28,7 +28,7 @@ namespace TitanFramework
     {
         public static void Postfix(Pawn __instance, Corpse __result)
         {
-            if (__result == null || !TitanUtility.IsConstruct(__instance)) return;
+            if (__result == null || !BastleUtility.IsConstruct(__instance)) return;
             var rot = __result.TryGetComp<CompRottable>();
             if (rot != null) rot.disabled = true;
         }
@@ -40,7 +40,7 @@ namespace TitanFramework
     {
         public static void Postfix(Corpse __instance, ref bool __result)
         {
-            if (__result && TitanUtility.IsConstruct(__instance.InnerPawn)) __result = false;
+            if (__result && BastleUtility.IsConstruct(__instance.InnerPawn)) __result = false;
         }
     }
 
@@ -52,9 +52,9 @@ namespace TitanFramework
         public static IEnumerable<Thing> Postfix(IEnumerable<Thing> __result, Pawn __instance, float efficiency)
         {
             foreach (var t in __result) yield return t;
-            var stuff = TitanUtility.GetMaterial(__instance);
+            var stuff = BastleUtility.GetMaterial(__instance);
             if (stuff == null) yield break;
-            int count = TitanMaterialUtility.ButcherCount(__instance, stuff, efficiency);
+            int count = BastleMaterialUtility.ButcherCount(__instance, stuff, efficiency);
             while (count > 0)
             {
                 var thing = ThingMaker.MakeThing(stuff);

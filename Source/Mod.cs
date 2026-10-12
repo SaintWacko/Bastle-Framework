@@ -2,30 +2,30 @@ using HarmonyLib;
 using UnityEngine;
 using Verse;
 
-namespace TitanFramework
+namespace BastleFramework
 {
-    public class TitanFrameworkMod : Mod
+    public class BastleFrameworkMod : Mod
     {
-        public static TitanSettings Settings { get; private set; }
+        public static BastleSettings Settings { get; private set; }
 
-        public TitanFrameworkMod(ModContentPack content) : base(content)
+        public BastleFrameworkMod(ModContentPack content) : base(content)
         {
-            Settings = GetSettings<TitanSettings>();
-            // Harmony is applied in TitanPatcher, after defs load: see there.
+            Settings = GetSettings<BastleSettings>();
+            // Harmony is applied in BastlePatcher, after defs load: see there.
         }
 
-        public override string SettingsCategory() => "Titan Framework";
+        public override string SettingsCategory() => "Bastle Framework";
 
         public override void DoSettingsWindowContents(Rect inRect) => Settings.DoWindowContents(inRect);
 
         /// <summary>Runs when the settings window closes. Cached material stages, lights
-        /// and effecters on existing titans are rebuilt from the new values.</summary>
+        /// and effecters on existing bastles are rebuilt from the new values.</summary>
         public override void WriteSettings()
         {
             base.WriteSettings();
             if (Current.Game == null) return;
             foreach (var p in RimWorld.PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
-                TitanUtility.GetTitan(p)?.SettingsChanged();
+                BastleUtility.GetBastle(p)?.SettingsChanged();
         }
     }
 
@@ -40,8 +40,8 @@ namespace TitanFramework
     /// here.
     /// </summary>
     [StaticConstructorOnStartup]
-    internal static class TitanPatcher
+    internal static class BastlePatcher
     {
-        static TitanPatcher() => new Harmony("saintwacko.TitanFramework").PatchAll();
+        static BastlePatcher() => new Harmony("saintwacko.BastleFramework").PatchAll();
     }
 }

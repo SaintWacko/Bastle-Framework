@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <BF_UnknownTrait>???</BF_UnknownTrait>
+  <BF_UnknownTraitDesc>An unknown trait. It will reveal itself in time.</BF_UnknownTraitDesc>
+
+  <!-- {0}: the creature's label before the discovery. {1}: the trait's label. -->
+  <BF_TraitDiscovered>{0} has revealed a hidden trait: {1}.</BF_TraitDiscovered>
+
+  <!-- Shown after the hediff label in the health tab. {0}: known count. {1}: unknown count. -->
+  <BF_HediffBrackets>{0} known</BF_HediffBrackets>
+  <BF_HediffBracketsUnknown>{0} known, {1} unknown</BF_HediffBracketsUnknown>
+
+  <BF_MaterialTipTitle>Made of {0}</BF_MaterialTipTitle>
+  <BF_MaterialValue>Made of {0} {1}</BF_MaterialValue>
+  <BF_MaterialTipDesc>Feels no pain, doesn't bleed or rot, and is immune to toxins. Butchering yields its material.</BF_MaterialTipDesc>
+
+  <!-- Mod settings -->
+  <BF_Settings_LightsSection>Lights and effects</BF_Settings_LightsSection>
+  <BF_Settings_Lights>Glowing traits cast light</BF_Settings_Lights>
+  <BF_Settings_LightsHint>Off: glowing creatures keep their look but light nothing up.</BF_Settings_LightsHint>
+  <BF_Settings_LightFollow>Light follows every</BF_Settings_LightFollow>
+  <BF_Settings_LightFollowValue>{0} tile(s)</BF_Settings_LightFollowValue>
+  <BF_Settings_LightFollowHint>How far a walking creature gets ahead of its light. Higher is cheaper with many glowing creatures; the light still recentres when it stops.</BF_Settings_LightFollowHint>
+  <BF_Settings_LightRadius>Light radius</BF_Settings_LightRadius>
+  <BF_Settings_Effects>Particle effects</BF_Settings_Effects>
+  <BF_Settings_EffectsHint>Embers, smoke and other effecters. Tints and glows always show.</BF_Settings_EffectsHint>
+  <BF_Settings_TraitsSection>Traits</BF_Settings_TraitsSection>
+  <BF_Settings_Inherit>Inheritance chance</BF_Settings_Inherit>
+  <BF_Settings_InheritHint>Multiplies each trait's own chance to pass to offspring.</BF_Settings_InheritHint>
+  <BF_Settings_DiscoveryMessages>Message when a trait is discovered</BF_Settings_DiscoveryMessages>
+  <BF_Settings_AbilityAI>Bastles use trait abilities on their own</BF_Settings_AbilityAI>
+  <BF_Settings_AbilityAIHint>Hostile, manhunting and tamed bastles cast their trait abilities in a fight, and wild ones when fighting back. Player colonists only cast when you order them to.</BF_Settings_AbilityAIHint>
+  <BF_Settings_MaterialsSection>Materials</BF_Settings_MaterialsSection>
+  <BF_Settings_Armor>Armor from material</BF_Settings_Armor>
+  <BF_Settings_ArmorHint>Share of the stuff's armor value. Steel at this setting: +{0} sharp armor.</BF_Settings_ArmorHint>
+  <BF_Settings_Damage>Melee damage from material</BF_Settings_Damage>
+  <BF_Settings_DamageHint>How strongly the stuff's damage multipliers apply. 0%: every material hits like flesh.</BF_Settings_DamageHint>
+  <BF_Settings_Fire>Fire weakness</BF_Settings_Fire>
+  <BF_Settings_FireHint>How much flammability changes fire damage and ignition. At this setting: wood takes x{0} fire damage, stone x{1}.</BF_Settings_FireHint>
+  <BF_Settings_Butcher>Butchered material per body size</BF_Settings_Butcher>
+  <BF_Settings_ButcherHint>A steel bear (body size 2.15) gives about {0} steel.</BF_Settings_ButcherHint>
+  <BF_Settings_Precious>Precious material multiplier</BF_Settings_Precious>
+  <BF_Settings_PreciousHint>Extra units for small-volume stuffs like gold and silver, as vanilla does.</BF_Settings_PreciousHint>
+  <BF_Settings_MarketValue>Material adds to market value</BF_Settings_MarketValue>
+  <BF_Settings_MarketValueHint>A tamed jade bear counts its jade toward colony wealth (and raid size).</BF_Settings_MarketValueHint>
+  <BF_Settings_ValuePercent>Market value per trait point (% of creature's value)</BF_Settings_ValuePercent>
+  <BF_Settings_ValuePercentHint>Scales with the species: the same trait is worth far more on a thrumbo than on a rat. Drawbacks with negative points lower the value.</BF_Settings_ValuePercentHint>
+  <BF_Settings_ValueFlat>Market value per trait point (silver)</BF_Settings_ValueFlat>
+  <BF_Settings_ValueFlatHint>Added on top of the percentage, so small bastles still count. Colony wealth, and so raid points, include every trait, known or not. Trade prices and the info card include only discovered traits.</BF_Settings_ValueFlatHint>
+  <BF_Settings_MaxNameTraits>Most traits in a name</BF_Settings_MaxNameTraits>
+  <BF_Settings_MaxNameTraitsHint>How many known traits can add a word to a bastle's name. The most notable traits are picked first, and at most one of them adds words after the creature's kind. The material always shows and is not counted.</BF_Settings_MaxNameTraitsHint>
+  <BF_Settings_Mystery>Trade bonus for unknown traits</BF_Settings_Mystery>
+  <BF_Settings_MysteryHint>Traders pay this much more (of the creature's normal value) for a creature with any undiscovered trait.</BF_Settings_MysteryHint>
+
+  <BF_Settings_GenerationSection>Generation</BF_Settings_GenerationSection>
+  <BF_Settings_PointTarget>Points per bastle (minimum)</BF_Settings_PointTarget>
+  <BF_Settings_PointTargetHint>Used when a mod rolls traits without its own target. Traits are rolled until their points reach the target; the last one may go over.</BF_Settings_PointTargetHint>
+  <BF_Settings_Strictness>Overshoot strictness</BF_Settings_Strictness>
+  <BF_Settings_StrictnessHint>How rarely a trait worth more than the points left still rolls. 0: the target is only a minimum. Higher keeps bastles close to their target.</BF_Settings_StrictnessHint>
+  <BF_Settings_MaxTraits>Most traits per bastle</BF_Settings_MaxTraits>
+  <BF_Settings_DrawbackChance>Drawback chance</BF_Settings_DrawbackChance>
+  <BF_Settings_MaxDrawbacks>Most drawbacks per roll</BF_Settings_MaxDrawbacks>
+  <BF_Settings_DrawbackHint>A bastle that rolls the chance can take drawbacks. Their negative points are paid back with more or better traits. The combat and utility rolls each make this check, and a utility drawback is only paid back with utility traits.</BF_Settings_DrawbackHint>
+  <BF_Settings_RarityShift>Rarity shift on inheritance</BF_Settings_RarityShift>
+  <BF_Settings_UtilityChance>Utility trait chance</BF_Settings_UtilityChance>
+  <BF_Settings_UtilityBudget>Utility points</BF_Settings_UtilityBudget>
+  <BF_Settings_UtilityHint>Utility traits (meaty, pack beast and the like) get their own roll after the others, in any trait slots left. Their points are this share of the bastle's target, at least one common trait's worth, and add no health.</BF_Settings_UtilityHint>
+  <BF_Settings_RarityShiftHint>Chance an inherited scaling trait is born one rarity higher or lower than its parent's (even odds either way).</BF_Settings_RarityShiftHint>
+  <BF_Settings_RarityWeights>Rarity chances</BF_Settings_RarityWeights>
+  <BF_Settings_RarityWeightsHint>Relative weight of each rarity when a trait is rolled.</BF_Settings_RarityWeightsHint>
+  <BF_Settings_RarityStrength>Rarity strength</BF_Settings_RarityStrength>
+  <BF_Settings_RarityStrengthHint>How much stronger a scaling trait's effects are at each rarity.</BF_Settings_RarityStrengthHint>
+  <BF_Settings_RarityPoints>Rarity points</BF_Settings_RarityPoints>
+  <BF_Settings_RarityPointsHint>What a trait is worth at each rarity: its cost when rolling, and its health and market value.</BF_Settings_RarityPointsHint>
+  <BF_DietAdds>Also eats: {0}</BF_DietAdds>
+  <BF_DietRemoves>Won't eat: {0}</BF_DietRemoves>
+  <BF_DietRefuses>Refuses: {0}</BF_DietRefuses>
+  <BF_DietHunts>Hunts other creatures</BF_DietHunts>
+  <BF_DietNoHunt>Never hunts</BF_DietNoHunt>
+  <BF_DietCardNote>Changed by this creature's material and known bastle traits.</BF_DietCardNote>
+  <BF_HealthLine>Health: {0}</BF_HealthLine>
+  <BF_TraitHealthLine>Health multiplier: {0}</BF_TraitHealthLine>
+  <BF_Settings_HealthPerPoint>Health per trait point</BF_Settings_HealthPerPoint>
+  <BF_Settings_HealthPerPointHint>Each trait point makes every body part this much tougher. Utility trait points don't count. Traits can add more of their own.</BF_Settings_HealthPerPointHint>
+  <BF_Card_Material>Material</BF_Card_Material>
+  <BF_Card_Traits>Bastle traits</BF_Card_Traits>
+  <BF_Card_TraitsIntro>Rare traits this creature was born with. Unknown traits reveal themselves in time, and offspring can inherit any of them.</BF_Card_TraitsIntro>
+  <BF_Card_TraitValue>Market value: {0}</BF_Card_TraitValue>
+  <BF_Card_Mystery>Traders pay {0} more for a creature with unknown traits.</BF_Card_Mystery>
+  <BF_TraitValue>Bastle traits</BF_TraitValue>
+  <BF_MysteryValue>Unknown traits</BF_MysteryValue>
+  <BF_Settings_EatMaterial>Nutrition from eating own material (per unit)</BF_Settings_EatMaterial>
+  <!-- {0}: units of material for one full meal's worth of nutrition. -->
+  <BF_Settings_EatMaterialHint>A hungry material creature with no other food eats its own material: {0} units fill 1 nutrition. Tamed ones eat from your stockpiles unless the stack is forbidden; wild ones eat any they find.</BF_Settings_EatMaterialHint>
+  <BF_Settings_EatMaterialOffHint>Material creatures don't eat their material.</BF_Settings_EatMaterialOffHint>
+  <BF_Settings_Reset>Reset to defaults</BF_Settings_Reset>
+
+  <BF_Rarity_Common>common</BF_Rarity_Common>
+  <BF_Rarity_Uncommon>uncommon</BF_Rarity_Uncommon>
+  <BF_Rarity_Rare>rare</BF_Rarity_Rare>
+  <BF_Rarity_Epic>epic</BF_Rarity_Epic>
+  <BF_Rarity_Legendary>legendary</BF_Rarity_Legendary>
+  <!-- {0}: trait label. {1}: rarity. -->
+  <BF_TraitWithRarity>{0} ({1})</BF_TraitWithRarity>
+  <!-- Trait classes -->
+  <BF_UndyingRose>{PAWN_labelShort} has risen from the dead.</BF_UndyingRose>
+  <BF_PackCalled>{PAWN_labelShort} called its pack. {1} came to fight.</BF_PackCalled>
+  <BF_LightsickActive>Weakened by the light.</BF_LightsickActive>
+  <BF_PartRegrown>{PAWN_labelShort} has regrown its {1}.</BF_PartRegrown>
+  <BF_HydraSplit>{PAWN_labelShort} split as it died. {1} young ones sprang from its body.</BF_HydraSplit>
+
+</LanguageData>

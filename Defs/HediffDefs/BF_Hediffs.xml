@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- The single hediff that carries a creature's bastle traits. Added and removed
+       through BastleUtility; never add it by hand. -->
+  <HediffDef>
+    <defName>BF_Bastle</defName>
+    <label>bastle traits</label>
+    <description>This creature has unusual traits. Some of them may not have shown themselves yet.</description>
+    <hediffClass>BastleFramework.Hediff_Bastle</hediffClass>
+    <defaultLabelColor>(0.95, 0.75, 0.35)</defaultLabelColor>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <initialSeverity>1</initialSeverity>
+    <maxSeverity>1</maxSeverity>
+  </HediffDef>
+
+</Defs>
