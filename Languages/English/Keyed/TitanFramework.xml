@@ -48,6 +48,8 @@
   <TF_Settings_ValuePercentHint>Scales with the species: the same trait is worth far more on a thrumbo than on a rat. Drawbacks with negative points lower the value.</TF_Settings_ValuePercentHint>
   <TF_Settings_ValueFlat>Market value per trait point (silver)</TF_Settings_ValueFlat>
   <TF_Settings_ValueFlatHint>Added on top of the percentage, so small titans still count. Colony wealth, and so raid points, include every trait, known or not. Trade prices and the info card include only discovered traits.</TF_Settings_ValueFlatHint>
+  <TF_Settings_MaxNameTraits>Most traits in a name</TF_Settings_MaxNameTraits>
+  <TF_Settings_MaxNameTraitsHint>How many known traits can add a word to a titan's name. The most notable traits are picked first, and at most one of them adds words after the creature's kind. The material always shows and is not counted.</TF_Settings_MaxNameTraitsHint>
   <TF_Settings_Mystery>Trade bonus for unknown traits</TF_Settings_Mystery>
   <TF_Settings_MysteryHint>Traders pay this much more (of the creature's normal value) for a creature with any undiscovered trait.</TF_Settings_MysteryHint>
 

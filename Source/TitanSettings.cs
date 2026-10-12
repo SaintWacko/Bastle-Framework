@@ -24,6 +24,8 @@ namespace TitanFramework
         public float valueFlatPerPoint = 100f;
         public float mysteryTradeBonus = 0.25f;
         public float healthPerPoint = 0.1f;
+        public int maxNameTraits = 3;
+        public const int MaxNameTraitsLimit = 10;
 
         // Generation and rarity (indexed by TitanRarity)
         public static readonly float[] DefaultRarityWeights = { 50f, 25f, 12f, 5f, 3f };
@@ -68,6 +70,7 @@ namespace TitanFramework
             valueFlatPerPoint = 100f;
             mysteryTradeBonus = 0.25f;
             healthPerPoint = 0.1f;
+            maxNameTraits = 3;
             rarityWeights = (float[])DefaultRarityWeights.Clone();
             rarityStrength = (float[])DefaultRarityStrength.Clone();
             rarityPoints = (float[])DefaultRarityPoints.Clone();
@@ -102,6 +105,8 @@ namespace TitanFramework
             Scribe_Values.Look(ref valueFlatPerPoint, "valueFlatPerPoint", 100f);
             Scribe_Values.Look(ref mysteryTradeBonus, "mysteryTradeBonus", 0.25f);
             Scribe_Values.Look(ref healthPerPoint, "healthPerPoint", 0.1f);
+            Scribe_Values.Look(ref maxNameTraits, "maxNameTraits", 3);
+            maxNameTraits = Mathf.Clamp(maxNameTraits, 0, MaxNameTraitsLimit);
             for (int i = 0; i < TitanRarityUtility.Count; i++)
             {
                 var r = (TitanRarity)i;
@@ -182,6 +187,9 @@ namespace TitanFramework
             Slider(l, "TF_Settings_Inherit", ref inheritChanceFactor, 0f, 2f, inheritChanceFactor.ToStringPercent(), "TF_Settings_InheritHint", 0.05f);
             Check(l, "TF_Settings_DiscoveryMessages", ref discoveryMessages, null);
             Check(l, "TF_Settings_AbilityAI", ref abilityAI, "TF_Settings_AbilityAIHint");
+            float names = maxNameTraits;
+            Slider(l, "TF_Settings_MaxNameTraits", ref names, 0f, MaxNameTraitsLimit, Mathf.RoundToInt(names).ToString(), "TF_Settings_MaxNameTraitsHint", 1f);
+            maxNameTraits = Mathf.RoundToInt(names);
             Slider(l, "TF_Settings_HealthPerPoint", ref healthPerPoint, 0f, 0.5f, "+" + healthPerPoint.ToStringPercent(), "TF_Settings_HealthPerPointHint", 0.01f);
             Slider(l, "TF_Settings_ValuePercent", ref valuePercentPerPoint, 0f, 1f, "+" + valuePercentPerPoint.ToStringPercent(), "TF_Settings_ValuePercentHint", 0.01f);
             Slider(l, "TF_Settings_ValueFlat", ref valueFlatPerPoint, 0f, 500f, "+" + valueFlatPerPoint.ToStringMoney(), "TF_Settings_ValueFlatHint", 5f);

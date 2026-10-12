@@ -156,6 +156,11 @@ namespace TitanFramework
         /// <summary>Order among prefixes/suffixes. Lower is further from the kind label.</summary>
         public int nameOrder;
 
+        /// <summary>When a creature knows more naming traits than the "Most traits in a name"
+        /// setting allows, higher priority wins a place first; ties go to the trait worth more
+        /// points. Default 0. Only decides which words appear, not where (that is nameOrder).</summary>
+        public int namePriority;
+
         // ---- inheritance ---------------------------------------------------------
 
         public bool heritable = true;
