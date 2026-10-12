@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ModMetaData>
-  <name>Titan Framework</name>
-  <packageId>saintwacko.TitanFramework</packageId>
+  <name>Bastle Framework</name>
+  <packageId>saintwacko.BastleFramework</packageId>
   <author>saintwacko</author>
   <description>A framework for creatures with randomly rolled traits. Traits change stats, add attacks and abilities, and stay hidden until the creature shows them, at which point they appear in its name. Creatures can also be made of a material, such as a steel wolf or a jade bear, taking their armor, damage, color and butcher products from it. Works on any pawn. Content mods supply the traits.</description>
   <supportedVersions>

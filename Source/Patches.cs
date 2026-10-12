@@ -2,12 +2,12 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace TitanFramework
+namespace BastleFramework
 {
     /// <summary>
-    /// Adds discovered traits' prefixes/suffixes to a titan's kind label ("venomous wolf").
+    /// Adds discovered traits' prefixes/suffixes to a bastle's kind label ("venomous wolf").
     /// Hot path: called whenever a label is drawn, so the body is one weak-table lookup
-    /// for ordinary pawns and a cached string concat for titans.
+    /// for ordinary pawns and a cached string concat for bastles.
     /// Named pawns (tamed animals with names, colonists) show their name in most places;
     /// the kind label still carries the affixes wherever the game shows the kind.
     /// </summary>
@@ -17,8 +17,8 @@ namespace TitanFramework
     {
         public static void Postfix(Pawn pawn, ref string __result)
         {
-            var titan = TitanUtility.GetTitan(pawn);
-            if (titan != null) __result = titan.DecorateKindLabel(__result);
+            var bastle = BastleUtility.GetBastle(pawn);
+            if (bastle != null) __result = bastle.DecorateKindLabel(__result);
         }
     }
 
@@ -52,7 +52,7 @@ namespace TitanFramework
         public static void Postfix(Thing __result)
         {
             if (BirthContext.active && !BirthContext.applied && __result is Pawn baby && !baby.Dead)
-                TitanUtility.InheritTraits(baby, BirthContext.mother, BirthContext.father);
+                BastleUtility.InheritTraits(baby, BirthContext.mother, BirthContext.father);
         }
 
         public static void Finalizer() => BirthContext.Clear();
@@ -89,7 +89,7 @@ namespace TitanFramework
         {
             if (!BirthContext.active || pawn == null) return;
             BirthContext.applied = true;
-            TitanUtility.InheritTraits(pawn, BirthContext.mother, BirthContext.father);
+            BastleUtility.InheritTraits(pawn, BirthContext.mother, BirthContext.father);
         }
     }
 
@@ -103,11 +103,11 @@ namespace TitanFramework
         public static void Postfix(Pawn __instance, Faction newFaction)
         {
             if (newFaction == null || !newFaction.IsPlayer) return;
-            var titan = TitanUtility.PeekTitan(__instance);
-            if (titan == null) return;
-            var traits = titan.TraitsForReading;
+            var bastle = BastleUtility.PeekBastle(__instance);
+            if (bastle == null) return;
+            var traits = bastle.TraitsForReading;
             for (int i = traits.Count - 1; i >= 0; i--)
-                if (!traits[i].discovered && traits[i].def.DiscoveredBy(TitanDiscoveryTrigger.JoinsColony))
+                if (!traits[i].discovered && traits[i].def.DiscoveredBy(BastleDiscoveryTrigger.JoinsColony))
                     traits[i].Discover();
         }
     }

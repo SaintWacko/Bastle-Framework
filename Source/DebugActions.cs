@@ -4,19 +4,19 @@ using LudeonTK;
 using RimWorld;
 using Verse;
 
-namespace TitanFramework
+namespace BastleFramework
 {
-    public static class TitanDebugActions
+    public static class BastleDebugActions
     {
-        private const string Category = "Titan Framework";
+        private const string Category = "Bastle Framework";
 
         [DebugAction(Category, "Add trait...", actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static List<DebugActionNode> AddTrait()
         {
             var list = new List<DebugActionNode>();
-            foreach (var def in DefDatabase<TitanTraitDef>.AllDefs.OrderBy(d => d.defName))
+            foreach (var def in DefDatabase<BastleTraitDef>.AllDefs.OrderBy(d => d.defName))
             {
-                var rarities = new List<TitanRarity>();
+                var rarities = new List<BastleRarity>();
                 for (var r = def.rarity; r <= def.MaxRarity; r++)
                     if (def.CanAppearAt(r)) rarities.Add(r);
                 if (rarities.Count == 0) continue;
@@ -34,10 +34,10 @@ namespace TitanFramework
             return list;
         }
 
-        private static DebugActionNode AddTraitNode(string label, TitanTraitDef def, TitanRarity rarity) =>
+        private static DebugActionNode AddTraitNode(string label, BastleTraitDef def, BastleRarity rarity) =>
             new DebugActionNode(label, DebugActionType.ToolMapForPawns, null, p =>
             {
-                if (TitanUtility.AddTrait(p, def, rarity: rarity) == null)
+                if (BastleUtility.AddTrait(p, def, rarity: rarity) == null)
                     Messages.Message($"{def.defName} cannot go on {p.LabelShort} (filters or a conflicting trait).", MessageTypeDefOf.RejectInput, false);
             });
 
@@ -46,19 +46,19 @@ namespace TitanFramework
         {
             var list = new List<DebugActionNode>
             {
-                new DebugActionNode("settings target", DebugActionType.ToolMapForPawns, null, p => Report(p, TitanUtility.RollTraits(p))),
+                new DebugActionNode("settings target", DebugActionType.ToolMapForPawns, null, p => Report(p, BastleUtility.RollTraits(p))),
             };
             foreach (int budget in new[] { 1, 3, 6, 10, 20 })
             {
                 int b = budget;
-                list.Add(new DebugActionNode($"{b} points", DebugActionType.ToolMapForPawns, null, p => Report(p, TitanUtility.RollTraits(p, b))));
+                list.Add(new DebugActionNode($"{b} points", DebugActionType.ToolMapForPawns, null, p => Report(p, BastleUtility.RollTraits(p, b))));
             }
             return list;
         }
 
-        private static void Report(Pawn p, List<TitanTrait> added)
+        private static void Report(Pawn p, List<BastleTrait> added)
         {
-            Log.Message($"[Titan Framework] Rolled {added.Count} trait(s) on {p} for {added.Sum(t => t.Points):0.#} points: "
+            Log.Message($"[Bastle Framework] Rolled {added.Count} trait(s) on {p} for {added.Sum(t => t.Points):0.#} points: "
                 + string.Join(", ", added.Select(t => $"{t.def.defName} ({t.Rarity}, {t.Points:0.#})")));
         }
 
@@ -67,22 +67,22 @@ namespace TitanFramework
         {
             var list = new List<DebugActionNode>
             {
-                new DebugActionNode("(flesh)", DebugActionType.ToolMapForPawns, null, p => TitanUtility.SetMaterial(p, null)),
+                new DebugActionNode("(flesh)", DebugActionType.ToolMapForPawns, null, p => BastleUtility.SetMaterial(p, null)),
                 new DebugActionNode("(random)", DebugActionType.ToolMapForPawns, null, p =>
-                    Log.Message($"[Titan Framework] Rolled material for {p}: {TitanUtility.RollMaterial(p)?.defName ?? "none"}")),
+                    Log.Message($"[Bastle Framework] Rolled material for {p}: {BastleUtility.RollMaterial(p)?.defName ?? "none"}")),
             };
-            foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(TitanMaterialUtility.IsMaterialCandidate).OrderBy(d => d.defName))
+            foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(BastleMaterialUtility.IsMaterialCandidate).OrderBy(d => d.defName))
             {
                 var local = def;
-                list.Add(new DebugActionNode(def.defName, DebugActionType.ToolMapForPawns, null, p => TitanUtility.SetMaterial(p, local)));
+                list.Add(new DebugActionNode(def.defName, DebugActionType.ToolMapForPawns, null, p => BastleUtility.SetMaterial(p, local)));
             }
             return list;
         }
 
         [DebugAction(Category, "Discover all traits", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void DiscoverAll(Pawn p) => TitanUtility.DiscoverAll(p, notify: true);
+        private static void DiscoverAll(Pawn p) => BastleUtility.DiscoverAll(p, notify: true);
 
-        [DebugAction(Category, "Clear titan", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void Clear(Pawn p) => TitanUtility.ClearTitan(p);
+        [DebugAction(Category, "Clear bastle", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void Clear(Pawn p) => BastleUtility.ClearBastle(p);
     }
 }

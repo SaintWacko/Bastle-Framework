@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A bastle eating something on its diet that isn't food: its own material, stone chunks... -->
+  <JobDef>
+    <defName>BF_EatNonFood</defName>
+    <driverClass>BastleFramework.JobDriver_BastleEatNonFood</driverClass>
+    <reportString>eating TargetA.</reportString>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+</Defs>

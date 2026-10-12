@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Material traits: every creature made of one of these stuffs has the trait.
+       Defs/Traits/BF_Traits_Materials.xml has the traits themselves. -->
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Uranium"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleMaterialExtension">
+        <traits><li>BF_Irradiated</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Gold"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleMaterialExtension">
+        <traits><li>BF_Gilded</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Plasteel"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleMaterialExtension">
+        <traits><li>BF_Unyielding</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Silver"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleMaterialExtension">
+        <traits><li>BF_Argent</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="WoodLog"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleMaterialExtension">
+        <traits><li>BF_Kindling</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="BlocksGranite"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleMaterialExtension">
+        <traits><li>BF_Stonebound</li></traits>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Anomaly</li></mods>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/ThingDef[defName="Bioferrite"]</xpath>
+      <value>
+        <li Class="BastleFramework.BastleMaterialExtension">
+          <traits><li>BF_VoidTouched</li></traits>
+        </li>
+      </value>
+    </match>
+  </Operation>
+
+</Patch>
