@@ -338,6 +338,10 @@ namespace BastleFramework
                 yield return $"aura radius {radius} must be above 0 and at most {GenRadial.MaxRadialPatternRadius}";
             if (intervalTicks < 1) yield return "aura intervalTicks must be at least 1";
             if (pulseFleck != null && pulseIntervalTicks < 1) yield return "aura pulseIntervalTicks must be at least 1";
+            if (glowMote != null && !typeof(MoteAttached).IsAssignableFrom(glowMote.thingClass))
+                yield return $"aura glowMote {glowMote.defName} must have a MoteAttached thingClass";
+            if (linkMote != null && !typeof(MoteDualAttached).IsAssignableFrom(linkMote.thingClass))
+                yield return $"aura linkMote {linkMote.defName} must have a MoteDualAttached thingClass";
             if (!affectsSelf && !affectsAllies && !affectsNeutrals && !affectsEnemies)
                 yield return "aura affects nobody: set affectsAllies, affectsEnemies, affectsNeutrals or affectsSelf";
             if (hediff != null && severityPerDay <= 0f)
@@ -537,7 +541,7 @@ namespace BastleFramework
                 var p = tmpLinkPawns[i];
                 links.TryGetValue(p, out var m);
                 if (now - linkHits[p] > keep || p.Dead || !p.Spawned || p.Map != map
-                    || !p.Position.InHorDistOf(pawn.Position, P.radius))
+                    || !p.Position.InHorDistOf(pawn.Position, P.radius) || p.Position.Fogged(map))
                 {
                     if (m != null && !m.Destroyed) m.Destroy();
                     links.Remove(p);
@@ -585,8 +589,9 @@ namespace BastleFramework
         {
             var pawn = Pawn;
             var P = Params;
-            // With Ideology the glow shows the range instead (it ignores walls; accepted).
-            if (!P.showRing || GlowDef != null || !discovered || pawn?.Map == null || P.radius > GenRadial.MaxRadialPatternRadius) return;
+            // While the Ideology glow is up it shows the range instead (it ignores walls;
+            // accepted). With effects off or the aura idle, the ring comes back.
+            if (!P.showRing || (glow != null && !glow.Destroyed) || !discovered || pawn?.Map == null || P.radius > GenRadial.MaxRadialPatternRadius) return;
             var map = pawn.Map;
             var c = pawn.Position;
             if (P.blockedByWalls)
