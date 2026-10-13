@@ -213,6 +213,9 @@ namespace BastleFramework
         /// wings instead of drawing the standing sprite over a bird in flight. Position and
         /// size need no work: the overlay is the body's child and inherits its transform.
         /// </summary>
+        // Deliberately GetGraphic and not GetGraphicState: base ScaleFor also reads
+        // GetGraphicState and multiplies by the state's drawSize, which the overlay already
+        // inherits from the body, so a flying overlay would be scaled twice.
         protected override Graphic GetGraphic(PawnRenderNode node, PawnDrawParms parms)
         {
             if (node is PawnRenderNode_BastleOverlay o && !o.TProps_IsHead && o.Overlay != null
