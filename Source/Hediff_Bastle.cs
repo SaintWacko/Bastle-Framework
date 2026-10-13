@@ -1013,6 +1013,19 @@ namespace BastleFramework
                 materialStage = null;
                 traits = traits ?? new List<BastleTrait>();
                 traits.RemoveAll(t => t?.def == null);
+                // A def whose traitClass changed since the save (Irradiated became an aura)
+                // would otherwise load as the old class and silently do nothing new.
+                for (int i = 0; i < traits.Count; i++)
+                {
+                    var old = traits[i];
+                    if (old.GetType() == old.def.traitClass) continue;
+                    var fresh = (BastleTrait)Activator.CreateInstance(old.def.traitClass);
+                    fresh.def = old.def;
+                    fresh.discovered = old.discovered;
+                    fresh.fromMaterial = old.fromMaterial;
+                    fresh.SetRarityExact(old.Rarity);
+                    traits[i] = fresh;
+                }
                 foreach (var t in traits)
                 {
                     t.bastle = this;
