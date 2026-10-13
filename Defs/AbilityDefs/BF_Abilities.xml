@@ -58,9 +58,8 @@
     <defName>BF_Proj_Quill</defName>
     <label>quill</label>
     <graphicData>
-      <texPath>Things/Projectile/Arrow_Small</texPath>
+      <texPath>Things/Projectile/BF_Quill</texPath>
       <graphicClass>Graphic_Single</graphicClass>
-      <color>(0.85, 0.8, 0.7)</color>
     </graphicData>
     <projectile>
       <damageDef>RangedStab</damageDef>

@@ -153,6 +153,34 @@ namespace BastleFramework
             return source.GetColoredVersion(Overlay.Shader, Overlay.color, Overlay.color);
         }
 
+        /// <summary>
+        /// Recoloured copies of the body's state graphics (flying frames, swimming,
+        /// stationary), keyed by the same states. Built on the main thread when the tree
+        /// initialises, after the body node (the parent initialises its children last),
+        /// so the parallel pre-draw only reads them.
+        /// </summary>
+        protected override IEnumerable<(GraphicStateDef state, Graphic graphic)> StateGraphicsFor(Pawn pawn)
+        {
+            var body = parent;
+            if (body == null || TProps.head || Overlay == null || pawn.RaceProps.Humanlike) yield break;
+            var anim = pawn.Drawer.renderer.CurAnimation;
+            if (anim != null)
+                foreach (var (state, graphic) in anim.GetGraphicStates(body))
+                {
+                    var g = Recolor(body.ContainsGraphicState(state) ? body.GraphicForState(state) : graphic);
+                    if (g != null) yield return (state, g);
+                }
+            foreach (var state in new[] { GraphicStateDefOf.Swimming, GraphicStateDefOf.Stationary })
+            {
+                if (state == null || !body.ContainsGraphicState(state)) continue;
+                var g = Recolor(body.GraphicForState(state));
+                if (g != null) yield return (state, g);
+            }
+        }
+
+        private Graphic Recolor(Graphic source) =>
+            source?.GetColoredVersion(Overlay.Shader, Overlay.color, Overlay.color);
+
         /// <summary>Height of the mesh in cells, used to keep a scaled overlay's bottom
         /// on the creature's feet. Set from MeshSetFor, which the base constructor calls.</summary>
         public float meshHeight;
@@ -177,6 +205,40 @@ namespace BastleFramework
     {
         public override bool CanDrawNow(PawnRenderNode node, PawnDrawParms parms) =>
             base.CanDrawNow(node, parms) && BastleVisualsUtility.IsLiveBastle(parms);
+
+        /// <summary>
+        /// An animal's body node swaps its texture for graphic states: the frames of the
+        /// flying animation (Odyssey birds), and the swimming and stationary sprites. The
+        /// overlay copies whatever the body is showing, recoloured, so the glow follows the
+        /// wings instead of drawing the standing sprite over a bird in flight. Position and
+        /// size need no work: the overlay is the body's child and inherits its transform.
+        /// </summary>
+        protected override Graphic GetGraphic(PawnRenderNode node, PawnDrawParms parms)
+        {
+            if (node is PawnRenderNode_BastleOverlay o && !o.TProps_IsHead && o.Overlay != null
+                && !parms.pawn.RaceProps.Humanlike && o.parent != null)
+            {
+                var state = BodyGraphicState(o.parent, parms);
+                if (state != null && o.ContainsGraphicState(state))
+                    return o.GraphicForState(state);
+            }
+            return base.GetGraphic(node, parms);
+        }
+
+        /// <summary>Mirrors PawnRenderNodeWorker_AnimalBody.GetGraphicState, which is
+        /// protected on the body's worker.</summary>
+        private static GraphicStateDef BodyGraphicState(PawnRenderNode body, PawnDrawParms parms)
+        {
+            Pawn pawn = parms.pawn;
+            if (body.tree.currentAnimation == null)
+            {
+                if (pawn.DrawNonHumanlikeSwimmingGraphic) return GraphicStateDefOf.Swimming;
+                if (pawn.DrawNonHumanlikeStationaryGraphic) return GraphicStateDefOf.Stationary;
+            }
+            if (!parms.flags.FlagSet(PawnRenderFlags.Portrait) && body.TryGetAnimationGraphicState(parms, out var state))
+                return state;
+            return null;
+        }
 
         public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
         {
@@ -214,9 +276,11 @@ namespace BastleFramework
     {
         /// <summary>Statue rendering is also how vanilla draws sculptures of pawns. Those use
         /// an unspawned stand-in pawn with no bastle material; a material bastle is drawn
-        /// with the statue flag too and should keep its trait visuals.</summary>
+        /// with the statue flag too and should keep its trait visuals. A corpse is drawn
+        /// through the dead pawn's render tree, so dead pawns are left out too: a pile of
+        /// bodies shouldn't glow or burn.</summary>
         public static bool IsLiveBastle(PawnDrawParms parms) =>
-            !parms.Statue || BastleUtility.PeekBastle(parms.pawn)?.IsConstruct == true;
+            !parms.pawn.Dead && (!parms.Statue || BastleUtility.PeekBastle(parms.pawn)?.IsConstruct == true);
     }
 
     /// <summary>

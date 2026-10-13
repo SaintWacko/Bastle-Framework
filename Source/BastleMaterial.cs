@@ -17,6 +17,11 @@ namespace BastleFramework
     ///   &lt;/li&gt;
     /// &lt;/modExtensions&gt;
     /// </code>
+    /// Several mods may each add one to the same stuff (the framework already adds its
+    /// material traits to gold, silver, uranium, plasteel, wood and granite). They are
+    /// merged into one at startup: traits and tags are combined, the factors and
+    /// commonality multiply, forceAllowed is on if any sets it, and allowRolling is off
+    /// if any turns it off.
     /// </summary>
     public class BastleMaterialExtension : DefModExtension
     {
@@ -39,6 +44,52 @@ namespace BastleFramework
 
         /// <summary>Free-form tags for content mods, like a trait's tags.</summary>
         public List<string> tags;
+
+        /// <summary>Folds another extension on the same stuff into this one.</summary>
+        internal void MergeFrom(BastleMaterialExtension other)
+        {
+            allowRolling &= other.allowRolling;
+            forceAllowed |= other.forceAllowed;
+            commonality *= other.commonality;
+            armorFactor *= other.armorFactor;
+            damageFactor *= other.damageFactor;
+            butcherYieldFactor *= other.butcherYieldFactor;
+            traits = Union(traits, other.traits);
+            tags = Union(tags, other.tags);
+        }
+
+        private static List<T> Union<T>(List<T> a, List<T> b)
+        {
+            if (b.NullOrEmpty()) return a;
+            var result = a == null ? new List<T>() : new List<T>(a);
+            foreach (var x in b)
+                if (!result.Contains(x)) result.Add(x);
+            return result;
+        }
+
+        /// <summary>
+        /// Vanilla's GetModExtension returns only the first extension of a type, so a
+        /// content mod's extension on a stuff the framework already patched would be
+        /// ignored without a word. Merges every BastleMaterialExtension on a def into the
+        /// first and drops the rest, so Ext() and GetModExtension both see all of them.
+        /// Runs once at startup, before any game exists.
+        /// </summary>
+        internal static void MergeAll()
+        {
+            foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
+            {
+                var list = def.modExtensions;
+                if (list == null || list.Count < 2) continue;
+                BastleMaterialExtension first = null;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (!(list[i] is BastleMaterialExtension ext)) continue;
+                    if (first == null) { first = ext; continue; }
+                    first.MergeFrom(ext);
+                    list.RemoveAt(i--);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -158,6 +209,7 @@ namespace BastleFramework
     {
         static BastleMaterialStartup()
         {
+            BastleMaterialExtension.MergeAll();
             var stat = StatDefOf.MarketValue;
             if (stat.parts == null) stat.parts = new List<StatPart>();
             // Traits first: they're priced off the creature's value before its material.
