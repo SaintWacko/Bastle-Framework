@@ -26,7 +26,25 @@
       <radius>3</radius>
       <color>(80,220,60,0)</color>
     </glow>
-    <traitClass>BastleFramework.BastleTrait_ToxicAura</traitClass>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>3.9</radius>
+        <hediff>ToxicBuildup</hediff>
+        <!-- A little above vanilla toxic fallout's 0.4, cut by the same resistances. -->
+        <severityPerDay>0.5</severityPerDay>
+        <resistStats>
+          <li>ToxicResistance</li>
+          <li>ToxicEnvironmentResistance</li>
+        </resistStats>
+        <affectsAllies>true</affectsAllies>
+        <affectsNeutrals>true</affectsNeutrals>
+        <affectsEnemies>true</affectsEnemies>
+        <affectsEntities>true</affectsEntities>
+        <whileDowned>true</whileDowned>
+        <ringColor>(0.4, 1.0, 0.3, 1)</ringColor>
+      </li>
+    </modExtensions>
   </BastleFramework.BastleTraitDef>
 
   <!-- Gold. Worth a fortune, alive or as a statue. -->

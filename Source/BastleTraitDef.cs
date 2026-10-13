@@ -470,6 +470,8 @@ namespace BastleFramework
                         yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
             if (retaliation != null && retaliation.damageDef == null) yield return "retaliation has no damageDef";
+            if (traitClass != null && typeof(BastleTrait_Aura).IsAssignableFrom(traitClass) && GetModExtension<AuraParams>() == null)
+                yield return "traitClass is BastleTrait_Aura but there is no AuraParams in modExtensions";
             if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(BastleTrait))
                 yield return "not visible and has no discoverWhen: only code can ever reveal it (add <li>Manual</li> to discoverWhen to silence this)";
         }

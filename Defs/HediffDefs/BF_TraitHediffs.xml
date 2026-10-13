@@ -14,6 +14,32 @@
     </stages>
   </HediffDef>
 
+  <!-- Given by the rallying aura and refreshed while in range. -->
+  <HediffDef>
+    <defName>BF_Rallied</defName>
+    <label>rallied</label>
+    <description>Steadied by a nearby rallying creature. It fades soon after the creature is out of range or the fight ends.</description>
+    <hediffClass>HediffWithComps</hediffClass>
+    <defaultLabelColor>(1.0, 0.8, 0.35)</defaultLabelColor>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>400</disappearsAfterTicks>
+        <showRemainingTime>false</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <painFactor>0.7</painFactor>
+        <statFactors>
+          <MeleeDamageFactor>1.2</MeleeDamageFactor>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
   <HediffDef ParentName="BF_TraitHediffBase">
     <defName>BF_VenomFangs</defName>
     <label>venomous fangs</label>

@@ -302,6 +302,21 @@ namespace BastleFramework
             if (!tracked.Contains(bastle)) tracked.Add(bastle);
         }
 
+        /// <summary>Aura rings for selected bastles. Main thread, per frame.</summary>
+        public override void MapComponentUpdate()
+        {
+            if (map != Find.CurrentMap) return;
+            var sel = Find.Selector.SelectedObjectsListForReading;
+            for (int i = 0; i < sel.Count; i++)
+            {
+                if (!(sel[i] is Pawn p) || !p.Spawned || p.Map != map) continue;
+                var traits = BastleUtility.PeekBastle(p)?.Traits;
+                if (traits == null) continue;
+                for (int j = 0; j < traits.Count; j++)
+                    (traits[j] as BastleTrait_Aura)?.DrawRing();
+            }
+        }
+
         public override void MapComponentTick()
         {
             for (int i = tracked.Count - 1; i >= 0; i--)

@@ -213,93 +213,218 @@ namespace BastleFramework
         }
     }
 
-    // ---- Dread aura --------------------------------------------------------------
+    // ---- Aura --------------------------------------------------------------------
 
-    public class DreadAuraParams : DefModExtension
+    /// <summary>Settings for BastleTrait_Aura, in the trait def's modExtensions. Every
+    /// aura (dread, irradiated, rallying) is one of these; nothing about who or what it
+    /// affects is in code.</summary>
+    public class AuraParams : DefModExtension
     {
-        public float radius = 7.9f;
+        public float radius = 5.9f;
 
-        /// <summary>Given to enemies in range and refreshed while they stay there. It
-        /// should have a HediffComp_Disappears so it fades once they leave.</summary>
+        /// <summary>How often it reaches out, in ticks (250 is about 4 seconds).</summary>
+        public int intervalTicks = 250;
+
+        /// <summary>Walls, closed doors and other sight-blocking buildings stop it. The
+        /// ring is drawn to match.</summary>
+        public bool blockedByWalls = true;
+
+        // ---- Effect
+
         public HediffDef hediff;
-    }
 
-    /// <summary>Living enemies near it are gripped by dread (BF_DreadStruck by default).
-    /// Mechanoids and Anomaly entities are immune.</summary>
-    public class BastleTrait_DreadAura : BastleTrait
-    {
-        private DreadAuraParams P => def.GetModExtension<DreadAuraParams>() ?? Defaults;
-        private static readonly DreadAuraParams Defaults = new DreadAuraParams();
+        /// <summary>0: give the hediff and keep refreshing its HediffComp_Disappears while
+        /// the target stays in range (a buff or debuff that fades on leaving). Above 0: add
+        /// this much severity per day of exposure instead (a buildup, like toxic fallout's
+        /// 0.4).</summary>
+        public float severityPerDay;
 
-        public override void TickInterval(int delta)
+        /// <summary>Buildup only: each stat's (1 - value) on the target multiplies the
+        /// severity, as ToxicResistance does for fallout.</summary>
+        public List<StatDef> resistStats;
+
+        // ---- Who. Allies are its own faction; a wild one's allies are wild creatures of
+        // its own kind. Enemies are anyone hostile to it. Neutrals are everyone else.
+
+        public bool affectsSelf;
+        public bool affectsAllies;
+        public bool affectsNeutrals;
+        public bool affectsEnemies;
+        public bool affectsHumanlikes = true;
+        public bool affectsAnimals = true;
+        public bool affectsMechanoids;
+        public bool affectsEntities;
+
+        /// <summary>Only creatures of the same race as the source.</summary>
+        public bool targetSameRace;
+
+        /// <summary>Only bastles carrying at least one of these traits.</summary>
+        public List<BastleTraitDef> targetTraits;
+
+        // ---- When
+
+        public bool whileDowned;
+        public bool whileAsleep = true;
+
+        /// <summary>Only while drafted, in an aggressive mental state, holding an enemy
+        /// target, or within 20 seconds of fighting.</summary>
+        public bool onlyInCombat;
+
+        /// <summary>Reveal the trait when it affects someone while the player can see it.</summary>
+        public bool discoverOnEffect = true;
+
+        // ---- Visuals
+
+        /// <summary>Draw the range around it while it is selected, the way a psycast's
+        /// targeting ring shows. Only once the trait is known.</summary>
+        public bool showRing = true;
+        public Color ringColor = Color.white;
+
+        /// <summary>A fleck spawned on it every pulseIntervalTicks while active, such as
+        /// PsycastAreaEffect. Off by default.</summary>
+        public FleckDef pulseFleck;
+        public int pulseIntervalTicks = 150;
+
+        /// <summary>Fleck scale; below 0 it is sized from the radius.</summary>
+        public float pulseScale = -1f;
+
+        public override IEnumerable<string> ConfigErrors()
         {
-            var pawn = Pawn;
-            if (pawn == null || !pawn.Spawned || pawn.Downed || !pawn.IsHashIntervalTick(250, delta)) return;
-            var hediff = P.hediff ?? BastleDefOf.BF_DreadStruck;
-            float radius = P.radius;
-            bool any = false;
-            var pawns = pawn.Map.mapPawns.AllPawnsSpawned;
-            for (int i = pawns.Count - 1; i >= 0; i--)
-            {
-                var p = pawns[i];
-                if (p == pawn || p.Dead || !p.RaceProps.IsFlesh || p.RaceProps.IsAnomalyEntity) continue;
-                if (!p.Position.InHorDistOf(pawn.Position, radius) || !p.HostileTo(pawn)) continue;
-                var h = p.health.hediffSet.GetFirstHediffOfDef(hediff);
-                if (h == null) p.health.AddHediff(hediff);
-                else h.TryGetComp<HediffComp_Disappears>()?.ResetElapsedTicks();
-                any = true;
-            }
-            if (any && !discovered && BastleUtility.PlayerCanObserve(pawn)) Discover();
+            foreach (var e in base.ConfigErrors()) yield return e;
+            if (hediff == null) yield return "aura has no hediff";
+            if (radius <= 0f || radius > GenRadial.MaxRadialPatternRadius)
+                yield return $"aura radius {radius} must be above 0 and at most {GenRadial.MaxRadialPatternRadius}";
+            if (intervalTicks < 1) yield return "aura intervalTicks must be at least 1";
+            if (pulseFleck != null && pulseIntervalTicks < 1) yield return "aura pulseIntervalTicks must be at least 1";
+            if (!affectsSelf && !affectsAllies && !affectsNeutrals && !affectsEnemies)
+                yield return "aura affects nobody: set affectsAllies, affectsEnemies, affectsNeutrals or affectsSelf";
+            if (hediff != null && severityPerDay <= 0f
+                && (hediff.comps == null || !hediff.comps.Any(c => c is HediffCompProperties_Disappears)))
+                yield return $"aura hediff {hediff.defName} has no HediffCompProperties_Disappears, so it never wears off after leaving the aura (or set severityPerDay for a buildup)";
         }
     }
 
-    // ---- Toxic aura --------------------------------------------------------------
-
-    public class ToxicAuraParams : DefModExtension
+    /// <summary>Gives a hediff to creatures near it, filtered by allegiance, race and
+    /// traits (see AuraParams). Shows its range when selected and can pulse.</summary>
+    public class BastleTrait_Aura : BastleTrait
     {
-        public float radius = 3.9f;
+        private const int CombatMemoryTicks = 1200;
 
-        /// <summary>Severity added per day to a creature that stays in range the whole
-        /// time, before its toxic resistance. Vanilla toxic fallout is 0.4.</summary>
-        public float severityPerDay = 0.5f;
-
-        /// <summary>Defaults to toxic buildup.</summary>
-        public HediffDef hediff;
-
-        /// <summary>Walls and other sight-blocking buildings stop it.</summary>
-        public bool blockedByWalls = true;
-    }
-
-    /// <summary>Everything living near it builds up toxins: friend, foe, its handler
-    /// and its packmates alike. Uses the same resistances as toxic fallout
-    /// (ToxicResistance and ToxicEnvironmentResistance), so constructs and
-    /// toxin-immune creatures are unharmed.</summary>
-    public class BastleTrait_ToxicAura : BastleTrait
-    {
-        private const int Interval = 250;
-
-        private ToxicAuraParams P => def.GetModExtension<ToxicAuraParams>() ?? Defaults;
-        private static readonly ToxicAuraParams Defaults = new ToxicAuraParams();
+        private AuraParams cached;
+        public AuraParams Params => cached ?? (cached = def.GetModExtension<AuraParams>() ?? Defaults);
+        private static readonly AuraParams Defaults = new AuraParams();
 
         public override void TickInterval(int delta)
         {
             var pawn = Pawn;
-            if (pawn == null || !pawn.Spawned || !pawn.IsHashIntervalTick(Interval, delta)) return;
-            var hediff = P.hediff ?? HediffDefOf.ToxicBuildup;
-            float perPulse = P.severityPerDay * Interval / GenDate.TicksPerDay;
-            float radius = P.radius;
-            var pawns = pawn.Map.mapPawns.AllPawnsSpawned;
+            if (pawn == null || !pawn.Spawned) return;
+            var P = Params;
+            bool doEffect = pawn.IsHashIntervalTick(P.intervalTicks, delta);
+            bool doPulse = P.pulseFleck != null && pawn.IsHashIntervalTick(P.pulseIntervalTicks, delta);
+            if ((!doEffect && !doPulse) || !IsActive(pawn, P)) return;
+            if (doPulse) Pulse(pawn, P);
+            if (doEffect) Apply(pawn, P);
+        }
+
+        public static bool IsActive(Pawn pawn, AuraParams P)
+        {
+            if (pawn.Dead || (!P.whileDowned && pawn.Downed) || (!P.whileAsleep && !pawn.Awake())) return false;
+            return !P.onlyInCombat || InCombat(pawn);
+        }
+
+        private static bool InCombat(Pawn p)
+        {
+            if (p.Drafted || p.InAggroMentalState) return true;
+            var m = p.mindState;
+            if (m == null) return false;
+            int now = Find.TickManager.TicksGame;
+            return m.enemyTarget != null
+                || now - m.lastEngageTargetTick < CombatMemoryTicks
+                || now - m.lastAttackTargetTick < CombatMemoryTicks;
+        }
+
+        private void Apply(Pawn pawn, AuraParams P)
+        {
+            if (P.hediff == null) return;
+            var map = pawn.Map;
+            var center = pawn.Position;
+            bool any = false;
+            var pawns = map.mapPawns.AllPawnsSpawned;
+            // Backwards: a buildup can kill, which removes the pawn from this list.
             for (int i = pawns.Count - 1; i >= 0; i--)
             {
                 var p = pawns[i];
-                if (p == pawn || p.Dead || !p.RaceProps.IsFlesh) continue;
-                if (!p.Position.InHorDistOf(pawn.Position, radius)) continue;
-                if (P.blockedByWalls && !GenSight.LineOfSight(pawn.Position, p.Position, pawn.Map)) continue;
-                float amount = perPulse
-                    * Mathf.Max(0f, 1f - p.GetStatValue(StatDefOf.ToxicResistance))
-                    * Mathf.Max(0f, 1f - p.GetStatValue(StatDefOf.ToxicEnvironmentResistance));
-                if (amount > 0f) HealthUtility.AdjustSeverity(p, hediff, amount);
+                if (p.Dead || !p.Position.InHorDistOf(center, P.radius) || !Affects(pawn, p, P)) continue;
+                if (P.blockedByWalls && p != pawn && !GenSight.LineOfSight(center, p.Position, map)) continue;
+                if (Give(p, P)) any = true;
             }
+            if (any && P.discoverOnEffect && !discovered && BastleUtility.PlayerCanObserve(pawn)) Discover();
+        }
+
+        public static bool Affects(Pawn source, Pawn p, AuraParams P)
+        {
+            var r = p.RaceProps;
+            bool raceOk = r.IsAnomalyEntity ? P.affectsEntities
+                : r.IsMechanoid ? P.affectsMechanoids
+                : r.Humanlike ? P.affectsHumanlikes
+                : P.affectsAnimals;
+            if (!raceOk) return false;
+            if (p == source) return P.affectsSelf;
+            if (P.targetSameRace && p.def != source.def) return false;
+            if (P.targetTraits != null)
+            {
+                var b = BastleUtility.PeekBastle(p);
+                if (b == null) return false;
+                bool has = false;
+                for (int i = 0; i < P.targetTraits.Count && !has; i++) has = b.HasTrait(P.targetTraits[i]);
+                if (!has) return false;
+            }
+            if (p.HostileTo(source)) return P.affectsEnemies;
+            bool ally = source.Faction != null ? p.Faction == source.Faction
+                : p.Faction == null && p.def == source.def;
+            return ally ? P.affectsAllies : P.affectsNeutrals;
+        }
+
+        private static bool Give(Pawn p, AuraParams P)
+        {
+            if (P.severityPerDay > 0f)
+            {
+                float amount = P.severityPerDay * P.intervalTicks / GenDate.TicksPerDay;
+                if (P.resistStats != null)
+                    for (int i = 0; i < P.resistStats.Count; i++)
+                        amount *= Mathf.Max(0f, 1f - p.GetStatValue(P.resistStats[i]));
+                if (amount <= 0f) return false;
+                HealthUtility.AdjustSeverity(p, P.hediff, amount);
+                return true;
+            }
+            var h = p.health.hediffSet.GetFirstHediffOfDef(P.hediff);
+            if (h == null) p.health.AddHediff(P.hediff);
+            else h.TryGetComp<HediffComp_Disappears>()?.ResetElapsedTicks();
+            return true;
+        }
+
+        private void Pulse(Pawn pawn, AuraParams P)
+        {
+            var map = pawn.Map;
+            if (map != Find.CurrentMap || !BastleFrameworkMod.Settings.effectsEnabled) return;
+            if (!(discovered || def.showVisualsWhenHidden) || pawn.Position.Fogged(map)) return;
+            // PsycastAreaEffect is 2.3 tiles across at scale 1 and grows as it fades.
+            float scale = P.pulseScale > 0f ? P.pulseScale : P.radius * 0.7f;
+            FleckMaker.Static(pawn.DrawPos, map, P.pulseFleck, scale);
+        }
+
+        /// <summary>Per frame while selected (MapComponent_BastleVisuals).</summary>
+        internal void DrawRing()
+        {
+            var pawn = Pawn;
+            var P = Params;
+            if (!P.showRing || !discovered || pawn?.Map == null || P.radius > GenRadial.MaxRadialPatternRadius) return;
+            var map = pawn.Map;
+            var c = pawn.Position;
+            if (P.blockedByWalls)
+                GenDraw.DrawRadiusRing(c, P.radius, P.ringColor, x => x.InBounds(map) && GenSight.LineOfSight(c, x, map));
+            else
+                GenDraw.DrawRadiusRing(c, P.radius, P.ringColor);
         }
     }
 

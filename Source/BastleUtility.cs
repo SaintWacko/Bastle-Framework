@@ -347,7 +347,6 @@ namespace BastleFramework
     {
         public static HediffDef BF_Bastle;
         public static JobDef BF_EatNonFood;
-        public static HediffDef BF_DreadStruck;
 
         static BastleDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(BastleDefOf));
     }

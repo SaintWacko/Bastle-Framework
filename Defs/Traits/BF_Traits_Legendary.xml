@@ -78,8 +78,37 @@
     <description>An aura of dread surrounds it. Living enemies within 8 tiles are less aware and move more slowly. Mechanoids and entities don't feel it.</description>
     <namePrefix>dreadful</namePrefix>
     <rarity>Legendary</rarity>
-    <traitClass>BastleFramework.BastleTrait_DreadAura</traitClass>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
     <discoverWhen><li>Dies</li></discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>7.9</radius>
+        <hediff>BF_DreadStruck</hediff>
+        <affectsEnemies>true</affectsEnemies>
+        <showRing>false</showRing>
+        <pulseFleck>PsycastAreaEffect</pulseFleck>
+      </li>
+    </modExtensions>
+  </BastleFramework.BastleTraitDef>
+
+  <!-- The aura showcase for allies: only while fighting, so it reads as a battle cry. -->
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Rallying</defName>
+    <label>rallying</label>
+    <description>In a fight, its presence steadies its allies. Friendly people and animals within 7 tiles that it can see feel less pain and hit harder in melee.</description>
+    <namePrefix>rallying</namePrefix>
+    <rarity>Epic</rarity>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>6.9</radius>
+        <hediff>BF_Rallied</hediff>
+        <affectsAllies>true</affectsAllies>
+        <onlyInCombat>true</onlyInCombat>
+        <ringColor>(1.0, 0.8, 0.35, 1)</ringColor>
+      </li>
+    </modExtensions>
   </BastleFramework.BastleTraitDef>
 
   <BastleFramework.BastleTraitDef>
