@@ -85,8 +85,7 @@
         <radius>7.9</radius>
         <hediff>BF_DreadStruck</hediff>
         <affectsEnemies>true</affectsEnemies>
-        <showRing>false</showRing>
-        <pulseFleck>PsycastAreaEffect</pulseFleck>
+        <ringColor>(0.7, 0.35, 0.9, 1)</ringColor>
       </li>
     </modExtensions>
   </BastleFramework.BastleTraitDef>
