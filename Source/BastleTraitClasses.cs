@@ -265,6 +265,9 @@ namespace BastleFramework
 
         /// <summary>Defaults to toxic buildup.</summary>
         public HediffDef hediff;
+
+        /// <summary>Walls and other sight-blocking buildings stop it.</summary>
+        public bool blockedByWalls = true;
     }
 
     /// <summary>Everything living near it builds up toxins: friend, foe, its handler
@@ -291,6 +294,7 @@ namespace BastleFramework
                 var p = pawns[i];
                 if (p == pawn || p.Dead || !p.RaceProps.IsFlesh) continue;
                 if (!p.Position.InHorDistOf(pawn.Position, radius)) continue;
+                if (P.blockedByWalls && !GenSight.LineOfSight(pawn.Position, p.Position, pawn.Map)) continue;
                 float amount = perPulse
                     * Mathf.Max(0f, 1f - p.GetStatValue(StatDefOf.ToxicResistance))
                     * Mathf.Max(0f, 1f - p.GetStatValue(StatDefOf.ToxicEnvironmentResistance));
