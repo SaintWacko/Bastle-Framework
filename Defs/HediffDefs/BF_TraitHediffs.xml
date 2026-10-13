@@ -53,25 +53,6 @@
   </HediffDef>
 
   <HediffDef ParentName="BF_TraitHediffBase">
-    <defName>BF_IrradiatedTouch</defName>
-    <label>irradiated touch</label>
-    <description>A strike that leaves toxic buildup in the victim.</description>
-    <comps>
-      <li Class="HediffCompProperties_VerbGiver">
-        <tools>
-          <li>
-            <label>irradiated strike</label>
-            <capacities><li>ToxicBite</li></capacities>
-            <power>8</power>
-            <cooldownTime>2</cooldownTime>
-            <chanceFactor>1.5</chanceFactor>
-          </li>
-        </tools>
-      </li>
-    </comps>
-  </HediffDef>
-
-  <HediffDef ParentName="BF_TraitHediffBase">
     <defName>BF_BonebreakerBlow</defName>
     <label>bonebreaker blow</label>
     <description>A crushing blow that can stun.</description>

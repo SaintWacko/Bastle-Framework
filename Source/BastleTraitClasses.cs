@@ -253,6 +253,52 @@ namespace BastleFramework
         }
     }
 
+    // ---- Toxic aura --------------------------------------------------------------
+
+    public class ToxicAuraParams : DefModExtension
+    {
+        public float radius = 3.9f;
+
+        /// <summary>Severity added per day to a creature that stays in range the whole
+        /// time, before its toxic resistance. Vanilla toxic fallout is 0.4.</summary>
+        public float severityPerDay = 0.5f;
+
+        /// <summary>Defaults to toxic buildup.</summary>
+        public HediffDef hediff;
+    }
+
+    /// <summary>Everything living near it builds up toxins: friend, foe, its handler
+    /// and its packmates alike. Uses the same resistances as toxic fallout
+    /// (ToxicResistance and ToxicEnvironmentResistance), so constructs and
+    /// toxin-immune creatures are unharmed.</summary>
+    public class BastleTrait_ToxicAura : BastleTrait
+    {
+        private const int Interval = 250;
+
+        private ToxicAuraParams P => def.GetModExtension<ToxicAuraParams>() ?? Defaults;
+        private static readonly ToxicAuraParams Defaults = new ToxicAuraParams();
+
+        public override void TickInterval(int delta)
+        {
+            var pawn = Pawn;
+            if (pawn == null || !pawn.Spawned || !pawn.IsHashIntervalTick(Interval, delta)) return;
+            var hediff = P.hediff ?? HediffDefOf.ToxicBuildup;
+            float perPulse = P.severityPerDay * Interval / GenDate.TicksPerDay;
+            float radius = P.radius;
+            var pawns = pawn.Map.mapPawns.AllPawnsSpawned;
+            for (int i = pawns.Count - 1; i >= 0; i--)
+            {
+                var p = pawns[i];
+                if (p == pawn || p.Dead || !p.RaceProps.IsFlesh) continue;
+                if (!p.Position.InHorDistOf(pawn.Position, radius)) continue;
+                float amount = perPulse
+                    * Mathf.Max(0f, 1f - p.GetStatValue(StatDefOf.ToxicResistance))
+                    * Mathf.Max(0f, 1f - p.GetStatValue(StatDefOf.ToxicEnvironmentResistance));
+                if (amount > 0f) HealthUtility.AdjustSeverity(p, hediff, amount);
+            }
+        }
+    }
+
     // ---- Lightsick ---------------------------------------------------------------
 
     public class LightsickParams : DefModExtension

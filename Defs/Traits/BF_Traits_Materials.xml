@@ -9,7 +9,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Irradiated</defName>
     <label>irradiated</label>
-    <description>Its uranium body poisons whatever it strikes.</description>
+    <description>Its uranium body poisons everything living within 3 tiles, friend or foe, with toxic buildup.</description>
     <namePrefix>irradiated</namePrefix>
     <visible>true</visible>
     <commonality>0</commonality>
@@ -26,9 +26,7 @@
       <radius>3</radius>
       <color>(80,220,60,0)</color>
     </glow>
-    <hediffs>
-      <li><hediff>BF_IrradiatedTouch</hediff></li>
-    </hediffs>
+    <traitClass>BastleFramework.BastleTrait_ToxicAura</traitClass>
   </BastleFramework.BastleTraitDef>
 
   <!-- Gold. Worth a fortune, alive or as a statue. -->
