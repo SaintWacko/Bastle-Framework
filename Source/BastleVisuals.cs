@@ -305,7 +305,7 @@ namespace BastleFramework
         /// <summary>Aura rings for selected bastles. Main thread, per frame.</summary>
         public override void MapComponentUpdate()
         {
-            if (map != Find.CurrentMap || !WorldRendererUtility.DrawingMap) return;
+            if (map != Find.CurrentMap || !RimWorld.Planet.WorldRendererUtility.DrawingMap) return;
             var sel = Find.Selector.SelectedObjectsListForReading;
             for (int i = 0; i < sel.Count; i++)
             {
