@@ -329,7 +329,18 @@ namespace BastleFramework
         public override void MapComponentTick()
         {
             for (int i = glows.Count - 1; i >= 0; i--)
-                if (!glows[i].GlowTick(map)) glows.RemoveAt(i);
+            {
+                // One bad aura (e.g. a glowMote that isn't a Mote) mustn't stop the lights
+                // and effecters below from ticking.
+                bool keep;
+                try { keep = glows[i].GlowTick(map); }
+                catch (System.Exception e)
+                {
+                    Log.ErrorOnce($"[Bastle Framework] aura glow for {glows[i].def?.defName} failed and was turned off: {e}", glows[i].def?.shortHash ?? 0);
+                    keep = false;
+                }
+                if (!keep) glows.RemoveAt(i);
+            }
             for (int i = tracked.Count - 1; i >= 0; i--)
             {
                 var t = tracked[i];

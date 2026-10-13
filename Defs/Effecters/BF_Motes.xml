@@ -13,6 +13,10 @@
     <mote>
       <solidTime>9999999</solidTime>
       <needsMaintenance>true</needsMaintenance>
+      <!-- The mote ticks before map components maintain it, so it must survive one
+           unmaintained tick or it would be destroyed and respawned every tick. -->
+      <fadeOutUnmaintained>true</fadeOutUnmaintained>
+      <fadeOutTime>0.1</fadeOutTime>
     </mote>
     <graphicData>
       <graphicClass>Graphic_Mote</graphicClass>

@@ -452,7 +452,7 @@ namespace BastleFramework
             // Combat Command's link line, when the hediff asks for one. Kept on the first
             // source; HediffComp_Link drops the hediff when that source leaves the map.
             var link = h?.TryGetComp<HediffComp_Link>();
-            if (link != null && p != source && (link.other == null || !link.other.Spawned))
+            if (link != null && p != source && (link.other == null || !link.other.SpawnedOrAnyParentSpawned))
             {
                 link.other = source;
                 link.drawConnection = true;
@@ -468,7 +468,8 @@ namespace BastleFramework
             if (gd == null || pawn == null || !pawn.Spawned || pawn.Map != map
                 || BastleUtility.PeekBastle(pawn) != bastle || !bastle.Traits.Contains(this))
             {
-                DestroyGlow();
+                // After a map change the new map may already own the mote: leave it.
+                if (glow == null || glow.Destroyed || glow.Map == map) DestroyGlow();
                 if (glowMap == map) glowMap = null;
                 return false;
             }
