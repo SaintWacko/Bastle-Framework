@@ -374,7 +374,7 @@ namespace BastleFramework
             {
                 if (ticksCached == null)
                 {
-                    var m = traitClass.GetMethod(nameof(BastleTrait.TickInterval), new[] { typeof(int) });
+                    var m = traitClass?.GetMethod(nameof(BastleTrait.TickInterval), new[] { typeof(int) });
                     ticksCached = m != null && m.DeclaringType != typeof(BastleTrait);
                 }
                 return ticksCached.Value;

@@ -243,8 +243,9 @@ namespace BastleFramework
         /// severity, as ToxicResistance does for fallout.</summary>
         public List<StatDef> resistStats;
 
-        // ---- Who. Allies are its own faction; a wild one's allies are wild creatures of
-        // its own kind. Enemies are anyone hostile to it. Neutrals are everyone else.
+        // ---- Who. Allies are its own faction and factions allied to it; a wild one's
+        // allies are wild creatures of its own kind. Enemies are anyone hostile to it.
+        // Neutrals are everyone else.
 
         public bool affectsSelf;
         public bool affectsAllies;
@@ -298,9 +299,14 @@ namespace BastleFramework
             if (pulseFleck != null && pulseIntervalTicks < 1) yield return "aura pulseIntervalTicks must be at least 1";
             if (!affectsSelf && !affectsAllies && !affectsNeutrals && !affectsEnemies)
                 yield return "aura affects nobody: set affectsAllies, affectsEnemies, affectsNeutrals or affectsSelf";
-            if (hediff != null && severityPerDay <= 0f
-                && (hediff.comps == null || !hediff.comps.Any(c => c is HediffCompProperties_Disappears)))
-                yield return $"aura hediff {hediff.defName} has no HediffCompProperties_Disappears, so it never wears off after leaving the aura (or set severityPerDay for a buildup)";
+            if (hediff != null && severityPerDay <= 0f)
+            {
+                var d = hediff.comps?.OfType<HediffCompProperties_Disappears>().FirstOrDefault();
+                if (d == null)
+                    yield return $"aura hediff {hediff.defName} has no HediffCompProperties_Disappears, so it never wears off after leaving the aura (or set severityPerDay for a buildup)";
+                else if (d.disappearsAfterTicks.min <= intervalTicks)
+                    yield return $"aura hediff {hediff.defName} can wear off ({d.disappearsAfterTicks.min} ticks) before the aura refreshes it ({intervalTicks} ticks), so it will flicker";
+            }
         }
     }
 
@@ -380,7 +386,9 @@ namespace BastleFramework
                 if (!has) return false;
             }
             if (p.HostileTo(source)) return P.affectsEnemies;
-            bool ally = source.Faction != null ? p.Faction == source.Faction
+            var f = source.Faction;
+            bool ally = f != null
+                ? p.Faction == f || (p.Faction != null && p.Faction.RelationKindWith(f) == FactionRelationKind.Ally)
                 : p.Faction == null && p.def == source.def;
             return ally ? P.affectsAllies : P.affectsNeutrals;
         }
