@@ -31,8 +31,10 @@
       <li Class="BastleFramework.AuraParams">
         <radius>3.9</radius>
         <hediff>ToxicBuildup</hediff>
-        <!-- A little above vanilla toxic fallout's 0.4, cut by the same resistances. -->
-        <severityPerDay>0.5</severityPerDay>
+        <!-- Fast enough to show after a few seconds beside it (toxic buildup becomes
+             visible at 0.04 and fades 0.08/day); lethal after about 3 minutes in
+             contact. Cut by the same resistances as toxic fallout. -->
+        <severityPerDay>6</severityPerDay>
         <resistStats>
           <li>ToxicResistance</li>
           <li>ToxicEnvironmentResistance</li>

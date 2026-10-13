@@ -222,8 +222,9 @@ namespace BastleFramework
     {
         public float radius = 5.9f;
 
-        /// <summary>How often it reaches out, in ticks (250 is about 4 seconds).</summary>
-        public int intervalTicks = 250;
+        /// <summary>How often it reaches out, in ticks (60 is a second). A scan is cheap:
+        /// Ideology's Combat Command scans every tick.</summary>
+        public int intervalTicks = 60;
 
         /// <summary>Walls, closed doors and other sight-blocking buildings stop it. The
         /// ring is drawn to match.</summary>
@@ -289,6 +290,31 @@ namespace BastleFramework
         /// <summary>Fleck scale; below 0 it is sized from the radius.</summary>
         public float pulseScale = -1f;
 
+        /// <summary>With Ideology: Combat Command's soft ground glow, sized to the radius,
+        /// shown while the aura is active and known. It is a plain circle; the ring shows
+        /// where walls cut it off. Without Ideology there is no glow, only the ring.</summary>
+        public bool showGlow = true;
+
+        /// <summary>The glow's colour. Unset (alpha 0) uses ringColor.</summary>
+        public Color glowColor = new Color(0f, 0f, 0f, 0f);
+
+        /// <summary>The glow is additive, so the colour is scaled down by this. 0.125 is
+        /// about Combat Command's brightness.</summary>
+        public float glowStrength = 0.125f;
+
+        /// <summary>A different attached mote to use as the glow. Defaults to
+        /// BF_Mote_AuraGlow, which only exists with Ideology.</summary>
+        public ThingDef glowMote;
+
+        internal Color GlowInstanceColor
+        {
+            get
+            {
+                var c = glowColor.a > 0f ? glowColor : ringColor;
+                return new Color(c.r * glowStrength, c.g * glowStrength, c.b * glowStrength, 1f);
+            }
+        }
+
         public override IEnumerable<string> ConfigErrors()
         {
             foreach (var e in base.ConfigErrors()) yield return e;
@@ -312,7 +338,8 @@ namespace BastleFramework
     }
 
     /// <summary>Gives a hediff to creatures near it, filtered by allegiance, race and
-    /// traits (see AuraParams). Shows its range when selected and can pulse.</summary>
+    /// traits (see AuraParams). Shows its range when selected, a ground glow with
+    /// Ideology, and can pulse. A hediff with HediffComp_Link draws a line back to it.</summary>
     public class BastleTrait_Aura : BastleTrait
     {
         private const int CombatMemoryTicks = 1200;
@@ -321,11 +348,24 @@ namespace BastleFramework
         public AuraParams Params => cached ?? (cached = def.GetModExtension<AuraParams>() ?? Defaults);
         private static readonly AuraParams Defaults = new AuraParams();
 
+        // The glow mote needs maintaining every tick, which batched hediff ticks can't
+        // promise, so MapComponent_BastleVisuals maintains it. Not saved: the mote dies on
+        // its own without maintenance, and TickInterval re-registers after a load.
+        private Mote glow;
+        private Map glowMap;
+
+        private ThingDef GlowDef => Params.showGlow ? Params.glowMote ?? BastleDefOf.BF_Mote_AuraGlow : null;
+
         public override void TickInterval(int delta)
         {
             var pawn = Pawn;
             if (pawn == null || !pawn.Spawned) return;
             var P = Params;
+            if (glowMap != pawn.Map && GlowDef != null)
+            {
+                pawn.Map.GetComponent<MapComponent_BastleVisuals>()?.TrackGlow(this);
+                glowMap = pawn.Map;
+            }
             bool doEffect = pawn.IsHashIntervalTick(P.intervalTicks, delta);
             bool doPulse = P.pulseFleck != null && pawn.IsHashIntervalTick(P.pulseIntervalTicks, delta);
             if ((!doEffect && !doPulse) || !IsActive(pawn, P)) return;
@@ -363,7 +403,7 @@ namespace BastleFramework
                 var p = pawns[i];
                 if (p.Dead || !p.Position.InHorDistOf(center, P.radius) || !Affects(pawn, p, P)) continue;
                 if (P.blockedByWalls && p != pawn && !GenSight.LineOfSight(center, p.Position, map)) continue;
-                if (Give(p, P)) any = true;
+                if (Give(pawn, p, P)) any = true;
             }
             if (any && P.discoverOnEffect && !discovered && BastleUtility.PlayerCanObserve(pawn)) Discover();
         }
@@ -394,7 +434,7 @@ namespace BastleFramework
             return ally ? P.affectsAllies : P.affectsNeutrals;
         }
 
-        private static bool Give(Pawn p, AuraParams P)
+        private static bool Give(Pawn source, Pawn p, AuraParams P)
         {
             if (P.severityPerDay > 0f)
             {
@@ -407,10 +447,52 @@ namespace BastleFramework
                 return true;
             }
             var h = p.health.hediffSet.GetFirstHediffOfDef(P.hediff);
-            if (h == null) p.health.AddHediff(P.hediff);
+            if (h == null) h = p.health.AddHediff(P.hediff);
             else h.TryGetComp<HediffComp_Disappears>()?.ResetElapsedTicks();
+            // Combat Command's link line, when the hediff asks for one. Kept on the first
+            // source; HediffComp_Link drops the hediff when that source leaves the map.
+            var link = h?.TryGetComp<HediffComp_Link>();
+            if (link != null && p != source && (link.other == null || !link.other.Spawned))
+            {
+                link.other = source;
+                link.drawConnection = true;
+            }
             return true;
         }
+
+        /// <summary>Every tick from MapComponent_BastleVisuals. False stops tracking.</summary>
+        internal bool GlowTick(Map map)
+        {
+            var pawn = Pawn;
+            var gd = GlowDef;
+            if (gd == null || pawn == null || !pawn.Spawned || pawn.Map != map
+                || BastleUtility.PeekBastle(pawn) != bastle || !bastle.Traits.Contains(this))
+            {
+                DestroyGlow();
+                if (glowMap == map) glowMap = null;
+                return false;
+            }
+            var P = Params;
+            bool show = (discovered || def.showVisualsWhenHidden) && BastleFrameworkMod.Settings.effectsEnabled
+                && map == Find.CurrentMap && !pawn.Position.Fogged(map) && IsActive(pawn, P);
+            if (!show) { DestroyGlow(); return true; }
+            if (glow == null || glow.Destroyed)
+            {
+                // BF_Mote_AuraGlow is 2 cells across at scale 1.
+                glow = MoteMaker.MakeAttachedOverlay(pawn, gd, Vector3.zero, P.radius + 0.1f);
+                glow.instanceColor = P.GlowInstanceColor;
+            }
+            glow.Maintain();
+            return true;
+        }
+
+        private void DestroyGlow()
+        {
+            if (glow != null && !glow.Destroyed) glow.Destroy();
+            glow = null;
+        }
+
+        public override void PreRemoved() => DestroyGlow();
 
         private void Pulse(Pawn pawn, AuraParams P)
         {

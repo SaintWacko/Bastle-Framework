@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Aura ground glow: Combat Command's mask texture in white, so each aura tints it
+       (BastleTrait_Aura sets instanceColor from AuraParams). The texture ships with
+       Ideology, so without it this def doesn't load and auras show only their ring.
+       Maintained every tick by MapComponent_BastleVisuals and dies without it. -->
+  <ThingDef ParentName="MoteBase" MayRequire="Ludeon.RimWorld.Ideology">
+    <defName>BF_Mote_AuraGlow</defName>
+    <thingClass>MoteAttached</thingClass>
+    <altitudeLayer>LightingOverlay</altitudeLayer>
+    <drawOffscreen>true</drawOffscreen>
+    <mote>
+      <solidTime>9999999</solidTime>
+      <needsMaintenance>true</needsMaintenance>
+    </mote>
+    <graphicData>
+      <graphicClass>Graphic_Mote</graphicClass>
+      <texPath>Things/Mote/CombatCommandMask</texPath>
+      <shaderType>MoteGlow</shaderType>
+      <drawSize>2</drawSize>
+    </graphicData>
+  </ThingDef>
+
+</Defs>

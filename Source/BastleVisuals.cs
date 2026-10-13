@@ -302,6 +302,15 @@ namespace BastleFramework
             if (!tracked.Contains(bastle)) tracked.Add(bastle);
         }
 
+        /// <summary>Auras with a ground glow on this map; the glow mote is maintained here
+        /// every tick.</summary>
+        private readonly List<BastleTrait_Aura> glows = new List<BastleTrait_Aura>();
+
+        public void TrackGlow(BastleTrait_Aura aura)
+        {
+            if (!glows.Contains(aura)) glows.Add(aura);
+        }
+
         /// <summary>Aura rings for selected bastles. Main thread, per frame.</summary>
         public override void MapComponentUpdate()
         {
@@ -319,6 +328,8 @@ namespace BastleFramework
 
         public override void MapComponentTick()
         {
+            for (int i = glows.Count - 1; i >= 0; i--)
+                if (!glows[i].GlowTick(map)) glows.RemoveAt(i);
             for (int i = tracked.Count - 1; i >= 0; i--)
             {
                 var t = tracked[i];
