@@ -1018,12 +1018,16 @@ namespace BastleFramework
                 for (int i = 0; i < traits.Count; i++)
                 {
                     var old = traits[i];
-                    if (old.GetType() == old.def.traitClass) continue;
-                    var fresh = (BastleTrait)Activator.CreateInstance(old.def.traitClass);
+                    var cls = old.def.traitClass;
+                    if (cls == null || cls == old.GetType() || cls.IsAbstract || !typeof(BastleTrait).IsAssignableFrom(cls)) continue;
+                    var fresh = (BastleTrait)Activator.CreateInstance(cls);
                     fresh.def = old.def;
+                    fresh.bastle = this;
                     fresh.discovered = old.discovered;
                     fresh.fromMaterial = old.fromMaterial;
                     fresh.SetRarityExact(old.Rarity);
+                    // Overrides check their source's type, so unrelated classes copy nothing.
+                    fresh.CopyStateFrom(old);
                     traits[i] = fresh;
                 }
                 foreach (var t in traits)
