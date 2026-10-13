@@ -278,8 +278,8 @@ namespace BastleFramework
         // ---- Visuals
 
         /// <summary>Draw the range around it while it is selected, the way a psycast's
-        /// targeting ring shows. Only once the trait is known, and only when there is no
-        /// glow (no Ideology, or showGlow off).</summary>
+        /// targeting ring shows. Only once the trait is known, and only while no glow is
+        /// up (no Ideology, showGlow off, effects off, or the aura idle).</summary>
         public bool showRing = true;
         public Color ringColor = Color.white;
 
@@ -292,8 +292,10 @@ namespace BastleFramework
         public float pulseScale = -1f;
 
         /// <summary>With Ideology: Combat Command's soft ground glow, sized to the radius,
-        /// shown while the aura is active and known. It is a plain circle; the ring shows
-        /// where walls cut it off. Without Ideology there is no glow, only the ring.</summary>
+        /// shown while the aura is active and known. It is a plain circle that ignores
+        /// walls, and it replaces the selection ring while it is up. The ring (which does
+        /// stop at walls) shows instead without Ideology, with effects off, or while the
+        /// aura is idle.</summary>
         public bool showGlow = true;
 
         /// <summary>The glow's colour. Unset (alpha 0) uses ringColor.</summary>
