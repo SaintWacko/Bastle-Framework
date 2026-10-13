@@ -26,4 +26,27 @@
     </graphicData>
   </ThingDef>
 
+  <!-- Aura link line: Combat Command's line, drawn through Graphic_Mote so
+       BastleTrait_Aura can tint it per aura. Ideology's texture. -->
+  <ThingDef ParentName="MoteBase" MayRequire="Ludeon.RimWorld.Ideology">
+    <defName>BF_Mote_AuraLink</defName>
+    <thingClass>MoteDualAttached</thingClass>
+    <altitudeLayer>MoteLow</altitudeLayer>
+    <mote>
+      <fadeInTime>0.1</fadeInTime>
+      <fadeOutTime>0.1</fadeOutTime>
+      <solidTime>999999</solidTime>
+      <needsMaintenance>true</needsMaintenance>
+      <!-- Maintained after it ticks, like the glow: survive one tick's gap. -->
+      <fadeOutUnmaintained>true</fadeOutUnmaintained>
+      <rotateTowardsTarget>true</rotateTowardsTarget>
+      <scaleToConnectTargets>true</scaleToConnectTargets>
+    </mote>
+    <graphicData>
+      <graphicClass>Graphic_Mote</graphicClass>
+      <shaderType>MoteGlow</shaderType>
+      <texPath>Things/Mote/CombatCommandLinkLine</texPath>
+    </graphicData>
+  </ThingDef>
+
 </Defs>

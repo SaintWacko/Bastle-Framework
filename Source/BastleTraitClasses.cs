@@ -278,7 +278,8 @@ namespace BastleFramework
         // ---- Visuals
 
         /// <summary>Draw the range around it while it is selected, the way a psycast's
-        /// targeting ring shows. Only once the trait is known.</summary>
+        /// targeting ring shows. Only once the trait is known, and only when there is no
+        /// glow (no Ideology, or showGlow off).</summary>
         public bool showRing = true;
         public Color ringColor = Color.white;
 
@@ -305,6 +306,20 @@ namespace BastleFramework
         /// <summary>A different attached mote to use as the glow. Defaults to
         /// BF_Mote_AuraGlow, which only exists with Ideology.</summary>
         public ThingDef glowMote;
+
+        /// <summary>With Ideology: Combat Command's line from each pawn it affects back to
+        /// it, while it keeps affecting them. Skipped when the hediff has its own
+        /// HediffComp_Link (that draws the line instead).</summary>
+        public bool showLinks;
+
+        /// <summary>The line's colour. Unset (alpha 0) uses ringColor.</summary>
+        public Color linkColor = new Color(0f, 0f, 0f, 0f);
+
+        /// <summary>A different line mote (a MoteDualAttached). Defaults to
+        /// BF_Mote_AuraLink, which only exists with Ideology.</summary>
+        public ThingDef linkMote;
+
+        internal Color LinkInstanceColor => linkColor.a > 0f ? linkColor : ringColor;
 
         internal Color GlowInstanceColor
         {
@@ -356,12 +371,22 @@ namespace BastleFramework
 
         private ThingDef GlowDef => Params.showGlow ? Params.glowMote ?? BastleDefOf.BF_Mote_AuraGlow : null;
 
+        /// <summary>Null when this aura draws no lines of its own: showLinks off, no
+        /// Ideology, or the hediff has HediffComp_Link and draws its own.</summary>
+        private ThingDef LinkDef => Params.showLinks && !(Params.hediff?.HasComp(typeof(HediffComp_Link)) ?? false)
+            ? Params.linkMote ?? BastleDefOf.BF_Mote_AuraLink : null;
+
+        // Lines to pawns it affected recently: last hit tick, and the live mote.
+        private readonly Dictionary<Pawn, int> linkHits = new Dictionary<Pawn, int>();
+        private readonly Dictionary<Pawn, Mote> links = new Dictionary<Pawn, Mote>();
+        private static readonly List<Pawn> tmpLinkPawns = new List<Pawn>();
+
         public override void TickInterval(int delta)
         {
             var pawn = Pawn;
             if (pawn == null || !pawn.Spawned) return;
             var P = Params;
-            if (glowMap != pawn.Map && GlowDef != null)
+            if (glowMap != pawn.Map && (GlowDef != null || LinkDef != null))
             {
                 pawn.Map.GetComponent<MapComponent_BastleVisuals>()?.TrackGlow(this);
                 glowMap = pawn.Map;
@@ -396,6 +421,8 @@ namespace BastleFramework
             var map = pawn.Map;
             var center = pawn.Position;
             bool any = false;
+            bool lines = LinkDef != null;
+            int now = Find.TickManager.TicksGame;
             var pawns = map.mapPawns.AllPawnsSpawned;
             // Backwards: a buildup can kill, which removes the pawn from this list.
             for (int i = pawns.Count - 1; i >= 0; i--)
@@ -403,7 +430,9 @@ namespace BastleFramework
                 var p = pawns[i];
                 if (p.Dead || !p.Position.InHorDistOf(center, P.radius) || !Affects(pawn, p, P)) continue;
                 if (P.blockedByWalls && p != pawn && !GenSight.LineOfSight(center, p.Position, map)) continue;
-                if (Give(pawn, p, P)) any = true;
+                if (!Give(pawn, p, P)) continue;
+                any = true;
+                if (lines && p != pawn) linkHits[p] = now;
             }
             if (any && P.discoverOnEffect && !discovered && BastleUtility.PlayerCanObserve(pawn)) Discover();
         }
@@ -465,26 +494,65 @@ namespace BastleFramework
         {
             var pawn = Pawn;
             var gd = GlowDef;
-            if (gd == null || pawn == null || !pawn.Spawned || pawn.Map != map
+            var ld = LinkDef;
+            if ((gd == null && ld == null) || pawn == null || !pawn.Spawned || pawn.Map != map
                 || BastleUtility.PeekBastle(pawn) != bastle || !bastle.Traits.Contains(this))
             {
                 // After a map change the new map may already own the mote: leave it.
-                if (glow == null || glow.Destroyed || glow.Map == map) DestroyGlow();
+                if (glow == null || glow.Destroyed || glow.Map == map) { DestroyGlow(); DestroyLinks(); }
                 if (glowMap == map) glowMap = null;
                 return false;
             }
             var P = Params;
             bool show = (discovered || def.showVisualsWhenHidden) && BastleFrameworkMod.Settings.effectsEnabled
                 && map == Find.CurrentMap && !pawn.Position.Fogged(map) && IsActive(pawn, P);
-            if (!show) { DestroyGlow(); return true; }
-            if (glow == null || glow.Destroyed)
+            if (!show) { DestroyGlow(); DestroyLinks(); return true; }
+            if (gd == null) DestroyGlow();
+            else
             {
-                // BF_Mote_AuraGlow is 2 cells across at scale 1.
-                glow = MoteMaker.MakeAttachedOverlay(pawn, gd, Vector3.zero, P.radius + 0.1f);
-                glow.instanceColor = P.GlowInstanceColor;
+                if (glow == null || glow.Destroyed)
+                {
+                    // BF_Mote_AuraGlow is 2 cells across at scale 1.
+                    glow = MoteMaker.MakeAttachedOverlay(pawn, gd, Vector3.zero, P.radius + 0.1f);
+                    glow.instanceColor = P.GlowInstanceColor;
+                }
+                glow.Maintain();
             }
-            glow.Maintain();
+            if (ld == null) DestroyLinks();
+            else LinksTick(pawn, map, ld, P);
             return true;
+        }
+
+        private void LinksTick(Pawn pawn, Map map, ThingDef ld, AuraParams P)
+        {
+            if (linkHits.Count == 0) return;
+            int now = Find.TickManager.TicksGame;
+            // A line lasts until the next scan could have renewed it (+15 for off-camera
+            // tick batching), and drops as soon as the target walks out of range.
+            int keep = P.intervalTicks + 15;
+            tmpLinkPawns.Clear();
+            tmpLinkPawns.AddRange(linkHits.Keys);
+            for (int i = 0; i < tmpLinkPawns.Count; i++)
+            {
+                var p = tmpLinkPawns[i];
+                links.TryGetValue(p, out var m);
+                if (now - linkHits[p] > keep || p.Dead || !p.Spawned || p.Map != map
+                    || !p.Position.InHorDistOf(pawn.Position, P.radius))
+                {
+                    if (m != null && !m.Destroyed) m.Destroy();
+                    links.Remove(p);
+                    linkHits.Remove(p);
+                    continue;
+                }
+                if (m == null || m.Destroyed)
+                {
+                    m = MoteMaker.MakeInteractionOverlay(ld, p, pawn);
+                    m.instanceColor = P.LinkInstanceColor;
+                    links[p] = m;
+                }
+                m.Maintain();
+            }
+            tmpLinkPawns.Clear();
         }
 
         private void DestroyGlow()
@@ -493,7 +561,14 @@ namespace BastleFramework
             glow = null;
         }
 
-        public override void PreRemoved() => DestroyGlow();
+        private void DestroyLinks()
+        {
+            foreach (var m in links.Values) if (m != null && !m.Destroyed) m.Destroy();
+            links.Clear();
+            linkHits.Clear();
+        }
+
+        public override void PreRemoved() { DestroyGlow(); DestroyLinks(); }
 
         private void Pulse(Pawn pawn, AuraParams P)
         {
@@ -510,7 +585,8 @@ namespace BastleFramework
         {
             var pawn = Pawn;
             var P = Params;
-            if (!P.showRing || !discovered || pawn?.Map == null || P.radius > GenRadial.MaxRadialPatternRadius) return;
+            // With Ideology the glow shows the range instead (it ignores walls; accepted).
+            if (!P.showRing || GlowDef != null || !discovered || pawn?.Map == null || P.radius > GenRadial.MaxRadialPatternRadius) return;
             var map = pawn.Map;
             var c = pawn.Position;
             if (P.blockedByWalls)

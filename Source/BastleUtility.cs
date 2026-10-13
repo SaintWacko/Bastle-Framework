@@ -351,6 +351,9 @@ namespace BastleFramework
         /// <summary>Combat Command's ground glow, recolourable. Ideology's texture.</summary>
         [MayRequireIdeology] public static ThingDef BF_Mote_AuraGlow;
 
+        /// <summary>Combat Command's link line, recolourable. Ideology's texture.</summary>
+        [MayRequireIdeology] public static ThingDef BF_Mote_AuraLink;
+
         static BastleDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(BastleDefOf));
     }
 }

@@ -45,6 +45,7 @@
         <affectsEntities>true</affectsEntities>
         <whileDowned>true</whileDowned>
         <ringColor>(0.4, 1.0, 0.3, 1)</ringColor>
+        <showLinks>true</showLinks>
       </li>
     </modExtensions>
   </BastleFramework.BastleTraitDef>
