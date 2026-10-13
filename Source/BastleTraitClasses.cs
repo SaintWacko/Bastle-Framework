@@ -304,7 +304,8 @@ namespace BastleFramework
                 var d = hediff.comps?.OfType<HediffCompProperties_Disappears>().FirstOrDefault();
                 if (d == null)
                     yield return $"aura hediff {hediff.defName} has no HediffCompProperties_Disappears, so it never wears off after leaving the aura (or set severityPerDay for a buildup)";
-                else if (d.disappearsAfterTicks.min <= intervalTicks)
+                // +15: off-camera pawns tick in batches of up to 15, so a refresh can be late.
+                else if (d.disappearsAfterTicks.min <= intervalTicks + 15)
                     yield return $"aura hediff {hediff.defName} can wear off ({d.disappearsAfterTicks.min} ticks) before the aura refreshes it ({intervalTicks} ticks), so it will flicker";
             }
         }
