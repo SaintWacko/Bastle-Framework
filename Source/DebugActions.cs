@@ -86,7 +86,12 @@ namespace BastleFramework
         [DebugAction(Category, "Spawn linked pack (3 copies)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void SpawnLinkedPack(Pawn p)
         {
-            if (!BastleUtility.IsBastle(p)) return;
+            var b = BastleUtility.GetBastle(p);
+            if (b == null || b.TraitsForReading.Count == 0 && b.Material == null)
+            {
+                Messages.Message($"{p.LabelShort} has no traits or material to copy.", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
             for (int i = 0; i < 3; i++)
             {
                 var copy = PawnGenerator.GeneratePawn(new PawnGenerationRequest(p.kindDef, p.Faction, forceGenerateNewPawn: true));

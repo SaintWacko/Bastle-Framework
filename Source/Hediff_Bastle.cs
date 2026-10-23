@@ -247,10 +247,16 @@ namespace BastleFramework
             if (exactRarity && rarity != null) trait.SetRarityExact(rarity.Value);
             else trait.Rarity = rarity ?? def.rarity;
             if (!trait.discovered && TellsAbilities(trait)) trait.discovered = true;
+            // A trait the pack has already identified is known on arrival, as on a copy.
+            if (!trait.discovered && discoveryGroup != 0 && BastleDiscoveryGroups.KnownInGroup(discoveryGroup, def, this))
+                trait.discovered = true;
             traits.Add(trait);
             ApplyEffects(trait);
             trait.PostAdded();
             TraitsChanged(trait);
+            // One added known (a content mod's choice, a colonist telling its abilities)
+            // is known to the pack too. Visible traits are known everywhere anyway.
+            if (trait.discovered && !def.visible && discoveryGroup != 0) BastleDiscoveryGroups.Share(this, def);
             return trait;
         }
 

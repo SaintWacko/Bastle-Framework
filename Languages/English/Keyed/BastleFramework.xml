@@ -6,8 +6,8 @@
 
   <!-- {0}: the creature's label before the discovery. {1}: the trait's label. -->
   <BF_TraitDiscovered>{0} has revealed a hidden trait: {1}.</BF_TraitDiscovered>
-  <!-- As above, when packmates carrying the same trait learned it too. {2}: how many packmates. -->
-  <BF_TraitDiscoveredPack>{0} has revealed a hidden trait: {1}. {2} of its packmates carry it too.</BF_TraitDiscoveredPack>
+  <!-- As above, when packmates carrying the same trait learned it too. {2}: how many living packmates were newly identified. -->
+  <BF_TraitDiscoveredPack>{0} has revealed a hidden trait: {1}. It is now known on {2} of its packmates as well.</BF_TraitDiscoveredPack>
 
   <!-- Shown after the hediff label in the health tab. {0}: known count. {1}: unknown count. -->
   <BF_HediffBrackets>{0} known</BF_HediffBrackets>

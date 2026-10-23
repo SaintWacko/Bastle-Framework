@@ -60,11 +60,31 @@ namespace BastleFramework
             return revealed;
         }
 
+        /// <summary>Adds a newcomer (a copy, a newborn) to a group. Knowledge flows one way:
+        /// the newcomer learns what the pack knows, but what it knew before (a newborn's
+        /// father's traits) says nothing about the pack, so the members are left alone.</summary>
         internal static void Join(Hediff_Bastle bastle, int group)
         {
             if (bastle == null || group == 0) return;
             bastle.SetDiscoveryGroup(group);
-            MergeKnowledge(group);
+            foreach (var t in bastle.TraitsForReading.ToArray())
+                if (!t.discovered && KnownInGroup(group, t.def, bastle)) Quietly(t);
+        }
+
+        /// <summary>Whether another member of the group has this trait discovered.</summary>
+        internal static bool KnownInGroup(int group, BastleTraitDef def, Hediff_Bastle except)
+        {
+            foreach (var m in Members(group))
+                if (m != except && m.GetTrait(def)?.discovered == true) return true;
+            return false;
+        }
+
+        private static void Quietly(BastleTrait trait)
+        {
+            bool wasSharing = sharing;
+            sharing = true;
+            try { trait.Discover(notify: false); }
+            finally { sharing = wasSharing; }
         }
 
         /// <summary>Makes every member know each trait any member knows, so a pack linked

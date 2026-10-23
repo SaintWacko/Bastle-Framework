@@ -802,8 +802,12 @@ namespace BastleFramework
                 LordMaker.MakeNewLord(pawn.Faction, new LordJob_AssaultColony(pawn.Faction), map, spawned);
             }
             if (spawned.Any(c => BastleUtility.PlayerCanObserve(c)))
+            {
+                // The children were copied without it, so only the corpse can show what happened.
+                BastleUtility.GetBastle(pawn)?.GetTrait(ownDef)?.Discover(notify: false);
                 Messages.Message("BF_HydraSplit".Translate(pawn.Named("PAWN"), spawned.Count), new LookTargets(spawned),
                     pawn.Faction == Faction.OfPlayer ? MessageTypeDefOf.PositiveEvent : MessageTypeDefOf.ThreatSmall);
+            }
         }
     }
 }

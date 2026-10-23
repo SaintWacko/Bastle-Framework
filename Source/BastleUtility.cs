@@ -236,7 +236,8 @@ namespace BastleFramework
         /// Makes <paramref name="to"/> a copy of <paramref name="from"/>'s bastle: the same
         /// material and every trait at the same rarity, with each trait's own state copied
         /// through BastleTrait.CopyStateFrom. Whatever bastle state <paramref name="to"/> had is
-        /// replaced; if <paramref name="from"/> is not a bastle, <paramref name="to"/> stops being one.
+        /// replaced, its discovery group included; if <paramref name="from"/> is not a bastle,
+        /// <paramref name="to"/> stops being one.
         /// Traits are copied as they are, without the usual race and conflict checks, so the
         /// copy matches even when the target is a different kind of creature. Two exceptions:
         /// a trait that refuses constructs is left off a copy that has a material, and a
