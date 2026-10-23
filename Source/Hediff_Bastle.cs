@@ -27,6 +27,14 @@ namespace BastleFramework
         /// BastleUtility.SetMaterial.</summary>
         private ThingDef material;
 
+        private int discoveryGroup;
+
+        /// <summary>Bastles with the same non-zero id share discovery (see
+        /// BastleUtility.LinkDiscovery). 0: none.</summary>
+        public int DiscoveryGroup => discoveryGroup;
+
+        internal void SetDiscoveryGroup(int group) => discoveryGroup = group;
+
         [Unsaved] private HediffStage materialStage;
 
         [Unsaved] private HediffStage cachedStage;
@@ -1007,6 +1015,7 @@ namespace BastleFramework
             base.ExposeData();
             Scribe_Collections.Look(ref traits, "traits", LookMode.Deep);
             Scribe_Defs.Look(ref material, "material");
+            Scribe_Values.Look(ref discoveryGroup, "discoveryGroup", 0);
             // Default 0, not 1: saves from before this field have injuries already sized
             // for the current factor, and 0 makes SyncInjuries record it without scaling.
             Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f, forceSave: true);

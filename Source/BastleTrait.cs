@@ -133,10 +133,14 @@ namespace BastleFramework
             string oldLabel = Pawn?.LabelShort;
             discovered = true;
             bastle?.Notify_TraitDiscovered(this);
+            // Packmates learn it quietly; this creature's message counts them instead.
+            int packmates = BastleDiscoveryGroups.Share(bastle, def);
             if (notify && def.discoveryMessage && BastleFrameworkMod.Settings.discoveryMessages && Pawn != null && Pawn.Spawned)
             {
-                Messages.Message("BF_TraitDiscovered".Translate(oldLabel, Label),
-                    Pawn, MessageTypeDefOf.NeutralEvent, historical: false);
+                var text = packmates > 0
+                    ? "BF_TraitDiscoveredPack".Translate(oldLabel, Label, packmates)
+                    : "BF_TraitDiscovered".Translate(oldLabel, Label);
+                Messages.Message(text, Pawn, MessageTypeDefOf.NeutralEvent, historical: false);
             }
             PostDiscovered();
             return true;

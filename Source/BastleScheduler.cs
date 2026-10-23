@@ -40,11 +40,13 @@ namespace BastleFramework
         internal static void Clear() => queue.Clear();
     }
 
-    /// <summary>Ticks the scheduler and keeps Undying bastles' pending rises.</summary>
+    /// <summary>Ticks the scheduler, keeps Undying bastles' pending rises and hands out
+    /// discovery group ids.</summary>
     public class BastleGameComponent : GameComponent
     {
         private List<Pawn> risingPawns = new List<Pawn>();
         private List<int> riseTicks = new List<int>();
+        private int lastDiscoveryGroup;
 
         public BastleGameComponent(Game game)
         {
@@ -60,6 +62,15 @@ namespace BastleFramework
         {
             risingPawns.Add(pawn);
             riseTicks.Add(atTick);
+        }
+
+        internal int NextDiscoveryGroup() => ++lastDiscoveryGroup;
+
+        public override void FinalizeInit()
+        {
+            // A group id reused by a new pack would silently link it to an old one; the
+            // registry has every loaded bastle by now.
+            lastDiscoveryGroup = Math.Max(lastDiscoveryGroup, BastleDiscoveryGroups.MaxGroupInUse());
         }
 
         public override void GameComponentTick()
@@ -91,6 +102,7 @@ namespace BastleFramework
             }
             Scribe_Collections.Look(ref risingPawns, "risingPawns", LookMode.Reference);
             Scribe_Collections.Look(ref riseTicks, "riseTicks", LookMode.Value);
+            Scribe_Values.Look(ref lastDiscoveryGroup, "lastDiscoveryGroup", 0);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 risingPawns = risingPawns ?? new List<Pawn>();

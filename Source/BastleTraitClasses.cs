@@ -784,7 +784,7 @@ namespace BastleFramework
                 var req = new PawnGenerationRequest(pawn.kindDef, pawn.Faction, forceGenerateNewPawn: true,
                     fixedBiologicalAge: age, fixedChronologicalAge: age);
                 Pawn child = PawnGenerator.GeneratePawn(req);
-                BastleUtility.CopyBastle(pawn, child, includeDiscovery: true);
+                BastleUtility.CopyBastle(pawn, child, includeDiscovery: true, linkDiscovery: true);
                 BastleUtility.RemoveTrait(child, ownDef);
                 GenSpawn.Spawn(child, CellFinder.RandomClosewalkCellNear(pos, map, 2), map);
                 FleckMaker.ThrowSmoke(child.DrawPos, map, 1.5f);

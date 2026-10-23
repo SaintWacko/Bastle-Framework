@@ -82,6 +82,27 @@ namespace BastleFramework
         [DebugAction(Category, "Discover all traits", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void DiscoverAll(Pawn p) => BastleUtility.DiscoverAll(p, notify: true);
 
+        // Stands in for a content mod spawning a pack: three linked copies of the clicked bastle.
+        [DebugAction(Category, "Spawn linked pack (3 copies)", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void SpawnLinkedPack(Pawn p)
+        {
+            if (!BastleUtility.IsBastle(p)) return;
+            for (int i = 0; i < 3; i++)
+            {
+                var copy = PawnGenerator.GeneratePawn(new PawnGenerationRequest(p.kindDef, p.Faction, forceGenerateNewPawn: true));
+                BastleUtility.CopyBastle(p, copy, linkDiscovery: true);
+                GenSpawn.Spawn(copy, CellFinder.RandomClosewalkCellNear(p.Position, p.Map, 3), p.Map);
+            }
+        }
+
+        [DebugAction(Category, "Log discovery group", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static void LogGroup(Pawn p)
+        {
+            var members = BastleUtility.DiscoveryGroupOf(p);
+            Log.Message($"[Bastle Framework] {p} discovery group {BastleUtility.GetBastle(p)?.DiscoveryGroup ?? 0}: "
+                + (members.Count == 0 ? "none" : string.Join(", ", members.Select(m => m.ToString()))));
+        }
+
         [DebugAction(Category, "Clear bastle", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void Clear(Pawn p) => BastleUtility.ClearBastle(p);
     }

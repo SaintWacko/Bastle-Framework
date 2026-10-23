@@ -54,6 +54,10 @@ namespace BastleFramework
             registry = next;
         }
 
+        /// <summary>The current registry. Never modified once published, so it can be
+        /// iterated while the registry itself changes.</summary>
+        internal static Dictionary<Pawn, Hediff_Bastle> RegistrySnapshot => registry;
+
         /// <summary>A new game or a load: the previous game's pawns go.</summary>
         internal static void ClearRegistry() => registry = NewRegistry(null);
 
@@ -221,6 +225,11 @@ namespace BastleFramework
                 if (Rand.Chance(chance))
                     AddTrait(child, kv.Key, discovered: known.Contains(kv.Key), rarity: InheritedRarity(kv.Key, rarities[kv.Key]));
             }
+
+            // The young join their parents' pack: the mother's when both parents have one.
+            var c = GetBastle(child);
+            int group = m != null && m.DiscoveryGroup != 0 ? m.DiscoveryGroup : f?.DiscoveryGroup ?? 0;
+            if (c != null && c.DiscoveryGroup == 0 && group != 0) BastleDiscoveryGroups.Join(c, group);
         }
 
         /// <summary>
@@ -239,8 +248,12 @@ namespace BastleFramework
         /// </summary>
         /// <param name="includeDiscovery">Also copy which traits are discovered. Otherwise
         /// the copy starts with only visible traits known. No messages are sent either way.</param>
+        /// <param name="linkDiscovery">Put the copy in <paramref name="from"/>'s discovery group
+        /// (making one if needed): from then on a trait discovered on either is discovered on
+        /// both. The copy also learns at once whatever the group already knows, so this
+        /// implies includeDiscovery.</param>
         /// <returns>The copy's bastle hediff, or null if there was nothing to copy.</returns>
-        public static Hediff_Bastle CopyBastle(Pawn from, Pawn to, bool includeDiscovery = false)
+        public static Hediff_Bastle CopyBastle(Pawn from, Pawn to, bool includeDiscovery = false, bool linkDiscovery = false)
         {
             if (to?.health == null || from == to) return GetBastle(to);
             var source = GetBastle(from);
@@ -281,7 +294,43 @@ namespace BastleFramework
             foreach (var (copy, src) in copies) copy.CopyStateFrom(src);
             // Copied state can change what a trait shows (VisualsActive is virtual).
             bastle.VisualsChanged();
+
+            if (linkDiscovery)
+            {
+                if (source.DiscoveryGroup == 0) source.SetDiscoveryGroup(BastleDiscoveryGroups.NewGroup());
+                BastleDiscoveryGroups.Join(bastle, source.DiscoveryGroup);
+            }
             return bastle;
+        }
+
+        /// <summary>Links these creatures' discovery, for packs not made with CopyBastle's
+        /// linkDiscovery: a trait discovered on one is then quietly discovered on every
+        /// other member carrying it, wherever they are, for good. Groups any of them were
+        /// already in are merged whole, and the pack learns at once whatever any member
+        /// already knows. Pawns that aren't bastles are skipped, so give traits first.
+        /// Never adds traits.</summary>
+        /// <returns>The group id, or 0 if no bastle was given.</returns>
+        public static int LinkDiscovery(IEnumerable<Pawn> pawns)
+        {
+            if (pawns == null) return 0;
+            var bastles = new List<Hediff_Bastle>();
+            foreach (var p in pawns)
+            {
+                var b = GetBastle(p);
+                if (b != null) bastles.Add(b);
+            }
+            return BastleDiscoveryGroups.Link(bastles);
+        }
+
+        /// <summary>The bastles sharing discovery with this one, itself included. Empty if it
+        /// isn't a bastle or has no group.</summary>
+        public static List<Pawn> DiscoveryGroupOf(Pawn pawn)
+        {
+            var list = new List<Pawn>();
+            var bastle = GetBastle(pawn);
+            if (bastle == null || bastle.DiscoveryGroup == 0) return list;
+            foreach (var m in BastleDiscoveryGroups.Members(bastle.DiscoveryGroup)) list.Add(m.pawn);
+            return list;
         }
 
         /// <summary>A carrying parent's rarity (either one's when both carry it), shifted
