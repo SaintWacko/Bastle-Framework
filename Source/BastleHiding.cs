@@ -168,15 +168,13 @@ namespace BastleFramework
     [HarmonyPatch(typeof(Ability), nameof(Ability.GizmoDisabled))]
     internal static class Patch_AbilityGizmoDisabled_Undrafted
     {
-        private static string undraftedReason;
-
         static void Postfix(Ability __instance, ref bool __result, ref string reason)
         {
             if (!__result || !__instance.def.disableGizmoWhileUndrafted) return;
             var pawn = __instance.pawn;
             if (pawn == null || pawn.drafter != null) return;
-            if (undraftedReason == null) undraftedReason = "AbilityDisabledUndrafted".Translate();
-            if (reason != undraftedReason) return;
+            // Translated per call, not cached: the language can change mid-session.
+            if (reason != "AbilityDisabledUndrafted".Translate()) return;
             if (!Patch_AbilityTrackerGizmos_Undrafted.Undraftable(pawn, __instance)) return;
 
             if (pawn.DevelopmentalStage.Baby())
