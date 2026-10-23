@@ -52,24 +52,27 @@ namespace BastleFramework
 
         // Pawn_AbilityTracker.GetGizmos only shows an ability on an undrafted pawn when its
         // def says displayGizmoWhileUndrafted, and animals can never be drafted, so a
-        // trained animal bastle's buttons stayed hidden (test run #3). Every ability a
-        // trait grants gets the flag; colonists then see those buttons undrafted too, the
-        // way they see most psycasts.
+        // trained animal bastle's buttons stayed hidden (test run #3). An ability a trait
+        // grants gets the flag when it comes from the same mod as the trait; another mod's
+        // ability (vanilla's, say) is shared with pawns that aren't bastles, so it's left
+        // as its author wrote it. Colonists see the flagged buttons undrafted too, the way
+        // they see most psycasts.
         private static void ShowTraitAbilitiesUndrafted()
         {
             foreach (var trait in DefDatabase<BastleTraitDef>.AllDefsListForReading)
             {
-                Show(trait.abilities);
+                Show(trait, trait.abilities);
                 if (trait.rarityOverrides != null)
-                    foreach (var o in trait.rarityOverrides) Show(o.abilities);
+                    foreach (var o in trait.rarityOverrides) Show(trait, o.abilities);
             }
         }
 
-        private static void Show(List<AbilityDef> abilities)
+        private static void Show(BastleTraitDef trait, List<AbilityDef> abilities)
         {
             if (abilities == null) return;
             foreach (var ability in abilities)
-                if (ability != null) ability.displayGizmoWhileUndrafted = true;
+                if (ability != null && ability.modContentPack == trait.modContentPack)
+                    ability.displayGizmoWhileUndrafted = true;
         }
     }
 }
