@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "BastleFramework.AbilityAICompat/1.0.0": {
+        "runtime": {
+          "BastleFramework.AbilityAICompat.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "BastleFramework.AbilityAICompat/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

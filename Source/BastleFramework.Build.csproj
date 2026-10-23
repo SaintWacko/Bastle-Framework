@@ -6,6 +6,9 @@
     compat assembly for each version (Mods/AbilityAI/1.6|1.7/Source, shared C# in Mods/AbilityAI/Source), which
     needs Ability AI's own DLLs built in its workspace folder (4b7a8f666d21).
 
+    SkipGetTargetFrameworkProperties lets this net472 entry point build the net10.0 1.7 projects, whose outputs it
+    never references.
+
     It has to be the only project file directly in Source/, or `dotnet build` there stops and asks which one to build.
   -->
   <PropertyGroup>
@@ -25,17 +28,21 @@
   <ItemGroup>
     <ProjectReference Include="..\1.6\Source\BastleFramework.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <ProjectReference Include="..\1.7\Source\BastleFramework.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <!-- Skipped, with a warning below, when Ability AI isn't built there: the main DLLs need nothing from it, but
          the compat DLLs under Mods/AbilityAI are then left as they were -->
     <ProjectReference Include="..\Mods\AbilityAI\1.6\Source\BastleFramework.AbilityAICompat.csproj" Condition="'$(HasAbilityAI16)' == 'true'">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <ProjectReference Include="..\Mods\AbilityAI\1.7\Source\BastleFramework.AbilityAICompat.csproj" Condition="'$(HasAbilityAI17)' == 'true'">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
   </ItemGroup>
   <Target Name="WarnNoAbilityAI" BeforeTargets="Build" Condition="'$(HasAbilityAI16)' != 'true' Or '$(HasAbilityAI17)' != 'true'">
