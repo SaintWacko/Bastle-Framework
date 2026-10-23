@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ability AI rules for the abilities in Defs/AbilityDefs/BF_Abilities.xml. This folder loads only when Ability AI
+     (saintwacko.AbilityAI) is active (LoadFolders.xml), so the AbilityAI.* class names here always resolve.
+     Without it, JobGiver_BastleAbilities and vanilla cast these through aiCanUse in the base defs; Ability AI stands
+     both down for every ability it handles, so the two never both cast one.
+     BF_Leap has no rules on purpose: the BF_LeapAtTarget think tree also leaps at prey during a hunt, which
+     Ability AI's Movement worker doesn't cover, and an extension would stand that tree down.
+     The DLC abilities are wrapped in PatchOperationConditional on the def itself: the def is MayRequire, and a bare
+     xpath that finds nothing logs a patch failure.
+     The workers and their fields are described in Ability AI's AbilityAIWorkers.cs and AbilityAIWorkersTargeted.cs.
+     One top-level operation per ability, so a renamed ability loses only its own rules. -->
+<Patch>
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/AbilityDef[defName="BF_QuillVolley"]</xpath>
+    <value>
+      <li Class="AbilityAI.AbilityAIExtension">
+        <workerClass>AbilityAI.AbilityAIWorker_TargetHostile</workerClass>
+      </li>
+    </value>
+  </Operation>
+
+  <!-- Biotech. 9 cells of acid around the target: no ally of the caster within 2 tiles of it -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/AbilityDef[defName="BF_AcidSpit"]</xpath>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/AbilityDef[defName="BF_AcidSpit"]</xpath>
+      <value>
+        <li Class="AbilityAI.AbilityAIExtension">
+          <workerClass>AbilityAI.AbilityAIWorker_AoEHostile</workerClass>
+          <radius>1.9</radius>
+          <avoidAllies>true</avoidAllies>
+        </li>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- Biotech. The line is about 3 wide at its end. avoidAllies only looks around the target, not along the line,
+       so an ally between the caster and its target can still be burned (as with vanilla's fight AI). -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/AbilityDef[defName="BF_FireBreath"]</xpath>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/AbilityDef[defName="BF_FireBreath"]</xpath>
+      <value>
+        <li Class="AbilityAI.AbilityAIExtension">
+          <workerClass>AbilityAI.AbilityAIWorker_AoEHostile</workerClass>
+          <radius>1.5</radius>
+          <avoidAllies>true</avoidAllies>
+        </li>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- Odyssey. Self-centred: AoEHostile centres on an enemy, so with radius and range both 23.9 it can count enemies
+       out of the howl's reach. Switch to a caster-centred worker once Ability AI has one. -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/AbilityDef[defName="BF_DreadHowl"]</xpath>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/AbilityDef[defName="BF_DreadHowl"]</xpath>
+      <value>
+        <li Class="AbilityAI.AbilityAIExtension">
+          <workerClass>AbilityAI.AbilityAIWorker_AoEHostile</workerClass>
+          <minTargets>2</minTargets>
+        </li>
+      </value>
+    </match>
+  </Operation>
+</Patch>
