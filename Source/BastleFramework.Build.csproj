@@ -15,6 +15,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <AssemblyName>BastleFramework.Build</AssemblyName>
+    <!-- The net472 1.6 projects are built, never referenced -->
+    <NoWarn>$(NoWarn);NU1702</NoWarn>
     <!-- Same default as the compat projects; pass /p:AbilityAIDir=... to point both somewhere else -->
     <AbilityAIDir Condition="'$(AbilityAIDir)' == ''">$(MSBuildThisFileDirectory)..\..\4b7a8f666d21\</AbilityAIDir>
     <HasAbilityAI16>false</HasAbilityAI16>

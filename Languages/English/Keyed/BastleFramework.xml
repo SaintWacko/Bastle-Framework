@@ -31,6 +31,10 @@
   <BF_Settings_DiscoveryMessages>Message when a trait is discovered</BF_Settings_DiscoveryMessages>
   <BF_Settings_AbilityAI>Bastles use trait abilities on their own</BF_Settings_AbilityAI>
   <BF_Settings_AbilityAIHint>Hostile, manhunting and tamed bastles cast their trait abilities in a fight, and wild ones when fighting back. Player colonists only cast when you order them to.</BF_Settings_AbilityAIHint>
+  <BF_Settings_UntrainedKnownAbilities>Untrained tamed bastles use known trait abilities</BF_Settings_UntrainedKnownAbilities>
+  <BF_Settings_UntrainedKnownAbilitiesHint>Tamed animals that haven't learned trait abilities still use the abilities of their known traits on their own. Turn this off to keep them from casting those until they are trained. Abilities from undiscovered traits are always used, since using them is how those traits are found.</BF_Settings_UntrainedKnownAbilitiesHint>
+  <BF_Settings_TrainedAbilitiesOnOwn>Trained bastles also use trait abilities on their own</BF_Settings_TrainedAbilitiesOnOwn>
+  <BF_Settings_TrainedAbilitiesOnOwnHint>Tamed animals that have learned trait abilities keep casting them on their own as well as when you order them to. Turn this off to have them cast only on your order. With Ability AI, its autocast setting decides for the abilities it handles.</BF_Settings_TrainedAbilitiesOnOwnHint>
   <BF_Settings_MaterialsSection>Materials</BF_Settings_MaterialsSection>
   <BF_Settings_Armor>Armor from material</BF_Settings_Armor>
   <BF_Settings_ArmorHint>Share of the stuff's armor value. Steel at this setting: +{0} sharp armor.</BF_Settings_ArmorHint>

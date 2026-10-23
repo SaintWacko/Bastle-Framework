@@ -20,6 +20,8 @@ namespace BastleFramework
         public float inheritChanceFactor = 1f;
         public bool discoveryMessages = true;
         public bool abilityAI = true;
+        public bool untrainedKnownAbilities = true;
+        public bool trainedAbilitiesOnOwn = true;
         public float valuePercentPerPoint = 0.2f;
         public float valueFlatPerPoint = 100f;
         public float mysteryTradeBonus = 0.25f;
@@ -66,6 +68,8 @@ namespace BastleFramework
             inheritChanceFactor = 1f;
             discoveryMessages = true;
             abilityAI = true;
+            untrainedKnownAbilities = true;
+            trainedAbilitiesOnOwn = true;
             valuePercentPerPoint = 0.2f;
             valueFlatPerPoint = 100f;
             mysteryTradeBonus = 0.25f;
@@ -101,6 +105,8 @@ namespace BastleFramework
             Scribe_Values.Look(ref inheritChanceFactor, "inheritChanceFactor", 1f);
             Scribe_Values.Look(ref discoveryMessages, "discoveryMessages", true);
             Scribe_Values.Look(ref abilityAI, "abilityAI", true);
+            Scribe_Values.Look(ref untrainedKnownAbilities, "untrainedKnownAbilities", true);
+            Scribe_Values.Look(ref trainedAbilitiesOnOwn, "trainedAbilitiesOnOwn", true);
             Scribe_Values.Look(ref valuePercentPerPoint, "valuePercentPerPoint", 0.2f);
             Scribe_Values.Look(ref valueFlatPerPoint, "valueFlatPerPoint", 100f);
             Scribe_Values.Look(ref mysteryTradeBonus, "mysteryTradeBonus", 0.25f);
@@ -187,6 +193,8 @@ namespace BastleFramework
             Slider(l, "BF_Settings_Inherit", ref inheritChanceFactor, 0f, 2f, inheritChanceFactor.ToStringPercent(), "BF_Settings_InheritHint", 0.05f);
             Check(l, "BF_Settings_DiscoveryMessages", ref discoveryMessages, null);
             Check(l, "BF_Settings_AbilityAI", ref abilityAI, "BF_Settings_AbilityAIHint");
+            Check(l, "BF_Settings_UntrainedKnownAbilities", ref untrainedKnownAbilities, "BF_Settings_UntrainedKnownAbilitiesHint");
+            Check(l, "BF_Settings_TrainedAbilitiesOnOwn", ref trainedAbilitiesOnOwn, "BF_Settings_TrainedAbilitiesOnOwnHint");
             float names = maxNameTraits;
             Slider(l, "BF_Settings_MaxNameTraits", ref names, 0f, MaxNameTraitsLimit, Mathf.RoundToInt(names).ToString(), "BF_Settings_MaxNameTraitsHint", 1f);
             maxNameTraits = Mathf.RoundToInt(names);

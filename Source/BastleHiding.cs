@@ -93,8 +93,9 @@ namespace BastleFramework
         }
     }
 
-    /// <summary>No gizmo for an ability whose only source is an undiscovered trait. The AI
-    /// can still cast it, and that reveals the trait.</summary>
+    /// <summary>No gizmo for an ability whose only source is an undiscovered trait (the AI
+    /// can still cast it, and that reveals the trait), nor for a known one on an animal
+    /// that hasn't learned BF_TraitAbilities.</summary>
     [HarmonyPatch(typeof(Ability), nameof(Ability.GizmosVisible))]
     internal static class Patch_AbilityGizmosVisible
     {
@@ -102,7 +103,9 @@ namespace BastleFramework
         {
             if (!__result) return;
             var bastle = BastleUtility.GetBastle(__instance.pawn);
-            if (bastle != null && bastle.AbilityOnlyFromHiddenTraits(__instance.def)) __result = false;
+            if (bastle == null) return;
+            var control = BastleAbilityTraining.ControlOf(bastle, __instance.pawn, __instance.def);
+            if (control == BastleAbilityControl.Hidden || control == BastleAbilityControl.Untrained) __result = false;
         }
     }
 }

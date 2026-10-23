@@ -12,6 +12,8 @@
         <OutputType>Library</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>disable</ImplicitUsings>
+        <!-- A mod DLL is loaded by the game, not run as an app: no .deps.json beside it -->
+        <GenerateDependencyFile>false</GenerateDependencyFile>
         <RootNamespace>BastleFramework</RootNamespace>
         <AssemblyName>BastleFramework</AssemblyName>
         <LangVersion>latest</LangVersion>

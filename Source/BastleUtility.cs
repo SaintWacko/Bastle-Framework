@@ -347,6 +347,7 @@ namespace BastleFramework
     {
         public static HediffDef BF_Bastle;
         public static JobDef BF_EatNonFood;
+        public static TrainableDef BF_TraitAbilities;
 
         /// <summary>Combat Command's ground glow, recolourable. Ideology's texture.</summary>
         [MayRequireIdeology] public static ThingDef BF_Mote_AuraGlow;

@@ -23,7 +23,8 @@ namespace BastleFramework
     ///
     /// Every ability still goes through vanilla's own checks: <c>aiCanUse</c>, cooldown,
     /// range, and each effect comp's AICanTargetNow. Tamed animals and player mechs cast
-    /// too (they can't be ordered to); player colonists don't, they have the gizmo.
+    /// too; player colonists don't, they have the gizmo. For tamed animals the trait
+    /// abilities training and its settings decide (BastleAbilityTraining).
     /// </summary>
     public class JobGiver_BastleAbilities : ThinkNode_JobGiver
     {
@@ -41,7 +42,7 @@ namespace BastleFramework
             for (int i = 0; i < traits.Count; i++)
             {
                 var tree = traits[i].AiThinkTree;
-                if (tree?.thinkRoot == null) continue;
+                if (tree?.thinkRoot == null || !BastleAbilityTraining.MayRunTreeOnOwn(pawn, traits[i])) continue;
                 var result = tree.thinkRoot.TryIssueJobPackage(pawn, default);
                 if (result.IsValid) return result.Job;
             }

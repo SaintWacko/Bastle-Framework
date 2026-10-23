@@ -591,20 +591,6 @@ namespace BastleFramework
             return false;
         }
 
-        /// <summary>True when every trait that grants this ability is undiscovered.</summary>
-        internal bool AbilityOnlyFromHiddenTraits(AbilityDef abilityDef)
-        {
-            bool any = false;
-            for (int i = 0; i < traits.Count; i++)
-            {
-                var t = traits[i];
-                if (t.Abilities == null || !t.Abilities.Contains(abilityDef)) continue;
-                if (t.discovered) return false;
-                any = true;
-            }
-            return any;
-        }
-
         public override HediffStage CurStage
         {
             get
