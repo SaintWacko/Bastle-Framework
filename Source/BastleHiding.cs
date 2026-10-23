@@ -108,4 +108,40 @@ namespace BastleFramework
             if (control == BastleAbilityControl.Hidden || control == BastleAbilityControl.Untrained) __result = false;
         }
     }
+
+    /// <summary>
+    /// Vanilla shows an ability's button on an undrafted pawn only when its def sets
+    /// displayGizmoWhileUndrafted. Animals can never be drafted, so a trained animal
+    /// bastle never saw its buttons (test run #3). This adds the buttons vanilla skipped
+    /// for abilities a known trait grants, on bastles only: the AbilityDef itself is
+    /// shared with every other pawn that has it (a content mod's trait may grant a
+    /// vanilla ability), so the def is left as its author wrote it.
+    /// </summary>
+    [HarmonyPatch(typeof(Pawn_AbilityTracker), nameof(Pawn_AbilityTracker.GetGizmos))]
+    internal static class Patch_AbilityTrackerGizmos_Undrafted
+    {
+        static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn_AbilityTracker __instance)
+        {
+            foreach (var g in __result) yield return g;
+
+            var pawn = __instance.pawn;
+            if (pawn == null || pawn.Drafted) yield break;
+            // Mirrors GetGizmos' own tests: who gets buttons at all, and the dev-gizmo branch
+            // that already yielded every ability for non-colonist pawns.
+            if (!(pawn.IsColonistPlayerControlled || pawn.IsColonyMechPlayerControlled || pawn.IsColonySubhumanPlayerControlled || pawn.IsColonyAnimal)) yield break;
+            if (DebugSettings.ShowDevGizmos && !pawn.IsColonistPlayerControlled && !pawn.IsColonyMechPlayerControlled) yield break;
+            var bastle = BastleUtility.GetBastle(pawn);
+            if (bastle == null) yield break;
+
+            var abilities = __instance.AllAbilitiesForReading;
+            for (int i = 0; i < abilities.Count; i++)
+            {
+                var a = abilities[i];
+                if (a.def.displayGizmoWhileUndrafted) continue;
+                if (BastleAbilityTraining.ControlOf(bastle, pawn, a.def) != BastleAbilityControl.Player) continue;
+                if (!a.GizmosVisible()) continue;
+                foreach (var c in a.GetGizmos()) yield return c;
+            }
+        }
+    }
 }
