@@ -171,7 +171,7 @@ namespace BastleFramework
             var pawn = req.Pawn ?? req.Thing as Pawn;
             var bastle = pawn == null ? null : BastleUtility.PeekBastle(pawn);
             BastleDiet diet = null;
-            if (bastle != null && !(pawn.IsMutant && pawn.mutant.Def.overrideFoodType))
+            if (bastle != null && !bastle.DietOverridden)
             {
                 var known = new List<BastleTrait>();
                 foreach (var t in bastle.Traits)
@@ -198,7 +198,10 @@ namespace BastleFramework
     // ---- patches ------------------------------------------------------------------
 
     /// <summary>The per-creature food check every eating, foraging and feeding path goes
-    /// through (WillEat calls it). The race's own diet stays the base.</summary>
+    /// through (WillEat calls it). The race's own diet stays the base. An added food type
+    /// wins over the race's willNeverEat list except for trees: vanilla uses that list to
+    /// keep thrumbos off anima, Gauranlen and similar special trees, and a tree-eating
+    /// trait shouldn't let a bastle eat the colony's anima tree.</summary>
     [HarmonyPatch(typeof(FoodUtility), nameof(FoodUtility.FoodIsSuitable))]
     internal static class Patch_FoodIsSuitable
     {
@@ -209,7 +212,9 @@ namespace BastleFramework
             bool ok = __result;
             if (!ok && d.Adds(food) && p.needs?.food != null && p.RaceProps.EatsFood
                 && food.ingestible != null && food.ingestible.preferability != FoodPreferability.Undefined
-                && !(p.DevelopmentalStage.Baby() && !food.ingestible.babiesCanIngest))
+                && !(p.DevelopmentalStage.Baby() && !food.ingestible.babiesCanIngest)
+                && !(food.plant != null && food.plant.IsTree && p.RaceProps.willNeverEat != null
+                    && p.RaceProps.willNeverEat.Contains(food)))
                 ok = true;
             if (ok && d.Refuses(food)) ok = false;
             __result = ok;

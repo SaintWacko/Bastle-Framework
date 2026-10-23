@@ -78,6 +78,7 @@ namespace BastleFramework
         {
             get
             {
+                if (DietOverridden) return null;
                 if (stageDirty || cachedStage == null)
                 {
                     cachedStage = BuildStage();
@@ -211,6 +212,19 @@ namespace BastleFramework
             if (dirty) renderer.SetAllGraphicsDirty();
         }
 
+        /// <summary>A mutant whose diet replaces its race's (Anomaly ghouls) eats only that:
+        /// trait diets and the material's nutrition stop applying, as vanilla's own
+        /// FoodIsSuitable ignores the race for it.</summary>
+        internal bool DietOverridden => pawn != null && pawn.IsMutant && pawn.mutant.Def.overrideFoodType;
+
+        /// <summary>A humanlike in the player's faction can show or tell the colony what it
+        /// can do, so traits that grant abilities are known as soon as it lives there.
+        /// Without this they'd stay hidden for good: nothing casts a colonist's abilities
+        /// on its own, and a hidden trait's ability has no gizmo.</summary>
+        internal bool TellsAbilities(BastleTrait trait)
+            => pawn != null && pawn.RaceProps.Humanlike && pawn.Faction != null && pawn.Faction.IsPlayer
+                && !trait.Abilities.NullOrEmpty();
+
         // ---- trait list mutation (use BastleUtility from outside) ----------------
 
         /// <param name="exactRarity">Keep the rarity as given instead of clamping it to
@@ -224,6 +238,7 @@ namespace BastleFramework
             trait.fromMaterial = fromMaterial;
             if (exactRarity && rarity != null) trait.SetRarityExact(rarity.Value);
             else trait.Rarity = rarity ?? def.rarity;
+            if (!trait.discovered && TellsAbilities(trait)) trait.discovered = true;
             traits.Add(trait);
             ApplyEffects(trait);
             trait.PostAdded();
@@ -947,6 +962,7 @@ namespace BastleFramework
         /// Also called by the non-food eating job, which doesn't go through Thing.Ingested.</summary>
         internal void Notify_Ate(ThingDef food)
         {
+            if (DietOverridden) return;
             var removed = Diet?.remove ?? FoodTypeFlags.None;
             for (int i = 0; i < traits.Count; i++)
             {
