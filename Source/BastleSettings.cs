@@ -163,12 +163,12 @@ namespace BastleFramework
             TabDrawer.DrawTabs(body, tabs);
 
             if (tab == Tab.Generation) DoGeneration(body.ContractedBy(12f));
+            else if (tab == Tab.Traits) DoTraits(body.ContractedBy(12f));
             else
             {
                 var l = new Listing_Standard();
                 l.Begin(body.ContractedBy(12f));
                 if (tab == Tab.Lights) DoLights(l);
-                else if (tab == Tab.Traits) DoTraits(l);
                 else DoMaterials(l);
                 l.End();
             }
@@ -188,8 +188,15 @@ namespace BastleFramework
             Check(l, "BF_Settings_Effects", ref effectsEnabled, "BF_Settings_EffectsHint");
         }
 
-        private void DoTraits(Listing_Standard l)
+        // Behaviour on the left, health and value on the right: in one column the hints
+        // push the last sliders past the bottom of the settings window.
+        private void DoTraits(Rect r)
         {
+            const float gap = 18f;
+            float half = (r.width - gap) / 2f;
+
+            var l = new Listing_Standard();
+            l.Begin(new Rect(r.x, r.y, half, r.height));
             Slider(l, "BF_Settings_Inherit", ref inheritChanceFactor, 0f, 2f, inheritChanceFactor.ToStringPercent(), "BF_Settings_InheritHint", 0.05f);
             Check(l, "BF_Settings_DiscoveryMessages", ref discoveryMessages, null);
             Check(l, "BF_Settings_AbilityAI", ref abilityAI, "BF_Settings_AbilityAIHint");
@@ -198,10 +205,15 @@ namespace BastleFramework
             float names = maxNameTraits;
             Slider(l, "BF_Settings_MaxNameTraits", ref names, 0f, MaxNameTraitsLimit, Mathf.RoundToInt(names).ToString(), "BF_Settings_MaxNameTraitsHint", 1f);
             maxNameTraits = Mathf.RoundToInt(names);
+            l.End();
+
+            l = new Listing_Standard();
+            l.Begin(new Rect(r.x + half + gap, r.y, half, r.height));
             Slider(l, "BF_Settings_HealthPerPoint", ref healthPerPoint, 0f, 0.5f, "+" + healthPerPoint.ToStringPercent(), "BF_Settings_HealthPerPointHint", 0.01f);
             Slider(l, "BF_Settings_ValuePercent", ref valuePercentPerPoint, 0f, 1f, "+" + valuePercentPerPoint.ToStringPercent(), "BF_Settings_ValuePercentHint", 0.01f);
             Slider(l, "BF_Settings_ValueFlat", ref valueFlatPerPoint, 0f, 500f, "+" + valueFlatPerPoint.ToStringMoney(), "BF_Settings_ValueFlatHint", 5f);
             Slider(l, "BF_Settings_Mystery", ref mysteryTradeBonus, 0f, 1f, "+" + mysteryTradeBonus.ToStringPercent(), "BF_Settings_MysteryHint", 0.05f);
+            l.End();
         }
 
         private static readonly Color[] RarityColors =

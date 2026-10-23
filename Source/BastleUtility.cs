@@ -165,7 +165,10 @@ namespace BastleFramework
         /// <summary>Rolls traits until the creature's new traits reach a point target
         /// rolled from request.points (the settings' range by default). The target is a
         /// minimum; see BastleRolling for how it is met. Traits the creature already has
-        /// are kept and block conflicting rolls, but don't count toward the target.</summary>
+        /// are kept and block conflicting rolls, but don't count toward the target.
+        /// Roll after the pawn has its faction: a humanlike already in the player's faction
+        /// gets its ability traits known as they are added; one given its faction later only
+        /// learns them if it joins through Pawn.SetFaction.</summary>
         public static List<BastleTrait> RollTraits(Pawn pawn, BastleRollRequest request = null)
             => BastleRolling.Roll(pawn, request ?? new BastleRollRequest(), null);
 
