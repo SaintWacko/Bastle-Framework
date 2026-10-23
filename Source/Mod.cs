@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using HarmonyLib;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -42,6 +44,32 @@ namespace BastleFramework
     [StaticConstructorOnStartup]
     internal static class BastlePatcher
     {
-        static BastlePatcher() => new Harmony("saintwacko.BastleFramework").PatchAll();
+        static BastlePatcher()
+        {
+            new Harmony("saintwacko.BastleFramework").PatchAll();
+            ShowTraitAbilitiesUndrafted();
+        }
+
+        // Pawn_AbilityTracker.GetGizmos only shows an ability on an undrafted pawn when its
+        // def says displayGizmoWhileUndrafted, and animals can never be drafted, so a
+        // trained animal bastle's buttons stayed hidden (test run #3). Every ability a
+        // trait grants gets the flag; colonists then see those buttons undrafted too, the
+        // way they see most psycasts.
+        private static void ShowTraitAbilitiesUndrafted()
+        {
+            foreach (var trait in DefDatabase<BastleTraitDef>.AllDefsListForReading)
+            {
+                Show(trait.abilities);
+                if (trait.rarityOverrides != null)
+                    foreach (var o in trait.rarityOverrides) Show(o.abilities);
+            }
+        }
+
+        private static void Show(List<AbilityDef> abilities)
+        {
+            if (abilities == null) return;
+            foreach (var ability in abilities)
+                if (ability != null) ability.displayGizmoWhileUndrafted = true;
+        }
     }
 }
