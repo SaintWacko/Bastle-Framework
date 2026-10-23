@@ -28,9 +28,10 @@ namespace BastleFramework
     public static class BastleAbilityTraining
     {
         /// <summary>Set by an integration that gives the player its own autocast toggle for
-        /// an ability (the Ability AI compat): a trained bastle's ability it handles follows
-        /// that toggle instead of the "trained bastles also use abilities on their own" setting.</summary>
-        public static Func<AbilityDef, bool> HasExternalAutocast;
+        /// an ability (the Ability AI compat): true when that integration is the one deciding
+        /// whether this pawn casts this ability on its own, so the "trained bastles also use
+        /// abilities on their own" setting stays out of its way.</summary>
+        public static Func<Pawn, Ability, bool> HasExternalAutocast;
 
         public static bool NeedsTraining(Pawn pawn) => pawn?.training != null && pawn.RaceProps.Animal;
 
@@ -60,19 +61,19 @@ namespace BastleFramework
         }
 
         /// <summary>Whether any AI may cast this ability for the pawn without an order.
-        /// Only the player's own pawns are ever held back.</summary>
-        public static bool MayCastOnOwn(Pawn pawn, AbilityDef def)
+        /// Only the player's own pawns are ever held back, and not during a mental break.</summary>
+        public static bool MayCastOnOwn(Pawn pawn, Ability ability)
         {
-            if (pawn.Faction == null || !pawn.Faction.IsPlayer) return true;
+            if (pawn.Faction == null || !pawn.Faction.IsPlayer || pawn.InMentalState) return true;
             var bastle = BastleUtility.PeekBastle(pawn);
             if (bastle == null) return true;
-            switch (ControlOf(bastle, pawn, def))
+            switch (ControlOf(bastle, pawn, ability.def))
             {
                 case BastleAbilityControl.Untrained:
                     return BastleFrameworkMod.Settings.untrainedKnownAbilities;
                 case BastleAbilityControl.Player:
                     return !NeedsTraining(pawn) || BastleFrameworkMod.Settings.trainedAbilitiesOnOwn
-                        || (HasExternalAutocast?.Invoke(def) ?? false);
+                        || (HasExternalAutocast?.Invoke(pawn, ability) ?? false);
                 default:
                     return true;
             }
@@ -82,7 +83,8 @@ namespace BastleFramework
         /// likes. Bastle runs those trees itself, so no integration's autocast applies.</summary>
         internal static bool MayRunTreeOnOwn(Pawn pawn, BastleTrait trait)
         {
-            if (!trait.discovered || pawn.Faction == null || !pawn.Faction.IsPlayer || !NeedsTraining(pawn)) return true;
+            if (!trait.discovered || pawn.Faction == null || !pawn.Faction.IsPlayer || pawn.InMentalState
+                || !NeedsTraining(pawn)) return true;
             return IsTrained(pawn)
                 ? BastleFrameworkMod.Settings.trainedAbilitiesOnOwn
                 : BastleFrameworkMod.Settings.untrainedKnownAbilities;
@@ -112,7 +114,7 @@ namespace BastleFramework
             if (td != BastleDefOf.BF_TraitAbilities) return;
             // BackCompatibility's PostLoadInit wipes the steps of any trainable this refuses,
             // and the bastle registry may not hold the pawn yet at that point.
-            if (Scribe.mode != LoadSaveMode.Inactive)
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 visible = true;
                 __result = true;
@@ -130,11 +132,11 @@ namespace BastleFramework
             }
             visible = true;
             var trainability = TrainableUtility.GetTrainability(pawn) ?? pawnDef.race.trainability;
-            if (td.requiredTrainability != null && trainability != null
+            if (pawn.BodySize < td.minBodySize)
+                __result = new AcceptanceReport("CannotTrainTooSmall".Translate(pawn.LabelShort).Resolve());
+            else if (td.requiredTrainability != null && trainability != null
                 && trainability.intelligenceOrder < td.requiredTrainability.intelligenceOrder)
                 __result = new AcceptanceReport("CannotTrainNotSmartEnough".Translate(td.requiredTrainability.label).Resolve());
-            else if (pawn.BodySize < td.minBodySize)
-                __result = new AcceptanceReport("CannotTrainTooSmall".Translate(pawn.LabelShort).Resolve());
             else
                 __result = true;
         }
@@ -147,7 +149,7 @@ namespace BastleFramework
     {
         static void Postfix(Ability __instance, ref bool __result)
         {
-            if (__result && __instance.pawn != null && !BastleAbilityTraining.MayCastOnOwn(__instance.pawn, __instance.def))
+            if (__result && __instance.pawn != null && !BastleAbilityTraining.MayCastOnOwn(__instance.pawn, __instance))
                 __result = false;
         }
     }

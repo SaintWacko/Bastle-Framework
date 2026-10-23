@@ -16,8 +16,10 @@ namespace BastleFramework.AbilityAICompat
     // and Ability AI's player stand-down would otherwise leave them uncast and hidden traits undiscovered. The veto
     // hands them back to JobGiver_BastleAbilities, which applies Bastle's instinct and training settings. That
     // hand-back is Ability AI's side of the contract (requested in .circinus/handoff/ability-ai.md).
-    // Once the gizmo shows, Ability AI's autocast toggle decides, so a trained animal's abilities that Ability AI has
-    // rules for are exempt from Bastle's "trained bastles also use abilities on their own" setting.
+    // Once the gizmo shows, Ability AI's autocast toggle decides wherever Ability AI stands the other AIs down, so
+    // those abilities are exempt from Bastle's "trained bastles also use abilities on their own" setting. Asking
+    // OthersStandDown itself keeps that exact: with Ability AI or its player autocast turned off, Bastle's setting
+    // applies again.
     //
     // Reveal needs nothing here: Patch_AbilityStartedCasting and Notify_PawnUsedVerb fire for Ability AI's casts the
     // same as for Bastle's own.
@@ -44,7 +46,7 @@ namespace BastleFramework.AbilityAICompat
         static BastleAbilityAIStartup()
         {
             AbilityAIHooks.Register(BastleAbilityAIHook.Instance);
-            BastleAbilityTraining.HasExternalAutocast = def => def.HasModExtension<AbilityAIExtension>();
+            BastleAbilityTraining.HasExternalAutocast = AbilityAIDriver.OthersStandDown;
         }
     }
 }
