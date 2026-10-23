@@ -256,6 +256,9 @@ namespace BastleFramework
         public static Hediff_Bastle CopyBastle(Pawn from, Pawn to, bool includeDiscovery = false, bool linkDiscovery = false)
         {
             if (to?.health == null || from == to) return GetBastle(to);
+            // Copied as discovered here, so joining the group below doesn't run PostDiscovered
+            // on traits that CopyStateFrom has already set up.
+            includeDiscovery |= linkDiscovery;
             var source = GetBastle(from);
             ClearBastle(to);
             if (source == null || source.TraitsForReading.Count == 0 && source.Material == null) return null;

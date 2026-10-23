@@ -171,7 +171,9 @@ namespace BastleFramework
 
         /// <summary>After the trait is revealed. Can run inside vanilla loops over the
         /// pawn's hediffs (damage, verb use, Thing.Ingested), so don't add or remove
-        /// hediffs or traits here: queue it for TickInterval.</summary>
+        /// hediffs or traits here: queue it for TickInterval. Also runs on packmates that
+        /// learn the trait quietly (see BastleUtility.LinkDiscovery); a trait this reveals
+        /// from there is not passed on to the rest of the pack.</summary>
         public virtual void PostDiscovered() { }
 
         public virtual void TickInterval(int delta) { }

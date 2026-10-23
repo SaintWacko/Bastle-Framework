@@ -40,7 +40,8 @@ namespace BastleFramework
         }
 
         /// <summary>Discovers <paramref name="def"/> on every other member of the source's
-        /// group that carries it, without messages. Returns how many were revealed.</summary>
+        /// group that carries it, without messages. Returns how many living members were
+        /// revealed (the Hydra's corpse still belongs to its children's group).</summary>
         internal static int Share(Hediff_Bastle source, BastleTraitDef def)
         {
             if (sharing || source == null || source.DiscoveryGroup == 0) return 0;
@@ -52,7 +53,7 @@ namespace BastleFramework
                 {
                     if (member == source) continue;
                     var trait = member.GetTrait(def);
-                    if (trait != null && trait.Discover(notify: false)) revealed++;
+                    if (trait != null && trait.Discover(notify: false) && !member.pawn.Dead) revealed++;
                 }
             }
             finally { sharing = false; }
@@ -77,6 +78,8 @@ namespace BastleFramework
                 foreach (var t in m.TraitsForReading)
                     if (t.discovered) known.Add(t.def);
             if (known.Count == 0) return;
+            // Restored rather than cleared: a PostDiscovered may link a pack mid-Share.
+            bool wasSharing = sharing;
             sharing = true;
             try
             {
@@ -84,7 +87,7 @@ namespace BastleFramework
                     foreach (var t in m.TraitsForReading.ToArray())
                         if (!t.discovered && known.Contains(t.def)) t.Discover(notify: false);
             }
-            finally { sharing = false; }
+            finally { sharing = wasSharing; }
         }
 
         /// <summary>Puts every bastle given into one group, absorbing whole groups any of
