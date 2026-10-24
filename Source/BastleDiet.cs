@@ -288,7 +288,9 @@ namespace BastleFramework
 
         static void Postfix(JobGiver_GetFood __instance, Pawn pawn, ref Job __result)
         {
-            if (__result != null || pawn?.Map == null) return;
+            // VEF skips this job for its weird eaters; their diet is applied after VEF's own
+            // food job instead (Patch_VEF_GetWeirdFood).
+            if (__result != null || pawn?.Map == null || BastleVEF.IsWeirdEater(pawn)) return;
             var bastle = BastleUtility.PeekBastle(pawn);
             var d = bastle?.Diet;
             var food = pawn.needs?.food;
@@ -352,6 +354,26 @@ namespace BastleFramework
         /// <summary>Vanilla's food search keeps a roped animal within 8 cells of its anchor.</summary>
         public static bool WithinRope(Pawn getter, Thing t)
             => getter.roping == null || !getter.roping.IsRoped || t.PositionHeld.InHorDistOf(getter.roping.RopedTo.Cell, 8f);
+
+        /// <summary>The nearest ordinary food that the creature eats only because its diet
+        /// adds it (food types or extraFoods), for a creature whose own food job never asks
+        /// FoodIsSuitable. Null when the diet adds no food or none is in reach.</summary>
+        public static Job EatAddedFoodJob(Pawn pawn, BastleDiet d)
+        {
+            if (d.add == 0 && d.edible.Count == 0) return null;
+            var group = d.AddsPlants || d.edible.Any(t => t.plant != null)
+                ? ThingRequestGroup.FoodSource : ThingRequestGroup.FoodSourceNotPlantOrTree;
+            Thing best = GenClosest.ClosestThingReachable(pawn.Position, pawn.Map, ThingRequest.ForGroup(group),
+                PathEndMode.Touch, TraverseParms.For(pawn), 9999f,
+                t => t.def.ingestible != null && d.Adds(t.def) && t.IngestibleNow && pawn.WillEat(t, pawn)
+                    && !t.IsForbidden(pawn) && !t.IsBurning() && pawn.CanReserve(t) && WithinRope(pawn, t),
+                null, 0, MaxRegions(pawn, false));
+            if (best == null) return null;
+            var finalDef = FoodUtility.GetFinalIngestibleDef(best);
+            var job = JobMaker.MakeJob(JobDefOf.Ingest, best);
+            job.count = FoodUtility.WillIngestStackCountOf(pawn, finalDef, FoodUtility.GetNutrition(pawn, best, finalDef));
+            return job;
+        }
 
         public static Job EatNonFoodJob(Pawn pawn, BastleDiet d)
         {
