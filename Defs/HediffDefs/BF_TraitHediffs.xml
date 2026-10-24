@@ -50,8 +50,8 @@
     <defName>BF_VenomFangs</defName>
     <label>venomous fangs</label>
     <description>Fangs that inject a building poison.</description>
-    <!-- Bites as hard as the creature's strongest natural attack, so the poison suits its size;
-         the tool's power only sets the ratio. -->
+    <!-- Bites as hard as the creature's strongest natural attack, so the poison suits its size.
+         The power below only applies to a race with no attacks of its own. -->
     <modExtensions>
       <li Class="BastleFramework.BastleScaledAttack"><factor>1</factor></li>
     </modExtensions>

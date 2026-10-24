@@ -45,29 +45,30 @@ namespace BastleFramework
     {
         private static AccessTools.FieldRef<object, HungerCategory> minCategory;
         private static AccessTools.FieldRef<object, float> maxLevelPercentage;
+        private static AccessTools.FieldRef<object, List<string>> thingsToEat;
+        private static MethodInfo findWeirdFood;
 
         static bool Prepare()
         {
             if (BastleVEF.WeirdFoodGiver == null) return false;
             // A VEF update that renames these would make the fallback fire at any hunger;
             // leave the patch off rather than guess.
+            findWeirdFood = AccessTools.Method(BastleVEF.WeirdFoodGiver, "FindWeirdFoodInMap");
             if (AccessTools.Field(BastleVEF.WeirdFoodGiver, "minCategory") == null
-                || AccessTools.Field(BastleVEF.WeirdFoodGiver, "maxLevelPercentage") == null)
+                || AccessTools.Field(BastleVEF.WeirdFoodGiver, "maxLevelPercentage") == null
+                || BastleVEF.WeirdFoodComp == null || AccessTools.Field(BastleVEF.WeirdFoodComp, "customThingToEat") == null
+                || findWeirdFood == null)
             {
                 Log.Warning("[Bastle Framework] Vanilla Expanded Framework's JobGiver_GetWeirdFood has changed; trait diets don't apply to its weird eaters.");
                 return false;
             }
             minCategory = AccessTools.FieldRefAccess<HungerCategory>(BastleVEF.WeirdFoodGiver, "minCategory");
             maxLevelPercentage = AccessTools.FieldRefAccess<float>(BastleVEF.WeirdFoodGiver, "maxLevelPercentage");
+            thingsToEat = AccessTools.FieldRefAccess<List<string>>(BastleVEF.WeirdFoodComp, "customThingToEat");
             return AccessTools.Method(BastleVEF.WeirdFoodGiver, "TryGiveJob") != null;
         }
 
         static MethodBase TargetMethod() => AccessTools.Method(BastleVEF.WeirdFoodGiver, "TryGiveJob");
-
-        private static readonly AccessTools.FieldRef<object, List<string>> thingsToEat =
-            BastleVEF.WeirdFoodComp == null ? null : AccessTools.FieldRefAccess<List<string>>(BastleVEF.WeirdFoodComp, "customThingToEat");
-        private static readonly MethodInfo findWeirdFood =
-            BastleVEF.WeirdFoodGiver == null ? null : AccessTools.Method(BastleVEF.WeirdFoodGiver, "FindWeirdFoodInMap");
 
         // VEF stops at the first thing on its list it can reach. When a trait refuses that
         // one, carry on down the list as VEF would have, so a refusal works like a normal
@@ -75,7 +76,7 @@ namespace BastleFramework
         private static Job NextWeirdFoodJob(object giver, Pawn pawn, BastleDiet d)
         {
             var ingestWeird = DefDatabase<JobDef>.GetNamedSilentFail("VEF_IngestWeird");
-            if (thingsToEat == null || findWeirdFood == null || ingestWeird == null) return null;
+            if (ingestWeird == null) return null;
             var comps = pawn.AllComps;
             List<string> list = null;
             for (int i = 0; i < comps.Count; i++)
@@ -85,6 +86,7 @@ namespace BastleFramework
             {
                 var def = DefDatabase<ThingDef>.GetNamedSilentFail(name);
                 if (def == null || d.Refuses(def)) continue;
+                // Reflection is fine here: this only runs when a trait refuses VEF's pick.
                 var thing = findWeirdFood.Invoke(giver, new object[] { def, pawn }) as Thing;
                 if (thing == null || !pawn.CanReserve(thing)) continue;
                 var job = JobMaker.MakeJob(ingestWeird, thing);

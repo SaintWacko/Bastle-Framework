@@ -64,7 +64,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Frenzied</defName>
     <label>frenzied</label>
-    <description>It attacks in a wild flurry: much faster, but less accurate.</description>
+    <description>It attacks in a wild flurry: faster, but less accurate.</description>
     <namePrefix>frenzied</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>

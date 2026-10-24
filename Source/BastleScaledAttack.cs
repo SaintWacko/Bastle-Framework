@@ -9,8 +9,10 @@ namespace BastleFramework
     /// then hit as hard as the creature's own strongest natural attack times factor, times
     /// the trait's rarity strength, instead of the tool's fixed power. A fixed power can't
     /// suit every body: venom fangs written for a wolf made a crow bite harder than a cobra.
-    /// The tool's extraMeleeDamages scale by the same ratio, since vanilla runs them through
-    /// the same damage factor.
+    /// The hediff's strongest tool is the one matched to the natural attack; its other tools
+    /// keep their power relative to it. extraMeleeDamages scale by the same ratio, since
+    /// vanilla runs them through the same damage factor. A tool that sets armorPenetration
+    /// keeps that value; leave it unset to have it follow the damage.
     /// </summary>
     public class BastleScaledAttack : DefModExtension
     {
@@ -22,6 +24,7 @@ namespace BastleFramework
     internal static class Patch_GetDamageFactorFor_ScaledAttack
     {
         private static readonly Dictionary<ThingDef, float> bestNatural = new Dictionary<ThingDef, float>();
+        private static readonly Dictionary<HediffDef, float> bestGiven = new Dictionary<HediffDef, float>();
 
         static void Postfix(Tool tool, HediffComp_VerbGiver hediffCompSource, ref float __result)
         {
@@ -33,7 +36,19 @@ namespace BastleFramework
             float natural = BestNaturalPower(pawn.def);
             // A race with no attacks of its own has nothing to scale from: the tool's power stands.
             if (natural <= 0f) return;
-            __result *= ext.factor * natural * TraitStrength(pawn, hediff) / tool.power;
+            __result *= ext.factor * natural * TraitStrength(pawn, hediff) / BestGivenPower(hediff, tool);
+        }
+
+        private static float BestGivenPower(HediffDef hediff, Tool fallback)
+        {
+            if (bestGiven.TryGetValue(hediff, out float best)) return best;
+            best = fallback.power;
+            var giver = hediff.CompProps<HediffCompProperties_VerbGiver>();
+            if (giver?.tools != null)
+                foreach (var t in giver.tools)
+                    if (t.power > best) best = t.power;
+            bestGiven[hediff] = best;
+            return best;
         }
 
         private static float BestNaturalPower(ThingDef race)
