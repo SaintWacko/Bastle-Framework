@@ -302,6 +302,18 @@ namespace BastleFramework
             }
         }
 
+        internal bool TraitGivesHediff(HediffDef def)
+        {
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var hediffs = traits[i].Hediffs;
+                if (hediffs == null) continue;
+                for (int j = 0; j < hediffs.Count; j++)
+                    if (hediffs[j].hediff == def) return true;
+            }
+            return false;
+        }
+
         private void RemoveEffects(BastleTrait trait)
         {
             var hediffs = trait.Hediffs;
@@ -323,8 +335,10 @@ namespace BastleFramework
                 {
                     if (traits.Any(t => t != trait && t.Abilities != null && t.Abilities.Contains(ab))) continue;
                     // A gene or psylink that gives the same ability still does.
-                    if (BastleAbilityTraining.HasOtherSource(pawn, ab, sharedEntryOnly: true)) continue;
-                    pawn.abilities.RemoveAbility(ab);
+                    if (BastleAbilityTraining.HasOtherSource(this, pawn, ab, sharedEntryOnly: true)) continue;
+                    BastleAbilityTraining.removingOwn = true;
+                    try { pawn.abilities.RemoveAbility(ab); }
+                    finally { BastleAbilityTraining.removingOwn = false; }
                 }
             }
         }

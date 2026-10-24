@@ -59,7 +59,7 @@ namespace BastleFramework
             bool untrained = known && NeedsTraining(pawn) && !IsTrained(pawn);
             if (known && !untrained) return BastleAbilityControl.Player;
             // Only asked when the trait would hold the ability back, so the common case pays nothing.
-            if (HasOtherSource(pawn, def)) return BastleAbilityControl.NotFromTraits;
+            if (HasOtherSource(bastle, pawn, def)) return BastleAbilityControl.NotFromTraits;
             return known ? BastleAbilityControl.Untrained : BastleAbilityControl.Hidden;
         }
 
@@ -70,7 +70,7 @@ namespace BastleFramework
         /// call outside these isn't seen. With <paramref name="sharedEntryOnly"/>, only the
         /// sources that rely on the same tracker entry the trait made count: a title's or
         /// gear's own copy doesn't keep the trait's entry alive when the trait goes.</summary>
-        internal static bool HasOtherSource(Pawn pawn, AbilityDef def, bool sharedEntryOnly = false)
+        internal static bool HasOtherSource(Hediff_Bastle bastle, Pawn pawn, AbilityDef def, bool sharedEntryOnly = false)
         {
             var tracker = pawn.abilities;
             if (tracker == null) return false;
@@ -84,7 +84,12 @@ namespace BastleFramework
             }
 
             if (pawn.kindDef?.abilities?.Contains(def) == true) return true;
-            if (def.IsPsycast && pawn.HasPsylink) return true;
+            // A psylink gives one psycast per level up to its own, and skips a level the
+            // list already has one for, so a trait's psycast in range may be holding that slot.
+            if (def.IsPsycast && pawn.HasPsylink && pawn.GetPsylinkLevel() >= def.level) return true;
+            var creep = pawn.creepjoiner;
+            if (creep != null && (creep.benefit?.abilities?.Contains(def) == true
+                || creep.downside?.abilities?.Contains(def) == true)) return true;
             if (pawn.genes != null)
             {
                 var genes = pawn.genes.GenesListForReading;
@@ -100,13 +105,17 @@ namespace BastleFramework
                 for (int i = 0; i < hediffs.Count; i++)
                 {
                     var comps = hediffs[i].def.comps;
-                    if (comps == null) continue;
+                    if (comps == null || bastle.TraitGivesHediff(hediffs[i].def)) continue;
                     for (int j = 0; j < comps.Count; j++)
                         if (comps[j] is HediffCompProperties_GiveAbility give
                             && (give.abilityDef == def || give.abilityDefs?.Contains(def) == true)) return true;
                 }
             return false;
         }
+
+        // Set while a trait takes its own abilities away, so the RemoveAbility postfix
+        // doesn't hand them straight back.
+        internal static bool removingOwn;
 
         /// <summary>Whether any AI may cast this ability for the pawn without an order.
         /// Only the player's own pawns are ever held back, and not during a mental break.</summary>
@@ -199,6 +208,27 @@ namespace BastleFramework
         {
             if (__result && __instance.pawn != null && !BastleAbilityTraining.MayCastOnOwn(__instance.pawn, __instance))
                 __result = false;
+        }
+    }
+
+    /// <summary>A gene, vanilla trait or hediff that gives the same ability as a bastle trait
+    /// removes the one shared tracker entry when it goes, which would leave the trait's
+    /// ability gone for good. Put it straight back while a trait still grants it.</summary>
+    [HarmonyPatch(typeof(Pawn_AbilityTracker), nameof(Pawn_AbilityTracker.RemoveAbility))]
+    internal static class Patch_RemoveAbility_KeepTraitAbility
+    {
+        static void Postfix(Pawn_AbilityTracker __instance, AbilityDef def)
+        {
+            if (BastleAbilityTraining.removingOwn || def == null) return;
+            var bastle = BastleUtility.PeekBastle(__instance.pawn);
+            if (bastle == null) return;
+            var traits = bastle.TraitsForReading;
+            for (int i = 0; i < traits.Count; i++)
+                if (traits[i].Abilities?.Contains(def) == true)
+                {
+                    __instance.GainAbility(def);
+                    return;
+                }
         }
     }
 }
