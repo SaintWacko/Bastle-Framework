@@ -84,9 +84,7 @@ namespace BastleFramework
             }
 
             if (pawn.kindDef?.abilities?.Contains(def) == true) return true;
-            // A psylink gives one psycast per level up to its own, and skips a level the
-            // list already has one for, so a trait's psycast in range may be holding that slot.
-            if (def.IsPsycast && pawn.HasPsylink && pawn.GetPsylinkLevel() >= def.level) return true;
+            if (def.IsPsycast && PsylinkSlot(pawn, tracker, def)) return true;
             var creep = pawn.creepjoiner;
             if (creep != null && (creep.benefit?.abilities?.Contains(def) == true
                 || creep.downside?.abilities?.Contains(def) == true)) return true;
@@ -113,9 +111,24 @@ namespace BastleFramework
             return false;
         }
 
-        // Set while a trait takes its own abilities away, so the RemoveAbility postfix
-        // doesn't hand them straight back.
-        internal static bool removingOwn;
+        // A psylink gives one psycast per level up to its own, but skips a level the list
+        // already has a psycast for. So a trait's psycast counts as the psylink's only when
+        // it is in range and the only one of its level: then the psylink has none there.
+        private static bool PsylinkSlot(Pawn pawn, Pawn_AbilityTracker tracker, AbilityDef def)
+        {
+            if (!pawn.HasPsylink || pawn.GetPsylinkLevel() < def.level) return false;
+            var list = tracker.abilities;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var other = list[i].def;
+                if (other != def && other.IsPsycast && other.level == def.level) return false;
+            }
+            return true;
+        }
+
+        // The trait whose effects are coming off, so the RemoveAbility patch doesn't count
+        // it as still granting its abilities and hand them straight back.
+        internal static BastleTrait removingTrait;
 
         /// <summary>Whether any AI may cast this ability for the pawn without an order.
         /// Only the player's own pawns are ever held back, and not during a mental break.</summary>
@@ -213,22 +226,25 @@ namespace BastleFramework
 
     /// <summary>A gene, vanilla trait or hediff that gives the same ability as a bastle trait
     /// removes the one shared tracker entry when it goes, which would leave the trait's
-    /// ability gone for good. Put it straight back while a trait still grants it.</summary>
+    /// ability gone for good. Put the same instance back while a trait still grants it, so
+    /// its cooldown and charges carry on.</summary>
     [HarmonyPatch(typeof(Pawn_AbilityTracker), nameof(Pawn_AbilityTracker.RemoveAbility))]
     internal static class Patch_RemoveAbility_KeepTraitAbility
     {
-        static void Postfix(Pawn_AbilityTracker __instance, AbilityDef def)
+        static void Prefix(Pawn_AbilityTracker __instance, AbilityDef def, out Ability __state)
         {
-            if (BastleAbilityTraining.removingOwn || def == null) return;
+            __state = null;
+            if (def == null) return;
             var bastle = BastleUtility.PeekBastle(__instance.pawn);
-            if (bastle == null) return;
-            var traits = bastle.TraitsForReading;
-            for (int i = 0; i < traits.Count; i++)
-                if (traits[i].Abilities?.Contains(def) == true)
-                {
-                    __instance.GainAbility(def);
-                    return;
-                }
+            if (bastle == null || !bastle.TraitGrantsAbility(def, BastleAbilityTraining.removingTrait)) return;
+            __state = __instance.GetAbility(def);
+        }
+
+        static void Postfix(Pawn_AbilityTracker __instance, Ability __state)
+        {
+            if (__state == null || __instance.abilities.Contains(__state)) return;
+            __instance.abilities.Add(__state);
+            __instance.Notify_TemporaryAbilitiesChanged();
         }
     }
 }

@@ -302,6 +302,30 @@ namespace BastleFramework
             }
         }
 
+        /// <summary>Whether a trait other than <paramref name="except"/> grants the ability,
+        /// directly or through a hediff with HediffComp_GiveAbility (which shares the same
+        /// tracker entry).</summary>
+        internal bool TraitGrantsAbility(AbilityDef def, BastleTrait except = null)
+        {
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var t = traits[i];
+                if (t == except) continue;
+                if (t.Abilities?.Contains(def) == true) return true;
+                var hediffs = t.Hediffs;
+                if (hediffs == null) continue;
+                for (int j = 0; j < hediffs.Count; j++)
+                {
+                    var comps = hediffs[j].hediff?.comps;
+                    if (comps == null) continue;
+                    for (int k = 0; k < comps.Count; k++)
+                        if (comps[k] is HediffCompProperties_GiveAbility give
+                            && (give.abilityDef == def || give.abilityDefs?.Contains(def) == true)) return true;
+                }
+            }
+            return false;
+        }
+
         internal bool TraitGivesHediff(HediffDef def)
         {
             for (int i = 0; i < traits.Count; i++)
@@ -315,6 +339,16 @@ namespace BastleFramework
         }
 
         private void RemoveEffects(BastleTrait trait)
+        {
+            // The trait is still in the list while its effects come off: the RemoveAbility
+            // patch must not count it as still granting what its hediffs give.
+            var wasRemoving = BastleAbilityTraining.removingTrait;
+            BastleAbilityTraining.removingTrait = trait;
+            try { RemoveEffectsInner(trait); }
+            finally { BastleAbilityTraining.removingTrait = wasRemoving; }
+        }
+
+        private void RemoveEffectsInner(BastleTrait trait)
         {
             var hediffs = trait.Hediffs;
             var abilities = trait.Abilities;
@@ -333,12 +367,10 @@ namespace BastleFramework
             {
                 foreach (var ab in abilities)
                 {
-                    if (traits.Any(t => t != trait && t.Abilities != null && t.Abilities.Contains(ab))) continue;
+                    if (TraitGrantsAbility(ab, trait)) continue;
                     // A gene or psylink that gives the same ability still does.
                     if (BastleAbilityTraining.HasOtherSource(this, pawn, ab, sharedEntryOnly: true)) continue;
-                    BastleAbilityTraining.removingOwn = true;
-                    try { pawn.abilities.RemoveAbility(ab); }
-                    finally { BastleAbilityTraining.removingOwn = false; }
+                    pawn.abilities.RemoveAbility(ab);
                 }
             }
         }
