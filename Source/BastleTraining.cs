@@ -8,7 +8,8 @@ namespace BastleFramework
     /// <summary>Who decides when a bastle's trait ability is cast.</summary>
     public enum BastleAbilityControl
     {
-        /// <summary>No trait grants it (a race or gene ability): Bastle leaves it alone.</summary>
+        /// <summary>No trait grants it, or something else does as well (a gene, a psylink, a
+        /// title, gear): Bastle leaves it alone.</summary>
         NotFromTraits,
         /// <summary>Every granting trait is undiscovered: no gizmo, always cast by instinct, which reveals the trait.</summary>
         Hidden,
@@ -55,9 +56,56 @@ namespace BastleFramework
                 if (traits[i].discovered) { known = true; break; }
             }
             if (!granted) return BastleAbilityControl.NotFromTraits;
-            if (!known) return BastleAbilityControl.Hidden;
-            if (NeedsTraining(pawn) && !IsTrained(pawn)) return BastleAbilityControl.Untrained;
-            return BastleAbilityControl.Player;
+            bool untrained = known && NeedsTraining(pawn) && !IsTrained(pawn);
+            if (known && !untrained) return BastleAbilityControl.Player;
+            // Only asked when the trait would hold the ability back, so the common case pays nothing.
+            if (HasOtherSource(pawn, def)) return BastleAbilityControl.NotFromTraits;
+            return known ? BastleAbilityControl.Untrained : BastleAbilityControl.Hidden;
+        }
+
+        /// <summary>Whether something besides a bastle trait gives the pawn this ability: its
+        /// kind, a gene, a vanilla trait, a psylink, a hediff, gear, a title or a role. Vanilla
+        /// shows and casts those as usual, so a trait granting the same def must not hide or
+        /// hold it back, nor take it away when the trait goes. Another mod's own GainAbility
+        /// call outside these isn't seen. With <paramref name="sharedEntryOnly"/>, only the
+        /// sources that rely on the same tracker entry the trait made count: a title's or
+        /// gear's own copy doesn't keep the trait's entry alive when the trait goes.</summary>
+        internal static bool HasOtherSource(Pawn pawn, AbilityDef def, bool sharedEntryOnly = false)
+        {
+            var tracker = pawn.abilities;
+            if (tracker == null) return false;
+            // Hediff abilities, equipment, apparel, titles, roles and mutations are their own
+            // instances, outside the list GainAbility (and so a trait) fills.
+            if (!sharedEntryOnly)
+            {
+                var all = tracker.AllAbilitiesForReading;
+                for (int i = 0; i < all.Count; i++)
+                    if (all[i].def == def && !tracker.abilities.Contains(all[i])) return true;
+            }
+
+            if (pawn.kindDef?.abilities?.Contains(def) == true) return true;
+            if (def.IsPsycast && pawn.HasPsylink) return true;
+            if (pawn.genes != null)
+            {
+                var genes = pawn.genes.GenesListForReading;
+                for (int i = 0; i < genes.Count; i++)
+                    if (genes[i].def.abilities?.Contains(def) == true) return true;
+            }
+            var storyTraits = pawn.story?.traits?.allTraits;
+            if (storyTraits != null)
+                for (int i = 0; i < storyTraits.Count; i++)
+                    if (storyTraits[i].CurrentData.abilities?.Contains(def) == true) return true;
+            var hediffs = pawn.health?.hediffSet?.hediffs;
+            if (hediffs != null)
+                for (int i = 0; i < hediffs.Count; i++)
+                {
+                    var comps = hediffs[i].def.comps;
+                    if (comps == null) continue;
+                    for (int j = 0; j < comps.Count; j++)
+                        if (comps[j] is HediffCompProperties_GiveAbility give
+                            && (give.abilityDef == def || give.abilityDefs?.Contains(def) == true)) return true;
+                }
+            return false;
         }
 
         /// <summary>Whether any AI may cast this ability for the pawn without an order.

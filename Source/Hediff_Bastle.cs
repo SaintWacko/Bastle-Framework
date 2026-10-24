@@ -322,6 +322,8 @@ namespace BastleFramework
                 foreach (var ab in abilities)
                 {
                     if (traits.Any(t => t != trait && t.Abilities != null && t.Abilities.Contains(ab))) continue;
+                    // A gene or psylink that gives the same ability still does.
+                    if (BastleAbilityTraining.HasOtherSource(pawn, ab, sharedEntryOnly: true)) continue;
                     pawn.abilities.RemoveAbility(ab);
                 }
             }

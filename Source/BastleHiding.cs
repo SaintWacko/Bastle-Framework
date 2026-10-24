@@ -98,7 +98,8 @@ namespace BastleFramework
 
     /// <summary>No gizmo for an ability whose only source is an undiscovered trait (the AI
     /// can still cast it, and that reveals the trait), nor for a known one on an animal
-    /// that hasn't learned BF_TraitAbilities.</summary>
+    /// that hasn't learned BF_TraitAbilities. One that a gene, psylink, title or the like
+    /// also gives keeps its gizmo (ControlOf answers NotFromTraits).</summary>
     [HarmonyPatch(typeof(Ability), nameof(Ability.GizmosVisible))]
     internal static class Patch_AbilityGizmosVisible
     {
