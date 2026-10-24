@@ -126,10 +126,6 @@ namespace BastleFramework
             return true;
         }
 
-        // The trait whose effects are coming off, so the RemoveAbility patch doesn't count
-        // it as still granting its abilities and hand them straight back.
-        internal static BastleTrait removingTrait;
-
         /// <summary>Whether any AI may cast this ability for the pawn without an order.
         /// Only the player's own pawns are ever held back, and not during a mental break.</summary>
         public static bool MayCastOnOwn(Pawn pawn, Ability ability)
@@ -236,7 +232,7 @@ namespace BastleFramework
             __state = null;
             if (def == null) return;
             var bastle = BastleUtility.PeekBastle(__instance.pawn);
-            if (bastle == null || !bastle.TraitGrantsAbility(def, BastleAbilityTraining.removingTrait)) return;
+            if (bastle == null || !bastle.TraitGrantsAbility(def)) return;
             __state = __instance.GetAbility(def);
         }
 

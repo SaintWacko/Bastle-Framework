@@ -303,8 +303,8 @@ namespace BastleFramework
         }
 
         /// <summary>Whether a trait other than <paramref name="except"/> grants the ability,
-        /// directly or through a hediff with HediffComp_GiveAbility (which shares the same
-        /// tracker entry).</summary>
+        /// directly or through a hediff it added that has HediffComp_GiveAbility (which
+        /// shares the same tracker entry).</summary>
         internal bool TraitGrantsAbility(AbilityDef def, BastleTrait except = null)
         {
             for (int i = 0; i < traits.Count; i++)
@@ -317,7 +317,8 @@ namespace BastleFramework
                 for (int j = 0; j < hediffs.Count; j++)
                 {
                     var comps = hediffs[j].hediff?.comps;
-                    if (comps == null) continue;
+                    // Only while the hediff is there: one lost to surgery or a missing part gives nothing.
+                    if (comps == null || !pawn.health.hediffSet.HasHediff(hediffs[j].hediff)) continue;
                     for (int k = 0; k < comps.Count; k++)
                         if (comps[k] is HediffCompProperties_GiveAbility give
                             && (give.abilityDef == def || give.abilityDefs?.Contains(def) == true)) return true;
@@ -338,17 +339,9 @@ namespace BastleFramework
             return false;
         }
 
+        // Callers take the trait out of the list first, so the RemoveAbility patch
+        // doesn't count it as still granting what it's losing.
         private void RemoveEffects(BastleTrait trait)
-        {
-            // The trait is still in the list while its effects come off: the RemoveAbility
-            // patch must not count it as still granting what its hediffs give.
-            var wasRemoving = BastleAbilityTraining.removingTrait;
-            BastleAbilityTraining.removingTrait = trait;
-            try { RemoveEffectsInner(trait); }
-            finally { BastleAbilityTraining.removingTrait = wasRemoving; }
-        }
-
-        private void RemoveEffectsInner(BastleTrait trait)
         {
             var hediffs = trait.Hediffs;
             var abilities = trait.Abilities;
