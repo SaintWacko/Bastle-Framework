@@ -111,7 +111,6 @@
     <label>regenerating</label>
     <description>Its wounds close with unnatural speed.</description>
     <namePrefix>regenerating</namePrefix>
-    <rarity>Uncommon</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <!-- Regrows lost parts from Legendary up (RegrowthParams.minRarity). -->
     <traitClass>BastleFramework.BastleTrait_Regrowth</traitClass>
@@ -124,8 +123,8 @@
     <exclusionTags><li>BF_Healing</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
-      <naturalHealingFactor>1.5</naturalHealingFactor>
-      <regeneration>20</regeneration>
+      <naturalHealingFactor>1.4</naturalHealingFactor>
+      <regeneration>16</regeneration>
     </stage>
   </BastleFramework.BastleTraitDef>
 
@@ -168,7 +167,6 @@
     <label>evasive</label>
     <description>It slips aside from blows that should land.</description>
     <namePrefix>phantom</namePrefix>
-    <rarity>Uncommon</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen>
       <li>Attacks</li>
@@ -176,7 +174,7 @@
     </discoverWhen>
     <stage>
       <statOffsets>
-        <MeleeDodgeChance>10</MeleeDodgeChance>
+        <MeleeDodgeChance>8</MeleeDodgeChance>
       </statOffsets>
     </stage>
   </BastleFramework.BastleTraitDef>
@@ -186,18 +184,18 @@
     <label>shelled</label>
     <description>A heavy shell covers its body. Blades skip off it, but the weight slows it down.</description>
     <namePrefix>shelled</namePrefix>
-    <rarity>Rare</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
     <disallowConstructs>true</disallowConstructs>
-    <healthScaleFactor>1.2</healthScaleFactor>
+    <healthScaleFactor>1.1</healthScaleFactor>
     <exclusionTags><li>BF_Toughness</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
       <statOffsets>
-        <ArmorRating_Sharp>0.6</ArmorRating_Sharp>
-        <ArmorRating_Blunt>0.3</ArmorRating_Blunt>
+        <ArmorRating_Sharp>0.3</ArmorRating_Sharp>
+        <ArmorRating_Blunt>0.15</ArmorRating_Blunt>
       </statOffsets>
       <statFactors>
-        <MoveSpeed>0.85</MoveSpeed>
+        <MoveSpeed>0.92</MoveSpeed>
       </statFactors>
     </stage>
   </BastleFramework.BastleTraitDef>
@@ -227,12 +225,11 @@
     <label>thorned</label>
     <description>Sharp barbs cover its body. Anything that strikes it in melee is cut.</description>
     <namePrefix>thorned</namePrefix>
-    <rarity>Uncommon</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <retaliation>
       <damageDef>Stab</damageDef>
-      <amount>4</amount>
+      <amount>3</amount>
       <armorPenetration>0.1</armorPenetration>
     </retaliation>
   </BastleFramework.BastleTraitDef>
@@ -264,13 +261,12 @@
     <label>stonehide</label>
     <description>Its hide is as dense as rock. Blunt blows barely bruise it.</description>
     <namePrefix>stonehide</namePrefix>
-    <rarity>Uncommon</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags><li>BF_Toughness</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
       <damageFactors>
-        <Blunt>0.7</Blunt>
+        <Blunt>0.76</Blunt>
       </damageFactors>
     </stage>
   </BastleFramework.BastleTraitDef>

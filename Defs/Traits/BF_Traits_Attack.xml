@@ -66,13 +66,12 @@
     <label>frenzied</label>
     <description>It attacks in a wild flurry: much faster, but less accurate.</description>
     <namePrefix>frenzied</namePrefix>
-    <rarity>Uncommon</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
     <stage>
       <statFactors>
-        <MeleeCooldownFactor>0.8</MeleeCooldownFactor>
-        <MeleeHitChance>0.92</MeleeHitChance>
+        <MeleeCooldownFactor>0.84</MeleeCooldownFactor>
+        <MeleeHitChance>0.94</MeleeHitChance>
       </statFactors>
     </stage>
   </BastleFramework.BastleTraitDef>
@@ -188,14 +187,13 @@
     <label>vampiric</label>
     <description>Its wounds close as it feeds. Part of the damage it deals in melee to living flesh heals it.</description>
     <namePrefix>vampiric</namePrefix>
-    <rarity>Rare</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
     <disallowConstructs>true</disallowConstructs>
     <exclusionTags><li>BF_Healing</li></exclusionTags>
     <discoverWhen><li>Attacks</li></discoverWhen>
     <lifesteal>
-      <fraction>0.25</fraction>
+      <fraction>0.17</fraction>
     </lifesteal>
   </BastleFramework.BastleTraitDef>
 

@@ -95,6 +95,8 @@ namespace BastleFramework
         /// <summary>Rarity strength for the retaliation amount (relative to where it was written).</summary>
         public float RetaliationStrength => def.StrengthFor(Override?.retaliation != null, Rarity);
         public float LifestealStrength => def.StrengthFor(Override?.lifesteal != null, Rarity);
+        /// <summary>Rarity strength for its hediffs, where they scale (BastleScaledAttack).</summary>
+        public float HediffStrength => def.StrengthFor(Override?.hediffs != null, Rarity);
         public BastleProducts Products => Override?.products ?? def.products;
         public BastleDeflect Deflect => Override?.deflect ?? def.deflect;
 

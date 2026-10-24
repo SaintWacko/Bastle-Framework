@@ -50,6 +50,11 @@
     <defName>BF_VenomFangs</defName>
     <label>venomous fangs</label>
     <description>Fangs that inject a building poison.</description>
+    <!-- Bites as hard as the creature's strongest natural attack, so the poison suits its size;
+         the tool's power only sets the ratio. -->
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>
@@ -69,6 +74,9 @@
     <defName>BF_VirulentFangs</defName>
     <label>virulent fangs</label>
     <description>Fangs that inject a fast, overwhelming poison.</description>
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1.75</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>
@@ -88,6 +96,9 @@
     <defName>BF_BonebreakerBlow</defName>
     <label>bonebreaker blow</label>
     <description>A crushing blow that can stun.</description>
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1.3</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>
@@ -113,6 +124,9 @@
     <defName>BF_StormStrike</defName>
     <label>storm strike</label>
     <description>A strike that carries an electric shock.</description>
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>
