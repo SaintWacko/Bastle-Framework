@@ -18,7 +18,7 @@ namespace BastleFramework
     internal static class BastleVEF
     {
         internal static readonly Type WeirdFoodGiver = AccessTools.TypeByName("VEF.AnimalBehaviours.JobGiver_GetWeirdFood");
-        private static readonly Type WeirdFoodComp = AccessTools.TypeByName("VEF.AnimalBehaviours.CompProperties_EatWeirdFood");
+        internal static readonly Type WeirdFoodComp = AccessTools.TypeByName("VEF.AnimalBehaviours.CompProperties_EatWeirdFood");
 
         private static readonly Dictionary<ThingDef, bool> weirdEater = new Dictionary<ThingDef, bool>();
 
@@ -64,6 +64,36 @@ namespace BastleFramework
 
         static MethodBase TargetMethod() => AccessTools.Method(BastleVEF.WeirdFoodGiver, "TryGiveJob");
 
+        private static readonly AccessTools.FieldRef<object, List<string>> thingsToEat =
+            BastleVEF.WeirdFoodComp == null ? null : AccessTools.FieldRefAccess<List<string>>(BastleVEF.WeirdFoodComp, "customThingToEat");
+        private static readonly MethodInfo findWeirdFood =
+            BastleVEF.WeirdFoodGiver == null ? null : AccessTools.Method(BastleVEF.WeirdFoodGiver, "FindWeirdFoodInMap");
+
+        // VEF stops at the first thing on its list it can reach. When a trait refuses that
+        // one, carry on down the list as VEF would have, so a refusal works like a normal
+        // diet's instead of starving the creature beside the next thing on the list.
+        private static Job NextWeirdFoodJob(object giver, Pawn pawn, BastleDiet d)
+        {
+            var ingestWeird = DefDatabase<JobDef>.GetNamedSilentFail("VEF_IngestWeird");
+            if (thingsToEat == null || findWeirdFood == null || ingestWeird == null) return null;
+            var comps = pawn.AllComps;
+            List<string> list = null;
+            for (int i = 0; i < comps.Count; i++)
+                if (BastleVEF.WeirdFoodComp.IsInstanceOfType(comps[i].props)) { list = thingsToEat(comps[i].props); break; }
+            if (list == null) return null;
+            foreach (var name in list)
+            {
+                var def = DefDatabase<ThingDef>.GetNamedSilentFail(name);
+                if (def == null || d.Refuses(def)) continue;
+                var thing = findWeirdFood.Invoke(giver, new object[] { def, pawn }) as Thing;
+                if (thing == null || !pawn.CanReserve(thing)) continue;
+                var job = JobMaker.MakeJob(ingestWeird, thing);
+                job.count = 1;
+                return job;
+            }
+            return null;
+        }
+
         static void Postfix(object __instance, Pawn pawn, ref Job __result)
         {
             if (pawn?.Map == null) return;
@@ -71,7 +101,7 @@ namespace BastleFramework
             var d = bastle?.Diet;
             if (d == null) return;
             var target = __result?.targetA.Thing;
-            if (target != null && d.Refuses(target.def)) __result = null;
+            if (target != null && d.Refuses(target.def)) __result = NextWeirdFoodJob(__instance, pawn, d);
             if (__result != null) return;
 
             var food = pawn.needs?.food;
