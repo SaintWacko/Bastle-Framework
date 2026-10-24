@@ -257,7 +257,9 @@ namespace BastleFramework
         static void Postfix(Pawn getter, Pawn eater, bool allowPlant, bool allowForbidden, bool forceScanWholeMap,
             ref ThingDef foodDef, ref Thing __result)
         {
-            if (__result != null || !allowPlant || getter?.Map == null || eater == null) return;
+            // Plants are eaten where they stand, never carried: vanilla only allows them when
+            // the getter is the eater, and another mod's caller may leave allowPlant at its default.
+            if (__result != null || !allowPlant || getter != eater || getter?.Map == null) return;
             var d = BastleUtility.PeekBastle(eater)?.Diet;
             if (d == null || !d.AddsPlants) return;
             if ((eater.RaceProps.foodType & (FoodTypeFlags.Plant | FoodTypeFlags.Tree)) != 0) return;

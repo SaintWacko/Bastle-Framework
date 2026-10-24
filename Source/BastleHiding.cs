@@ -44,11 +44,14 @@ namespace BastleFramework
             _ = p.health.hediffSet.PainTotal;
             _ = p.health.hediffSet.BleedRateTotal;
 
+            // Cleared here too: a Begin that threw part way never reached End.
+            hiddenHediffs.Clear();
             bastle.CollectHiddenHediffs(hiddenHediffs);
-            cardPawn = p;
             p.health.capacities.Notify_CapacityLevelsDirty();
             // Nested stat reads can serve cached values; drop the real ones gameplay cached.
             ClearStatCaches(p);
+            // Last, so a throw above can't leave hiding on with no End to turn it off.
+            cardPawn = p;
             return true;
         }
 

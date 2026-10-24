@@ -214,23 +214,30 @@ namespace BastleFramework
             }
             if (attacker.Dead || !Rand.Chance(r.chance)) return;
 
-            retaliating = true;
-            try
+            // This runs inside the victim's damage notification, with the attacker still in
+            // its attack verb: a lethal thorn would kill it mid-cast. Dealt next tick instead,
+            // with the guard up then so the attacker's own thorns don't answer.
+            float amount = r.amount * trait.RetaliationStrength;
+            BastleScheduler.NextTick(() =>
             {
-                float amount = r.amount * trait.RetaliationStrength;
-                if (r.damageDef != null && amount > 0f)
+                if (attacker.Dead || !attacker.Spawned) return;
+                retaliating = true;
+                try
                 {
-                    var back = new DamageInfo(r.damageDef, amount, r.armorPenetration, -1f, victim,
-                        null, null, DamageInfo.SourceCategory.ThingOrUnknown, attacker);
-                    attacker.TakeDamage(back);
+                    if (r.damageDef != null && amount > 0f)
+                    {
+                        var back = new DamageInfo(r.damageDef, amount, r.armorPenetration, -1f, victim,
+                            null, null, DamageInfo.SourceCategory.ThingOrUnknown, attacker);
+                        attacker.TakeDamage(back);
+                    }
+                    if (r.igniteChance > 0f && !attacker.Destroyed && Rand.Chance(r.igniteChance))
+                        attacker.TryAttachFire(Rand.Range(0.2f, 0.4f), victim);
                 }
-                if (r.igniteChance > 0f && !attacker.Destroyed && Rand.Chance(r.igniteChance))
-                    attacker.TryAttachFire(Rand.Range(0.2f, 0.4f), victim);
-            }
-            finally
-            {
-                retaliating = false;
-            }
+                finally
+                {
+                    retaliating = false;
+                }
+            });
         }
 
         internal static float LifestealFrom(BastleTrait trait, Thing victim, DamageInfo dinfo, DamageWorker.DamageResult result)
