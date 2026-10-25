@@ -254,7 +254,7 @@ namespace BastleFramework
     [HarmonyPatch(typeof(FoodUtility), nameof(FoodUtility.BestFoodSourceOnMap))]
     internal static class Patch_BestFoodSourceOnMap
     {
-        static void Postfix(Pawn getter, Pawn eater, FoodPreferability maxPref, bool allowPlant, bool allowForbidden, bool forceScanWholeMap,
+        static void Postfix(Pawn getter, Pawn eater, bool desperate, FoodPreferability maxPref, bool allowPlant, bool allowForbidden, bool forceScanWholeMap,
             FoodPreferability minPrefOverride, ref ThingDef foodDef, ref Thing __result)
         {
             // Plants are eaten where they stand, never carried: vanilla only allows them when
@@ -263,10 +263,11 @@ namespace BastleFramework
             var d = BastleUtility.PeekBastle(eater)?.Diet;
             if (d == null || !d.AddsPlants) return;
             if ((eater.RaceProps.foodType & (FoodTypeFlags.Plant | FoodTypeFlags.Tree)) != 0) return;
+            var minPref = MinPref(eater, desperate, minPrefOverride);
 
             Thing plant = GenClosest.ClosestThingReachable(getter.Position, getter.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.FoodSource), PathEndMode.Touch, TraverseParms.For(getter),
-                9999f, t => t is Plant && t.IngestibleNow && FitsPreference(t.def, maxPref, minPrefOverride) && eater.WillEat(t, getter)
+                9999f, t => t is Plant && t.IngestibleNow && t.def.ingestible.preferability <= maxPref && t.def.ingestible.preferability >= minPref && eater.WillEat(t, getter)
                     && (allowForbidden || !t.IsForbidden(getter)) && getter.CanReserve(t)
                     && BastleDietUtility.WithinRope(getter, t),
                 null, 0, BastleDietUtility.MaxRegions(getter, forceScanWholeMap));
@@ -275,13 +276,15 @@ namespace BastleFramework
             foodDef = FoodUtility.GetFinalIngestibleDef(plant);
         }
 
-        // The caller's bounds, as vanilla's own food validator applies them. Its default lower
-        // bound for an animal is NeverForNutrition, below every plant, so only an explicit
-        // minPrefOverride needs checking.
-        private static bool FitsPreference(ThingDef def, FoodPreferability maxPref, FoodPreferability minPrefOverride)
+        // Vanilla's lower bound from BestFoodSourceOnMap, so a humanlike bastle whose traits add
+        // plants only eats them raw when vanilla would let it eat raw food.
+        private static FoodPreferability MinPref(Pawn eater, bool desperate, FoodPreferability minPrefOverride)
         {
-            var pref = def.ingestible.preferability;
-            return pref <= maxPref && (minPrefOverride == FoodPreferability.Undefined || pref >= minPrefOverride);
+            if (minPrefOverride != FoodPreferability.Undefined) return minPrefOverride;
+            if (eater.NonHumanlikeOrWildMan()) return FoodPreferability.NeverForNutrition;
+            if (desperate) return FoodPreferability.DesperateOnly;
+            if (eater.needs.food.CurCategory >= HungerCategory.UrgentlyHungry) return FoodPreferability.RawBad;
+            return eater.genes != null && eater.genes.DontMindRawFood ? FoodPreferability.RawBad : FoodPreferability.MealAwful;
         }
     }
 

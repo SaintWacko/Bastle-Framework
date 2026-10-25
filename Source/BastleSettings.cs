@@ -117,7 +117,7 @@ namespace BastleFramework
             Scribe_Values.Look(ref maxNameTraits, "maxNameTraits", 3);
             maxNameTraits = Mathf.Clamp(maxNameTraits, 0, MaxNameTraitsLimit);
             Scribe_Values.Look(ref scaledAttackCap, "scaledAttackCap", 12f);
-            scaledAttackCap = Mathf.Clamp(scaledAttackCap, 1f, ScaledAttackNoCap);
+            scaledAttackCap = Mathf.Clamp(scaledAttackCap, 4f, ScaledAttackNoCap);
             for (int i = 0; i < BastleRarityUtility.Count; i++)
             {
                 var r = (BastleRarity)i;
