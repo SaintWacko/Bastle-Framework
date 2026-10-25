@@ -87,6 +87,9 @@
   <BF_DietCardNote>Changed by this creature's material and known bastle traits.</BF_DietCardNote>
   <BF_HealthLine>Health: {0}</BF_HealthLine>
   <BF_TraitHealthLine>Health multiplier: {0}</BF_TraitHealthLine>
+  <BF_Settings_ScaledAttackCap>Trait attack base cap</BF_Settings_ScaledAttackCap>
+  <BF_Settings_ScaledAttackNoCap>no cap</BF_Settings_ScaledAttackNoCap>
+  <BF_Settings_ScaledAttackCapHint>Attacks from traits such as Venomous hit as hard as the creature's own strongest attack. That base is capped at this, so a thrumbo's venom doesn't hit for its horn's 28. The trait's rarity multiplies the capped base, so a rarer trait always hits harder. 12 matches a cobra's bite.</BF_Settings_ScaledAttackCapHint>
   <BF_Settings_HealthPerPoint>Health per trait point</BF_Settings_HealthPerPoint>
   <BF_Settings_HealthPerPointHint>Each trait point makes every body part this much tougher. Utility trait points don't count. Traits can add more of their own.</BF_Settings_HealthPerPointHint>
   <BF_Card_Material>Material</BF_Card_Material>

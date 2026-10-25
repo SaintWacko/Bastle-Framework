@@ -32,7 +32,6 @@
       <!-- With Ideology, Combat Command's line back to the creature rallying it. -->
       <li Class="HediffCompProperties_Link" MayRequire="Ludeon.RimWorld.Ideology">
         <requireLinkOnOtherPawn>false</requireLinkOnOtherPawn>
-        <maxDistance>8</maxDistance>
         <customMote>Mote_CombatCommandLinkLine</customMote>
       </li>
     </comps>

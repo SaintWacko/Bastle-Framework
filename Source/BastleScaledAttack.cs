@@ -6,8 +6,9 @@ namespace BastleFramework
 {
     /// <summary>
     /// Put on a trait's hediff that gives attacks through HediffComp_VerbGiver. Its attacks
-    /// then hit as hard as the creature's own strongest natural attack times factor, times
-    /// the trait's rarity strength, instead of the tool's fixed power. A fixed power can't
+    /// then hit as hard as the creature's own strongest natural attack (capped by the
+    /// scaledAttackCap setting) times factor, times the trait's rarity strength, instead of
+    /// the tool's fixed power. A fixed power can't
     /// suit every body: venom fangs written for a wolf made a crow bite harder than a cobra.
     /// The hediff's strongest tool is the one matched to the natural attack; its other tools
     /// keep their power relative to it. extraMeleeDamages scale by the same ratio, since
@@ -36,6 +37,9 @@ namespace BastleFramework
             float natural = BestNaturalPower(pawn.def);
             // A race with no attacks of its own has nothing to scale from: the tool's power stands.
             if (natural <= 0f) return;
+            // Capped before rarity so a rarer trait still hits harder on a huge creature.
+            float cap = BastleFrameworkMod.Settings.scaledAttackCap;
+            if (cap < BastleSettings.ScaledAttackNoCap && natural > cap) natural = cap;
             __result *= ext.factor * natural * TraitStrength(pawn, hediff) / BestGivenPower(hediff, tool);
         }
 

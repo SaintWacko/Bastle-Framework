@@ -254,8 +254,8 @@ namespace BastleFramework
     [HarmonyPatch(typeof(FoodUtility), nameof(FoodUtility.BestFoodSourceOnMap))]
     internal static class Patch_BestFoodSourceOnMap
     {
-        static void Postfix(Pawn getter, Pawn eater, bool allowPlant, bool allowForbidden, bool forceScanWholeMap,
-            ref ThingDef foodDef, ref Thing __result)
+        static void Postfix(Pawn getter, Pawn eater, FoodPreferability maxPref, bool allowPlant, bool allowForbidden, bool forceScanWholeMap,
+            FoodPreferability minPrefOverride, ref ThingDef foodDef, ref Thing __result)
         {
             // Plants are eaten where they stand, never carried: vanilla only allows them when
             // the getter is the eater, and another mod's caller may leave allowPlant at its default.
@@ -266,13 +266,22 @@ namespace BastleFramework
 
             Thing plant = GenClosest.ClosestThingReachable(getter.Position, getter.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.FoodSource), PathEndMode.Touch, TraverseParms.For(getter),
-                9999f, t => t is Plant && t.IngestibleNow && eater.WillEat(t, getter)
+                9999f, t => t is Plant && t.IngestibleNow && FitsPreference(t.def, maxPref, minPrefOverride) && eater.WillEat(t, getter)
                     && (allowForbidden || !t.IsForbidden(getter)) && getter.CanReserve(t)
                     && BastleDietUtility.WithinRope(getter, t),
                 null, 0, BastleDietUtility.MaxRegions(getter, forceScanWholeMap));
             if (plant == null) return;
             __result = plant;
             foodDef = FoodUtility.GetFinalIngestibleDef(plant);
+        }
+
+        // The caller's bounds, as vanilla's own food validator applies them. Its default lower
+        // bound for an animal is NeverForNutrition, below every plant, so only an explicit
+        // minPrefOverride needs checking.
+        private static bool FitsPreference(ThingDef def, FoodPreferability maxPref, FoodPreferability minPrefOverride)
+        {
+            var pref = def.ingestible.preferability;
+            return pref <= maxPref && (minPrefOverride == FoodPreferability.Undefined || pref >= minPrefOverride);
         }
     }
 

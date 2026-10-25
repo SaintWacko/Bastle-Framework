@@ -28,6 +28,8 @@ namespace BastleFramework
         public float healthPerPoint = 0.1f;
         public int maxNameTraits = 3;
         public const int MaxNameTraitsLimit = 10;
+        public float scaledAttackCap = 12f;
+        public const float ScaledAttackNoCap = 40f;
 
         // Generation and rarity (indexed by BastleRarity)
         public static readonly float[] DefaultRarityWeights = { 50f, 25f, 12f, 5f, 3f };
@@ -75,6 +77,7 @@ namespace BastleFramework
             mysteryTradeBonus = 0.25f;
             healthPerPoint = 0.1f;
             maxNameTraits = 3;
+            scaledAttackCap = 12f;
             rarityWeights = (float[])DefaultRarityWeights.Clone();
             rarityStrength = (float[])DefaultRarityStrength.Clone();
             rarityPoints = (float[])DefaultRarityPoints.Clone();
@@ -113,6 +116,8 @@ namespace BastleFramework
             Scribe_Values.Look(ref healthPerPoint, "healthPerPoint", 0.1f);
             Scribe_Values.Look(ref maxNameTraits, "maxNameTraits", 3);
             maxNameTraits = Mathf.Clamp(maxNameTraits, 0, MaxNameTraitsLimit);
+            Scribe_Values.Look(ref scaledAttackCap, "scaledAttackCap", 12f);
+            scaledAttackCap = Mathf.Clamp(scaledAttackCap, 1f, ScaledAttackNoCap);
             for (int i = 0; i < BastleRarityUtility.Count; i++)
             {
                 var r = (BastleRarity)i;
@@ -213,6 +218,9 @@ namespace BastleFramework
             Slider(l, "BF_Settings_ValuePercent", ref valuePercentPerPoint, 0f, 1f, "+" + valuePercentPerPoint.ToStringPercent(), "BF_Settings_ValuePercentHint", 0.01f);
             Slider(l, "BF_Settings_ValueFlat", ref valueFlatPerPoint, 0f, 500f, "+" + valueFlatPerPoint.ToStringMoney(), "BF_Settings_ValueFlatHint", 5f);
             Slider(l, "BF_Settings_Mystery", ref mysteryTradeBonus, 0f, 1f, "+" + mysteryTradeBonus.ToStringPercent(), "BF_Settings_MysteryHint", 0.05f);
+            Slider(l, "BF_Settings_ScaledAttackCap", ref scaledAttackCap, 4f, ScaledAttackNoCap,
+                scaledAttackCap >= ScaledAttackNoCap ? "BF_Settings_ScaledAttackNoCap".Translate().ToString() : Mathf.RoundToInt(scaledAttackCap).ToString(),
+                "BF_Settings_ScaledAttackCapHint", 1f);
             l.End();
         }
 
