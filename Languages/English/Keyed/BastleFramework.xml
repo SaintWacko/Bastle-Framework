@@ -107,7 +107,7 @@
 
   <BF_Settings_WorldSection>World</BF_Settings_WorldSection>
   <BF_Settings_WorldEnabled>Bastles appear in the world</BF_Settings_WorldEnabled>
-  <BF_Settings_WorldEnabledHint>Turns every source on this tab on or off at once. These are the defaults for a new game; a mod can set them per colony when the game is created.</BF_Settings_WorldEnabledHint>
+  <BF_Settings_WorldEnabledHint>Turns every source on this tab on or off at once. Which sources are on is the default for a new game; a mod can switch them per colony when the game is created. The numbers here apply to every game.</BF_Settings_WorldEnabledHint>
   <BF_Settings_WorldStrength>Strength</BF_Settings_WorldStrength>
   <BF_Settings_WorldStrengthHint>Trait points a bastle gets from the threat points behind it. Straight lines between these, flat past either end.</BF_Settings_WorldStrengthHint>
   <!-- {0}: threat points, e.g. 1,500. -->

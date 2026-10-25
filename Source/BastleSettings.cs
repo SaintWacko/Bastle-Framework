@@ -541,12 +541,14 @@ namespace BastleFramework
             if (hintKey != null) Hint(l, hintKey.Translate());
         }
 
-        /// <param name="key">Either a Keyed key or an already-translated label.</param>
         /// <param name="hint">Either a Keyed key or an already-translated string.</param>
         private static void Slider(Listing_Standard l, string key, ref float value, float min, float max, string shown, string hint, float roundTo)
+            => Slider(l, key.Translate(), ref value, min, max, shown, hint, roundTo);
+
+        private static void Slider(Listing_Standard l, TaggedString label, ref float value, float min, float max, string shown, string hint, float roundTo)
         {
             var row = l.GetRect(Text.LineHeight);
-            Widgets.Label(row.LeftPart(0.75f), key.CanTranslate() ? key.Translate().ToString() : key);
+            Widgets.Label(row.LeftPart(0.75f), label);
             Text.Anchor = TextAnchor.UpperRight;
             Widgets.Label(row.RightPart(0.25f), shown);
             Text.Anchor = TextAnchor.UpperLeft;
