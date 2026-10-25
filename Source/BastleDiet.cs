@@ -259,7 +259,7 @@ namespace BastleFramework
         {
             // Plants are eaten where they stand, never carried: vanilla only allows them when
             // the getter is the eater, and another mod's caller may leave allowPlant at its default.
-            if (__result != null || !allowPlant || getter != eater || getter?.Map == null) return;
+            if (__result != null || !allowPlant || getter != eater || getter?.Map == null || !BastleDietUtility.EatsPlantsInPlace(eater)) return;
             var d = BastleUtility.PeekBastle(eater)?.Diet;
             if (d == null || !d.AddsPlants) return;
             if ((eater.RaceProps.foodType & (FoodTypeFlags.Plant | FoodTypeFlags.Tree)) != 0) return;
@@ -363,6 +363,12 @@ namespace BastleFramework
                     t.TryDiscoverBy(BastleDiscoveryTrigger.StarvesNearRefusedFood);
         }
 
+        /// <summary>JobDriver_Ingest sends tool users down its carry path, which picks a living
+        /// plant up and walks off with it, so only creatures that eat where they stand may be
+        /// pointed at one. Same test the driver makes.</summary>
+        public static bool EatsPlantsInPlace(Pawn pawn)
+            => !pawn.RaceProps.ToolUser || (pawn.IsMutant && pawn.mutant.Def.disableEatingAtTable);
+
         /// <summary>Vanilla's food search keeps a roped animal within 8 cells of its anchor.</summary>
         public static bool WithinRope(Pawn getter, Thing t)
             => getter.roping == null || !getter.roping.IsRoped || t.PositionHeld.InHorDistOf(getter.roping.RopedTo.Cell, 8f);
@@ -373,7 +379,7 @@ namespace BastleFramework
         public static Job EatAddedFoodJob(Pawn pawn, BastleDiet d)
         {
             if (d.add == 0 && d.edible.Count == 0) return null;
-            var group = d.AddsPlants || d.edible.Any(t => t.plant != null)
+            var group = EatsPlantsInPlace(pawn) && (d.AddsPlants || d.edible.Any(t => t.plant != null))
                 ? ThingRequestGroup.FoodSource : ThingRequestGroup.FoodSourceNotPlantOrTree;
             Thing best = GenClosest.ClosestThingReachable(pawn.Position, pawn.Map, ThingRequest.ForGroup(group),
                 PathEndMode.Touch, TraverseParms.For(pawn), 9999f,
