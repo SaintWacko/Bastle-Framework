@@ -47,6 +47,7 @@ namespace BastleFramework
         private List<Pawn> risingPawns = new List<Pawn>();
         private List<int> riseTicks = new List<int>();
         private int lastDiscoveryGroup;
+        internal Dictionary<BastleWorldFeature, bool> worldOverrides = new Dictionary<BastleWorldFeature, bool>();
 
         public BastleGameComponent(Game game)
         {
@@ -103,10 +104,12 @@ namespace BastleFramework
             Scribe_Collections.Look(ref risingPawns, "risingPawns", LookMode.Reference);
             Scribe_Collections.Look(ref riseTicks, "riseTicks", LookMode.Value);
             Scribe_Values.Look(ref lastDiscoveryGroup, "lastDiscoveryGroup", 0);
+            Scribe_Collections.Look(ref worldOverrides, "worldOverrides", LookMode.Value, LookMode.Value);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 risingPawns = risingPawns ?? new List<Pawn>();
                 riseTicks = riseTicks ?? new List<int>();
+                worldOverrides = worldOverrides ?? new Dictionary<BastleWorldFeature, bool>();
                 // A pawn that was destroyed (butchered, burned) saves as a null reference.
                 for (int i = Math.Min(risingPawns.Count, riseTicks.Count) - 1; i >= 0; i--)
                     if (risingPawns[i] == null) { risingPawns.RemoveAt(i); riseTicks.RemoveAt(i); }

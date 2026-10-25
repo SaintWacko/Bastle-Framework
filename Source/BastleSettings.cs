@@ -61,6 +61,35 @@ namespace BastleFramework
         public bool materialMarketValue = true;
         public float materialNutritionPerUnit = 0.05f;
 
+        // World (BastleWorld.cs). Defaults for new games; a game can override the switches.
+        public static readonly float[] DefaultWorldCurvePoints = { 1f, 2f, 4f, 6f, 9f };
+        public bool worldEnabled = true;
+        public float[] worldCurvePoints = (float[])DefaultWorldCurvePoints.Clone();
+        public float worldPointVariance = 0.25f;
+        public float wildStrength = 0.5f;
+        public float convertedStrength = 0.5f;
+        public float offeredStrength = 0.5f;
+        public bool wildEnabled = true;
+        public float wildChance = 0.025f;
+        public bool animalEventsEnabled = true;
+        public float animalEventChance = 0.15f;
+        public bool groupAnimalsEnabled = true;
+        public float groupAnimalChance = 0.15f;
+        public int groupAnimalMax = 2;
+        public bool traderAnimalsEnabled = true;
+        public float traderAnimalChance = 0.1f;
+        public bool rewardAnimalsEnabled = true;
+        public float rewardAnimalChance = 0.25f;
+        public bool sightingEnabled = true;
+        public float sightingFrequency = 1f;
+        public bool packEnabled = true;
+        public float packFrequency = 1f;
+        public float packTraitShare = 0.35f;
+        public bool rampageEnabled = true;
+        public float rampageFrequency = 1f;
+        public bool huntQuestEnabled = true;
+        public float huntQuestFrequency = 1f;
+
         public void Reset()
         {
             lightsEnabled = true;
@@ -96,6 +125,37 @@ namespace BastleFramework
             smallVolumeMultiplier = 10f;
             materialMarketValue = true;
             materialNutritionPerUnit = 0.05f;
+            ResetWorld();
+        }
+
+        private void ResetWorld()
+        {
+            worldEnabled = true;
+            worldCurvePoints = (float[])DefaultWorldCurvePoints.Clone();
+            worldPointVariance = 0.25f;
+            wildStrength = 0.5f;
+            convertedStrength = 0.5f;
+            offeredStrength = 0.5f;
+            wildEnabled = true;
+            wildChance = 0.025f;
+            animalEventsEnabled = true;
+            animalEventChance = 0.15f;
+            groupAnimalsEnabled = true;
+            groupAnimalChance = 0.15f;
+            groupAnimalMax = 2;
+            traderAnimalsEnabled = true;
+            traderAnimalChance = 0.1f;
+            rewardAnimalsEnabled = true;
+            rewardAnimalChance = 0.25f;
+            sightingEnabled = true;
+            sightingFrequency = 1f;
+            packEnabled = true;
+            packFrequency = 1f;
+            packTraitShare = 0.35f;
+            rampageEnabled = true;
+            rampageFrequency = 1f;
+            huntQuestEnabled = true;
+            huntQuestFrequency = 1f;
         }
 
         public override void ExposeData()
@@ -145,11 +205,42 @@ namespace BastleFramework
             Scribe_Values.Look(ref smallVolumeMultiplier, "smallVolumeMultiplier", 10f);
             Scribe_Values.Look(ref materialMarketValue, "materialMarketValue", true);
             Scribe_Values.Look(ref materialNutritionPerUnit, "materialNutritionPerUnit", 0.05f);
+
+            Scribe_Values.Look(ref worldEnabled, "worldEnabled", true);
+            for (int i = 0; i < DefaultWorldCurvePoints.Length; i++)
+            {
+                Scribe_Values.Look(ref worldCurvePoints[i], "worldCurve" + i, DefaultWorldCurvePoints[i]);
+                worldCurvePoints[i] = Mathf.Max(0f, worldCurvePoints[i]);
+            }
+            Scribe_Values.Look(ref worldPointVariance, "worldPointVariance", 0.25f);
+            Scribe_Values.Look(ref wildStrength, "wildStrength", 0.5f);
+            Scribe_Values.Look(ref convertedStrength, "convertedStrength", 0.5f);
+            Scribe_Values.Look(ref offeredStrength, "offeredStrength", 0.5f);
+            Scribe_Values.Look(ref wildEnabled, "wildEnabled", true);
+            Scribe_Values.Look(ref wildChance, "wildChance", 0.025f);
+            Scribe_Values.Look(ref animalEventsEnabled, "animalEventsEnabled", true);
+            Scribe_Values.Look(ref animalEventChance, "animalEventChance", 0.15f);
+            Scribe_Values.Look(ref groupAnimalsEnabled, "groupAnimalsEnabled", true);
+            Scribe_Values.Look(ref groupAnimalChance, "groupAnimalChance", 0.15f);
+            Scribe_Values.Look(ref groupAnimalMax, "groupAnimalMax", 2);
+            Scribe_Values.Look(ref traderAnimalsEnabled, "traderAnimalsEnabled", true);
+            Scribe_Values.Look(ref traderAnimalChance, "traderAnimalChance", 0.1f);
+            Scribe_Values.Look(ref rewardAnimalsEnabled, "rewardAnimalsEnabled", true);
+            Scribe_Values.Look(ref rewardAnimalChance, "rewardAnimalChance", 0.25f);
+            Scribe_Values.Look(ref sightingEnabled, "sightingEnabled", true);
+            Scribe_Values.Look(ref sightingFrequency, "sightingFrequency", 1f);
+            Scribe_Values.Look(ref packEnabled, "packEnabled", true);
+            Scribe_Values.Look(ref packFrequency, "packFrequency", 1f);
+            Scribe_Values.Look(ref packTraitShare, "packTraitShare", 0.35f);
+            Scribe_Values.Look(ref rampageEnabled, "rampageEnabled", true);
+            Scribe_Values.Look(ref rampageFrequency, "rampageFrequency", 1f);
+            Scribe_Values.Look(ref huntQuestEnabled, "huntQuestEnabled", true);
+            Scribe_Values.Look(ref huntQuestFrequency, "huntQuestFrequency", 1f);
         }
 
         // ---- window --------------------------------------------------------------
 
-        private enum Tab { Lights, Traits, Generation, Materials }
+        private enum Tab { Lights, Traits, Generation, Materials, World }
         private static Tab tab = Tab.Lights;
 
         public void DoWindowContents(Rect inRect)
@@ -163,11 +254,13 @@ namespace BastleFramework
                 new TabRecord("BF_Settings_TraitsSection".Translate(), () => tab = Tab.Traits, tab == Tab.Traits),
                 new TabRecord("BF_Settings_GenerationSection".Translate(), () => tab = Tab.Generation, tab == Tab.Generation),
                 new TabRecord("BF_Settings_MaterialsSection".Translate(), () => tab = Tab.Materials, tab == Tab.Materials),
+                new TabRecord("BF_Settings_WorldSection".Translate(), () => tab = Tab.World, tab == Tab.World),
             };
             Widgets.DrawMenuSection(body);
             TabDrawer.DrawTabs(body, tabs);
 
             if (tab == Tab.Generation) DoGeneration(body.ContractedBy(12f));
+            else if (tab == Tab.World) DoWorld(body.ContractedBy(12f));
             else if (tab == Tab.Traits) DoTraits(body.ContractedBy(12f));
             else
             {
@@ -332,6 +425,105 @@ namespace BastleFramework
                     : "BF_Settings_EatMaterialOffHint".Translate().ToString(), 0.01f);
         }
 
+        // Strength curve | animals the game already makes | new events. The per-source
+        // explanations sit in tooltips: written out, the middle column runs off the window.
+        private void DoWorld(Rect r)
+        {
+            const float gap = 18f;
+            var top = new Listing_Standard();
+            top.Begin(r);
+            Check(top, "BF_Settings_WorldEnabled", ref worldEnabled, "BF_Settings_WorldEnabledHint");
+            float used = top.CurHeight + 4f;
+            top.End();
+
+            var body = new Rect(r.x, r.y + used, r.width, r.height - used);
+            float third = (body.width - 2f * gap) / 3f;
+            Color before = GUI.color;
+            if (!worldEnabled) GUI.color = new Color(1f, 1f, 1f, 0.5f);
+
+            var l = new Listing_Standard();
+            l.Begin(new Rect(body.x, body.y, third, body.height));
+            l.Label("<b>" + "BF_Settings_WorldStrength".Translate() + "</b>");
+            Hint(l, "BF_Settings_WorldStrengthHint".Translate());
+            DrawWorldCurve(l.GetRect(54f));
+            l.Gap(4f);
+            for (int i = 0; i < worldCurvePoints.Length; i++)
+                Slider(l, "BF_Settings_WorldCurveRow".Translate(BastleWorld.CurveThreatPoints[i].ToString("N0")), ref worldCurvePoints[i], 0f, 20f,
+                    worldCurvePoints[i].ToStringByStyle(ToStringStyle.FloatMaxOne), null, 0.5f);
+            Slider(l, "BF_Settings_WorldVariance", ref worldPointVariance, 0f, 0.9f, "±" + worldPointVariance.ToStringPercent(), null, 0.05f);
+            Slider(l, "BF_Settings_WildStrength", ref wildStrength, 0f, 2f, wildStrength.ToStringPercent(), "BF_Settings_WildStrengthHint", 0.05f);
+            Slider(l, "BF_Settings_ConvertedStrength", ref convertedStrength, 0f, 2f, convertedStrength.ToStringPercent(), "BF_Settings_ConvertedStrengthHint", 0.05f);
+            Slider(l, "BF_Settings_OfferedStrength", ref offeredStrength, 0f, 2f, offeredStrength.ToStringPercent(), "BF_Settings_OfferedStrengthHint", 0.05f);
+            l.End();
+
+            l = new Listing_Standard();
+            l.Begin(new Rect(body.x + third + gap, body.y, third, body.height));
+            l.Label("<b>" + "BF_Settings_WorldConversion".Translate() + "</b>");
+            Hint(l, "BF_Settings_WorldHiddenHint".Translate());
+            if (Source(l, "BF_Settings_Wild", ref wildEnabled))
+                Slider(l, "BF_Settings_ChancePerAnimal", ref wildChance, 0f, 0.25f, wildChance.ToStringPercent("0.#"), null, 0.005f);
+            if (Source(l, "BF_Settings_AnimalEvents", ref animalEventsEnabled))
+                Slider(l, "BF_Settings_ChancePerEvent", ref animalEventChance, 0f, 1f, animalEventChance.ToStringPercent(), null, 0.01f);
+            if (Source(l, "BF_Settings_GroupAnimals", ref groupAnimalsEnabled))
+            {
+                Slider(l, "BF_Settings_ChancePerGroup", ref groupAnimalChance, 0f, 1f, groupAnimalChance.ToStringPercent(), null, 0.01f);
+                float max = groupAnimalMax;
+                Slider(l, "BF_Settings_MostPerGroup", ref max, 1f, 10f, Mathf.RoundToInt(max).ToString(), null, 1f);
+                groupAnimalMax = Mathf.RoundToInt(max);
+            }
+            if (Source(l, "BF_Settings_TraderAnimals", ref traderAnimalsEnabled))
+                Slider(l, "BF_Settings_ChancePerAnimal", ref traderAnimalChance, 0f, 1f, traderAnimalChance.ToStringPercent(), null, 0.01f);
+            if (Source(l, "BF_Settings_RewardAnimals", ref rewardAnimalsEnabled))
+                Slider(l, "BF_Settings_ChancePerAnimal", ref rewardAnimalChance, 0f, 1f, rewardAnimalChance.ToStringPercent(), null, 0.01f);
+            l.End();
+
+            l = new Listing_Standard();
+            l.Begin(new Rect(body.x + 2f * (third + gap), body.y, third, body.height));
+            l.Label("<b>" + "BF_Settings_WorldEvents".Translate() + "</b>");
+            Hint(l, "BF_Settings_WorldEventsHint".Translate());
+            if (Source(l, "BF_Settings_Sighting", ref sightingEnabled))
+                Frequency(l, ref sightingFrequency);
+            if (Source(l, "BF_Settings_Pack", ref packEnabled))
+            {
+                Frequency(l, ref packFrequency);
+                Slider(l, "BF_Settings_PackTraitShare", ref packTraitShare, 0f, 0.8f, packTraitShare.ToStringPercent(), null, 0.05f);
+            }
+            if (Source(l, "BF_Settings_Rampage", ref rampageEnabled))
+                Frequency(l, ref rampageFrequency);
+            if (Source(l, "BF_Settings_HuntQuest", ref huntQuestEnabled))
+                Frequency(l, ref huntQuestFrequency);
+            l.End();
+
+            GUI.color = before;
+        }
+
+        // A world source's switch, its explanation in the tooltip; the source's own sliders
+        // are only drawn while it is on.
+        private static bool Source(Listing_Standard l, string key, ref bool value)
+        {
+            l.Gap(6f);
+            l.CheckboxLabeled(key.Translate(), ref value, (key + "Hint").Translate());
+            return value;
+        }
+
+        private static void Frequency(Listing_Standard l, ref float value)
+            => Slider(l, "BF_Settings_Frequency", ref value, 0f, 3f, "x" + value.ToStringByStyle(ToStringStyle.FloatMaxTwo), null, 0.05f);
+
+        private void DrawWorldCurve(Rect rect)
+        {
+            Widgets.DrawBoxSolid(rect, new Color(0f, 0f, 0f, 0.25f));
+            Widgets.DrawBox(rect);
+            float maxY = Mathf.Max(1f, worldCurvePoints.Max());
+            float maxX = BastleWorld.CurveThreatPoints[BastleWorld.CurveThreatPoints.Length - 1];
+            Vector2 Point(int i) => new Vector2(
+                rect.x + 2f + (rect.width - 4f) * BastleWorld.CurveThreatPoints[i] / maxX,
+                rect.yMax - 2f - (rect.height - 4f) * worldCurvePoints[i] / maxY);
+            var color = new Color(1f, 0.8f, 0.4f);
+            Widgets.DrawLine(new Vector2(rect.x + 2f, Point(0).y), Point(0), color, 2f);
+            for (int i = 1; i < worldCurvePoints.Length; i++)
+                Widgets.DrawLine(Point(i - 1), Point(i), color, 2f);
+        }
+
         private static void Hint(Listing_Standard l, string text)
         {
             if (text.NullOrEmpty()) return;
@@ -349,11 +541,12 @@ namespace BastleFramework
             if (hintKey != null) Hint(l, hintKey.Translate());
         }
 
+        /// <param name="key">Either a Keyed key or an already-translated label.</param>
         /// <param name="hint">Either a Keyed key or an already-translated string.</param>
         private static void Slider(Listing_Standard l, string key, ref float value, float min, float max, string shown, string hint, float roundTo)
         {
             var row = l.GetRect(Text.LineHeight);
-            Widgets.Label(row.LeftPart(0.75f), key.Translate());
+            Widgets.Label(row.LeftPart(0.75f), key.CanTranslate() ? key.Translate().ToString() : key);
             Text.Anchor = TextAnchor.UpperRight;
             Widgets.Label(row.RightPart(0.25f), shown);
             Text.Anchor = TextAnchor.UpperLeft;
