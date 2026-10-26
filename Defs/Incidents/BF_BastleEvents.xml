@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <IncidentDef>
+    <defName>BF_BastleSighting</defName>
+    <label>bastle sighting</label>
+    <category>Misc</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>BastleFramework.IncidentWorker_BastleSighting</workerClass>
+    <baseChance>0.5</baseChance>
+    <minRefireDays>15</minRefireDays>
+    <letterLabel>Bastle sighted: {KIND}</letterLabel>
+    <letterText>A wild {KIND} is passing through. It is a bastle: it carries traits no ordinary {KIND} has, and nobody knows yet what they are.\n\nIt can be hunted or tamed, and its traits come to light as you see them at work. If you leave it alone, it will move on in a couple of days.</letterText>
+    <letterDef>PositiveEvent</letterDef>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>BF_BastlePack</defName>
+    <label>bastle pack</label>
+    <category>ThreatBig</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>BastleFramework.IncidentWorker_BastlePack</workerClass>
+    <baseChance>0.6</baseChance>
+    <minRefireDays>20</minRefireDays>
+    <pointsScaleable>true</pointsScaleable>
+    <letterLabel>Bastle pack</letterLabel>
+    <letterText>A pack of manhunting {KINDPLURAL} has arrived, driven mad by scaria. They are all one kind of bastle: fewer than an ordinary pack, but each one carries the same unknown traits, and whatever you learn about one of them, you learn about all of them.\n\nThey will attack any human they see, and leave in a day or two.</letterText>
+    <letterDef>ThreatBig</letterDef>
+    <letterHyperlinkHediffDefs>
+      <li>Scaria</li>
+    </letterHyperlinkHediffDefs>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>BF_BastleRampage</defName>
+    <label>bastle rampage</label>
+    <category>ThreatBig</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>BastleFramework.IncidentWorker_BastleRampage</workerClass>
+    <baseChance>0.4</baseChance>
+    <minRefireDays>25</minRefireDays>
+    <pointsScaleable>true</pointsScaleable>
+    <letterLabel>Rampaging bastle: {KIND}</letterLabel>
+    <letterText>A lone {KIND} has wandered in on a rampage, driven mad by scaria. It is a powerful bastle: every trait it carries is rare or better, and none of them is known yet.\n\nIt will attack any human it sees, and leave in a day or two.</letterText>
+    <letterDef>ThreatBig</letterDef>
+    <letterHyperlinkHediffDefs>
+      <li>Scaria</li>
+    </letterHyperlinkHediffDefs>
+  </IncidentDef>
+
+</Defs>

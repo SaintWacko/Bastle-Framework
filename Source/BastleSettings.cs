@@ -80,11 +80,13 @@ namespace BastleFramework
         public float traderAnimalChance = 0.1f;
         public bool sightingEnabled = true;
         public float sightingFrequency = 1f;
+        public float sightingStrength = 1f;
         public bool packEnabled = true;
         public float packFrequency = 1f;
         public float packTraitShare = 0.35f;
         public bool rampageEnabled = true;
         public float rampageFrequency = 1f;
+        public float rampageStrength = 2f;
         public bool huntQuestEnabled = true;
         public float huntQuestFrequency = 1f;
 
@@ -145,11 +147,13 @@ namespace BastleFramework
             traderAnimalChance = 0.1f;
             sightingEnabled = true;
             sightingFrequency = 1f;
+            sightingStrength = 1f;
             packEnabled = true;
             packFrequency = 1f;
             packTraitShare = 0.35f;
             rampageEnabled = true;
             rampageFrequency = 1f;
+            rampageStrength = 2f;
             huntQuestEnabled = true;
             huntQuestFrequency = 1f;
         }
@@ -223,11 +227,13 @@ namespace BastleFramework
             Scribe_Values.Look(ref traderAnimalChance, "traderAnimalChance", 0.1f);
             Scribe_Values.Look(ref sightingEnabled, "sightingEnabled", true);
             Scribe_Values.Look(ref sightingFrequency, "sightingFrequency", 1f);
+            Scribe_Values.Look(ref sightingStrength, "sightingStrength", 1f);
             Scribe_Values.Look(ref packEnabled, "packEnabled", true);
             Scribe_Values.Look(ref packFrequency, "packFrequency", 1f);
             Scribe_Values.Look(ref packTraitShare, "packTraitShare", 0.35f);
             Scribe_Values.Look(ref rampageEnabled, "rampageEnabled", true);
             Scribe_Values.Look(ref rampageFrequency, "rampageFrequency", 1f);
+            Scribe_Values.Look(ref rampageStrength, "rampageStrength", 2f);
             Scribe_Values.Look(ref huntQuestEnabled, "huntQuestEnabled", true);
             Scribe_Values.Look(ref huntQuestFrequency, "huntQuestFrequency", 1f);
         }
@@ -475,14 +481,20 @@ namespace BastleFramework
             l.Label("<b>" + "BF_Settings_WorldEvents".Translate() + "</b>");
             Hint(l, "BF_Settings_WorldEventsHint".Translate());
             if (Source(l, BastleWorldFeature.Sighting, "BF_Settings_Sighting", ref sightingEnabled))
+            {
                 Frequency(l, ref sightingFrequency);
+                Slider(l, "BF_Settings_EventStrength", ref sightingStrength, 0f, 4f, sightingStrength.ToStringPercent(), null, 0.05f);
+            }
             if (Source(l, BastleWorldFeature.Pack, "BF_Settings_Pack", ref packEnabled))
             {
                 Frequency(l, ref packFrequency);
                 Slider(l, "BF_Settings_PackTraitShare", ref packTraitShare, 0f, 0.8f, packTraitShare.ToStringPercent(), null, 0.05f);
             }
             if (Source(l, BastleWorldFeature.Rampage, "BF_Settings_Rampage", ref rampageEnabled))
+            {
                 Frequency(l, ref rampageFrequency);
+                Slider(l, "BF_Settings_EventStrength", ref rampageStrength, 0f, 4f, rampageStrength.ToStringPercent(), null, 0.05f);
+            }
             if (Source(l, BastleWorldFeature.HuntQuest, "BF_Settings_HuntQuest", ref huntQuestEnabled))
                 Frequency(l, ref huntQuestFrequency);
             l.End();

@@ -139,12 +139,13 @@
   <BF_Settings_WorldEventsHint>How often each happens against its base chance. 0 is never.</BF_Settings_WorldEventsHint>
   <BF_Settings_Frequency>Frequency</BF_Settings_Frequency>
   <BF_Settings_Sighting>Bastle sighting</BF_Settings_Sighting>
-  <BF_Settings_SightingHint>One strong wild bastle passes through. It leaves if you let it be.</BF_Settings_SightingHint>
+  <BF_Settings_SightingHint>One strong wild bastle passes through, to hunt or tame. It leaves if you let it be. Strength is the share of the map's raid points its traits are read from.</BF_Settings_SightingHint>
+  <BF_Settings_EventStrength>Strength</BF_Settings_EventStrength>
   <BF_Settings_Pack>Bastle pack</BF_Settings_Pack>
-  <BF_Settings_PackHint>A manhunter pack of one bastle kind.</BF_Settings_PackHint>
+  <BF_Settings_PackHint>A manhunter pack of one bastle kind that shares what you learn about it. Points spent on traits leave the pack's size: it is that much smaller than a vanilla pack of the same threat, and every animal's traits are read from the event's full points.</BF_Settings_PackHint>
   <BF_Settings_PackTraitShare>Points spent on traits</BF_Settings_PackTraitShare>
   <BF_Settings_Rampage>Rampage</BF_Settings_Rampage>
-  <BF_Settings_RampageHint>A single bastle goes manhunter, with the pack's threat in its traits.</BF_Settings_RampageHint>
+  <BF_Settings_RampageHint>A single manhunting bastle wanders in, its traits all rare or better, with a pack's threat in its traits. Strength is the share of the event's points its traits are read from.</BF_Settings_RampageHint>
   <BF_Settings_HuntQuest>Hunt quests</BF_Settings_HuntQuest>
   <BF_Settings_HuntQuestHint>A faction asks you to kill a bastle and its pack at a site, for vanilla rewards.</BF_Settings_HuntQuestHint>
 

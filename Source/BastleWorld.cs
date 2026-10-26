@@ -144,9 +144,9 @@ namespace BastleFramework
         /// <summary>Rolls hidden traits onto an animal for this many trait points. Never
         /// throws: world hooks run inside map, raid and stock generation, where an exception
         /// would lose far more than the bastle.</summary>
-        public static bool MakeBastle(Pawn pawn, float traitPoints)
+        public static bool MakeBastle(Pawn pawn, float traitPoints, BastleRollRequest request = null)
         {
-            try { return !BastleUtility.RollTraits(pawn, traitPoints).NullOrEmpty(); }
+            try { return !BastleUtility.RollTraits(pawn, traitPoints, request).NullOrEmpty(); }
             catch (Exception e)
             {
                 Log.ErrorOnce("[Bastle Framework] Could not make a world bastle of " + pawn + ": " + e, 0x42465751);
