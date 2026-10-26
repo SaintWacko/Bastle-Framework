@@ -59,9 +59,9 @@ namespace BastleFramework
             var kinds = WildKinds(map, true);
             if (refused != null) kinds.RemoveAll(k => refused.Contains(k.kind));
             if (kinds.Count == 0) return false;
-            // With too few points for any of them (an early colony), the cap rises to twice the
-            // weakest kind's power. Taking only the weakest made every early rampage the first
-            // 20-power kind in the biome list, a sparrow every time.
+            // The cap never drops below twice the weakest kind's power, so an early colony still
+            // draws from several small kinds. Taking only the weakest when nothing fit made every
+            // early rampage the first 20-power kind in the biome list, a sparrow every time.
             float weakest = float.MaxValue;
             foreach (var k in kinds) weakest = Mathf.Min(weakest, k.kind.combatPower);
             float most = Mathf.Max(points * RampageKindShare, weakest * 2f);
