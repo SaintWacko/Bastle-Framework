@@ -93,11 +93,19 @@ namespace BastleFramework
         internal static Pawn TryMakeBastle(Map map, PawnKindDef forced, Func<HashSet<PawnKindDef>, PawnKindDef> pick, Func<Pawn, bool> make)
         {
             var refused = new HashSet<PawnKindDef>();
-            for (int attempt = 0; attempt < 3; attempt++)
+            // A picker that can't exclude (vanilla's manhunter one) may hand back a refused
+            // kind; those picks don't use up a generation attempt, up to their own cap.
+            int repeats = 0;
+            for (int attempt = 0; attempt < 3;)
             {
                 var kind = forced ?? pick(refused);
                 if (kind == null) return null;
-                if (refused.Contains(kind)) continue;
+                if (refused.Contains(kind))
+                {
+                    if (++repeats >= 10) return null;
+                    continue;
+                }
+                attempt++;
                 var pawn = Generate(kind, map);
                 if (make(pawn)) return pawn;
                 Discard(pawn);

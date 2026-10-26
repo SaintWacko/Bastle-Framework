@@ -228,12 +228,14 @@ namespace BastleFramework
             Scribe_Values.Look(ref sightingEnabled, "sightingEnabled", true);
             Scribe_Values.Look(ref sightingFrequency, "sightingFrequency", 1f);
             Scribe_Values.Look(ref sightingStrength, "sightingStrength", 1f);
+            sightingStrength = Mathf.Max(0.1f, sightingStrength);
             Scribe_Values.Look(ref packEnabled, "packEnabled", true);
             Scribe_Values.Look(ref packFrequency, "packFrequency", 1f);
             Scribe_Values.Look(ref packTraitShare, "packTraitShare", 0.35f);
             Scribe_Values.Look(ref rampageEnabled, "rampageEnabled", true);
             Scribe_Values.Look(ref rampageFrequency, "rampageFrequency", 1f);
             Scribe_Values.Look(ref rampageStrength, "rampageStrength", 2f);
+            rampageStrength = Mathf.Max(0.1f, rampageStrength);
             Scribe_Values.Look(ref huntQuestEnabled, "huntQuestEnabled", true);
             Scribe_Values.Look(ref huntQuestFrequency, "huntQuestFrequency", 1f);
         }
