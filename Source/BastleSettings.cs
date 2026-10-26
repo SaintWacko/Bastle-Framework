@@ -426,14 +426,15 @@ namespace BastleFramework
             const float gap = 18f;
             var top = new Listing_Standard();
             top.Begin(r);
-            Check(top, "BF_Settings_WorldEnabled", ref worldEnabled, "BF_Settings_WorldEnabledHint");
+            bool masterOn = Source(top, BastleWorldFeature.World, "BF_Settings_WorldEnabled", ref worldEnabled, false);
+            Hint(top, "BF_Settings_WorldEnabledHint".Translate());
             float used = top.CurHeight + 4f;
             top.End();
 
             var body = new Rect(r.x, r.y + used, r.width, r.height - used);
             float third = (body.width - 2f * gap) / 3f;
             Color before = GUI.color;
-            if (!worldEnabled) GUI.color = new Color(1f, 1f, 1f, 0.5f);
+            if (!masterOn) GUI.color = new Color(1f, 1f, 1f, 0.5f);
 
             var l = new Listing_Standard();
             l.Begin(new Rect(body.x, body.y, third, body.height));
@@ -454,18 +455,18 @@ namespace BastleFramework
             l.Begin(new Rect(body.x + third + gap, body.y, third, body.height));
             l.Label("<b>" + "BF_Settings_WorldConversion".Translate() + "</b>");
             Hint(l, "BF_Settings_WorldHiddenHint".Translate());
-            if (Source(l, "BF_Settings_Wild", ref wildEnabled))
+            if (Source(l, BastleWorldFeature.WildAnimals, "BF_Settings_Wild", ref wildEnabled))
                 Slider(l, "BF_Settings_ChancePerAnimal", ref wildChance, 0f, 0.25f, wildChance.ToStringPercent("0.#"), null, 0.005f);
-            if (Source(l, "BF_Settings_AnimalEvents", ref animalEventsEnabled))
+            if (Source(l, BastleWorldFeature.AnimalEvents, "BF_Settings_AnimalEvents", ref animalEventsEnabled))
                 Slider(l, "BF_Settings_ChancePerEvent", ref animalEventChance, 0f, 1f, animalEventChance.ToStringPercent(), null, 0.01f);
-            if (Source(l, "BF_Settings_GroupAnimals", ref groupAnimalsEnabled))
+            if (Source(l, BastleWorldFeature.GroupAnimals, "BF_Settings_GroupAnimals", ref groupAnimalsEnabled))
             {
                 Slider(l, "BF_Settings_ChancePerGroup", ref groupAnimalChance, 0f, 1f, groupAnimalChance.ToStringPercent(), null, 0.01f);
                 float max = groupAnimalMax;
                 Slider(l, "BF_Settings_MostPerGroup", ref max, 1f, 10f, Mathf.RoundToInt(max).ToString(), null, 1f);
                 groupAnimalMax = Mathf.RoundToInt(max);
             }
-            if (Source(l, "BF_Settings_TraderAnimals", ref traderAnimalsEnabled))
+            if (Source(l, BastleWorldFeature.TraderAnimals, "BF_Settings_TraderAnimals", ref traderAnimalsEnabled))
                 Slider(l, "BF_Settings_ChancePerAnimal", ref traderAnimalChance, 0f, 1f, traderAnimalChance.ToStringPercent(), null, 0.01f);
             l.End();
 
@@ -473,16 +474,16 @@ namespace BastleFramework
             l.Begin(new Rect(body.x + 2f * (third + gap), body.y, third, body.height));
             l.Label("<b>" + "BF_Settings_WorldEvents".Translate() + "</b>");
             Hint(l, "BF_Settings_WorldEventsHint".Translate());
-            if (Source(l, "BF_Settings_Sighting", ref sightingEnabled))
+            if (Source(l, BastleWorldFeature.Sighting, "BF_Settings_Sighting", ref sightingEnabled))
                 Frequency(l, ref sightingFrequency);
-            if (Source(l, "BF_Settings_Pack", ref packEnabled))
+            if (Source(l, BastleWorldFeature.Pack, "BF_Settings_Pack", ref packEnabled))
             {
                 Frequency(l, ref packFrequency);
                 Slider(l, "BF_Settings_PackTraitShare", ref packTraitShare, 0f, 0.8f, packTraitShare.ToStringPercent(), null, 0.05f);
             }
-            if (Source(l, "BF_Settings_Rampage", ref rampageEnabled))
+            if (Source(l, BastleWorldFeature.Rampage, "BF_Settings_Rampage", ref rampageEnabled))
                 Frequency(l, ref rampageFrequency);
-            if (Source(l, "BF_Settings_HuntQuest", ref huntQuestEnabled))
+            if (Source(l, BastleWorldFeature.HuntQuest, "BF_Settings_HuntQuest", ref huntQuestEnabled))
                 Frequency(l, ref huntQuestFrequency);
             l.End();
 
@@ -490,12 +491,28 @@ namespace BastleFramework
         }
 
         // A world source's switch, its explanation in the tooltip; the source's own sliders
-        // are only drawn while it is on.
-        private static bool Source(Listing_Standard l, string key, ref bool value)
+        // are only drawn while it is on. While the open game overrides the switch, the box
+        // shows the game's value, greyed and locked, with a line saying where to change it;
+        // the settings' own value is kept for new games. The sliders stay editable because
+        // the numbers are never per game.
+        private static bool Source(Listing_Standard l, BastleWorldFeature feature, string key, ref bool value, bool tooltip = true)
         {
             l.Gap(6f);
-            l.CheckboxLabeled(key.Translate(), ref value, (key + "Hint").Translate());
-            return value;
+            string tip = tooltip ? (key + "Hint").Translate().ToString() : null;
+            bool? forGame = BastleWorld.GetForGame(feature);
+            if (!forGame.HasValue)
+            {
+                l.CheckboxLabeled(key.Translate(), ref value, tip);
+                return value;
+            }
+            bool shown = forGame.Value;
+            Rect row = l.GetRect(Text.LineHeight);
+            if (tip != null) TooltipHandler.TipRegion(row, tip);
+            Widgets.CheckboxLabeled(row, key.Translate(), ref shown, disabled: true);
+            Hint(l, BastleWorld.OverrideSource != null
+                ? "BF_Settings_WorldOverriddenBy".Translate(BastleWorld.OverrideSource).ToString()
+                : "BF_Settings_WorldOverridden".Translate().ToString());
+            return shown;
         }
 
         private static void Frequency(Listing_Standard l, ref float value)

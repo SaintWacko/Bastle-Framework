@@ -66,6 +66,11 @@ namespace BastleFramework
             return game != null && game.worldOverrides.TryGetValue(feature, out bool v) ? v : (bool?)null;
         }
 
+        /// <summary>Where a player changes this game's overrides, shown on the World settings
+        /// tab beside each overridden switch, e.g. "Dungeon Madness's world configurator".
+        /// Set it once at startup, already translated. Null shows a generic line.</summary>
+        public static string OverrideSource;
+
         /// <summary>Overrides a feature for the current game only (null goes back to the
         /// settings). Call it once the game exists: from a new-colony window, after
         /// Current.Game is set, or at any point in play.</summary>
