@@ -147,7 +147,8 @@
   <BF_Settings_Rampage>Rampage</BF_Settings_Rampage>
   <BF_Settings_RampageHint>A single manhunting bastle wanders in, its traits all rare or better, with a pack's threat in its traits. Strength is the share of the event's points its traits are read from.</BF_Settings_RampageHint>
   <BF_Settings_HuntQuest>Hunt quests</BF_Settings_HuntQuest>
-  <BF_Settings_HuntQuestHint>A faction asks you to kill a bastle and its pack at a site, for vanilla rewards.</BF_Settings_HuntQuestHint>
+  <BF_Settings_HuntQuestHint>A faction asks you to kill a bastle and the manhunting pack it leads at a site nearby, for vanilla rewards. The bastle's traits are all rare or better, and the quest names one of them. Strength is the share of the site's threat points its traits are read from; the points spent on the bastle leave the pack's size.</BF_Settings_HuntQuestHint>
+  <BF_Settings_HuntAlphaShare>Points spent on the bastle</BF_Settings_HuntAlphaShare>
 
   <BF_Rarity_Common>common</BF_Rarity_Common>
   <BF_Rarity_Uncommon>uncommon</BF_Rarity_Uncommon>

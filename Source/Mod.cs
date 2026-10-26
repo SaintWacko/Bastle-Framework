@@ -23,6 +23,7 @@ namespace BastleFramework
         public override void WriteSettings()
         {
             base.WriteSettings();
+            BastleHuntQuest.ApplyFrequency();
             if (Current.Game == null) return;
             foreach (var p in RimWorld.PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
                 BastleUtility.GetBastle(p)?.SettingsChanged();

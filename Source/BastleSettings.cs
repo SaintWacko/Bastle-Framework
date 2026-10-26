@@ -89,6 +89,8 @@ namespace BastleFramework
         public float rampageStrength = 2f;
         public bool huntQuestEnabled = true;
         public float huntQuestFrequency = 1f;
+        public float huntStrength = 2f;
+        public float huntAlphaShare = 0.35f;
 
         public void Reset()
         {
@@ -156,6 +158,8 @@ namespace BastleFramework
             rampageStrength = 2f;
             huntQuestEnabled = true;
             huntQuestFrequency = 1f;
+            huntStrength = 2f;
+            huntAlphaShare = 0.35f;
         }
 
         public override void ExposeData()
@@ -238,6 +242,10 @@ namespace BastleFramework
             rampageStrength = Mathf.Max(0.1f, rampageStrength);
             Scribe_Values.Look(ref huntQuestEnabled, "huntQuestEnabled", true);
             Scribe_Values.Look(ref huntQuestFrequency, "huntQuestFrequency", 1f);
+            Scribe_Values.Look(ref huntStrength, "huntStrength", 2f);
+            huntStrength = Mathf.Max(0.1f, huntStrength);
+            Scribe_Values.Look(ref huntAlphaShare, "huntAlphaShare", 0.35f);
+            huntAlphaShare = Mathf.Clamp(huntAlphaShare, 0f, 0.8f);
         }
 
         // ---- window --------------------------------------------------------------
@@ -498,7 +506,11 @@ namespace BastleFramework
                 Slider(l, "BF_Settings_EventStrength", ref rampageStrength, 0.1f, 4f, rampageStrength.ToStringPercent(), null, 0.05f);
             }
             if (Source(l, BastleWorldFeature.HuntQuest, "BF_Settings_HuntQuest", ref huntQuestEnabled))
+            {
                 Frequency(l, ref huntQuestFrequency);
+                Slider(l, "BF_Settings_EventStrength", ref huntStrength, 0.1f, 4f, huntStrength.ToStringPercent(), null, 0.05f);
+                Slider(l, "BF_Settings_HuntAlphaShare", ref huntAlphaShare, 0f, 0.8f, huntAlphaShare.ToStringPercent(), null, 0.05f);
+            }
             l.End();
 
             GUI.color = before;

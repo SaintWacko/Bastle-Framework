@@ -90,7 +90,7 @@ namespace BastleFramework
         /// <summary>Generates an animal and makes it a bastle. A content mod's trait filters
         /// can refuse a whole race, so a kind that rolled nothing is set aside and another
         /// picked, a few times, before the event gives up. forced (parms.pawnKind) is tried once.</summary>
-        internal static Pawn TryMakeBastle(Map map, PawnKindDef forced, Func<HashSet<PawnKindDef>, PawnKindDef> pick, Func<Pawn, bool> make)
+        internal static Pawn TryMakeBastle(PlanetTile tile, PawnKindDef forced, Func<HashSet<PawnKindDef>, PawnKindDef> pick, Func<Pawn, bool> make)
         {
             var refused = new HashSet<PawnKindDef>();
             // A picker that can't exclude (vanilla's manhunter one) may hand back a refused
@@ -106,7 +106,7 @@ namespace BastleFramework
                     continue;
                 }
                 attempt++;
-                var pawn = Generate(kind, map);
+                var pawn = Generate(kind, tile);
                 if (make(pawn)) return pawn;
                 Discard(pawn);
                 if (forced != null) return null;
@@ -121,8 +121,16 @@ namespace BastleFramework
         internal static float PointsOf(IncidentParms parms, Map map)
             => parms.points > 0f ? parms.points : BastleWorld.ThreatPointsNow(map);
 
-        internal static Pawn Generate(PawnKindDef kind, Map map)
-            => PawnGenerator.GeneratePawn(new PawnGenerationRequest(kind, null, PawnGenerationContext.NonPlayer, map.Tile));
+        internal static Pawn Generate(PawnKindDef kind, PlanetTile tile)
+            => PawnGenerator.GeneratePawn(new PawnGenerationRequest(kind, null, PawnGenerationContext.NonPlayer, tile));
+
+        // Without a lord, a manhunter that is not told otherwise stays where it was put: the
+        // events add exitMapAfterTick themselves, a lair's animals keep the lair.
+        internal static void MakeManhunterNoExit(Pawn pawn)
+        {
+            pawn.health.AddHediff(HediffDefOf.Scaria);
+            pawn.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.ManhunterPermanent);
+        }
 
         // A pawn generated for an event that then could not happen never reaches the map.
         internal static void Discard(Pawn pawn)
@@ -133,8 +141,7 @@ namespace BastleFramework
 
         internal static void MakeManhunter(Pawn pawn)
         {
-            pawn.health.AddHediff(HediffDefOf.Scaria);
-            pawn.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.ManhunterPermanent);
+            MakeManhunterNoExit(pawn);
             pawn.mindState.exitMapAfterTick = Find.TickManager.TicksGame + Rand.Range(60000, 120000);
         }
     }
@@ -160,7 +167,7 @@ namespace BastleFramework
             if (!BastleEvents.TryFindEntryCell(map, out IntVec3 entry, 0.2f)) return false;
             var kinds = BastleEvents.WildKinds(map, false);
             float points = BastleWorld.ThreatPointsNow(map) * BastleFrameworkMod.Settings.sightingStrength;
-            Pawn pawn = BastleEvents.TryMakeBastle(map, parms.pawnKind,
+            Pawn pawn = BastleEvents.TryMakeBastle(map.Tile, parms.pawnKind,
                 refused => kinds.Where(k => !refused.Contains(k.kind)).TryRandomElementByWeight(k => k.weight, out var pick) ? pick.kind : null,
                 p => BastleWorld.MakeBastle(p, BastleWorld.RollTraitPoints(points)));
             if (pawn == null) return false;
@@ -204,7 +211,7 @@ namespace BastleFramework
             if (!entry.IsValid && !BastleEvents.TryFindEntryCell(map, out entry)) return false;
 
             // Vanilla's picker is random, so asking again after a refused kind can give another.
-            Pawn leader = BastleEvents.TryMakeBastle(map, parms.pawnKind,
+            Pawn leader = BastleEvents.TryMakeBastle(map.Tile, parms.pawnKind,
                 refused => AggressiveAnimalIncidentUtility.TryFindAggressiveAnimalKind(countPoints, map, out var k) ? k : null,
                 p => BastleWorld.MakeBastle(p, BastleWorld.RollTraitPoints(points)));
             if (leader == null) return false;
@@ -213,7 +220,7 @@ namespace BastleFramework
             var pack = new List<Pawn> { leader };
             for (int i = 1; i < count; i++)
             {
-                Pawn p = BastleEvents.Generate(kind, map);
+                Pawn p = BastleEvents.Generate(kind, map.Tile);
                 BastleWorld.CopyPackLeader(leader, p);
                 pack.Add(p);
             }
@@ -255,7 +262,7 @@ namespace BastleFramework
 
             var request = new BastleRollRequest { allowedRarities = BastleEvents.RareAndUp };
             float traitPoints = BastleWorld.RollTraitPoints(points * BastleFrameworkMod.Settings.rampageStrength);
-            Pawn pawn = BastleEvents.TryMakeBastle(map, parms.pawnKind,
+            Pawn pawn = BastleEvents.TryMakeBastle(map.Tile, parms.pawnKind,
                 refused => BastleEvents.TryFindRampageKind(map, points, out var k, refused) ? k : null,
                 p => BastleWorld.MakeBastle(p, traitPoints, request));
             if (pawn == null) return false;
