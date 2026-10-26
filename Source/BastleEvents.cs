@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -63,7 +64,9 @@ namespace BastleFramework
                 return true;
             }
             // Too few points for any of them: the weakest still comes, with the traits.
-            kind = kinds.MinBy(k => k.kind.combatPower).kind;
+            kind = kinds[0].kind;
+            foreach (var k in kinds)
+                if (k.kind.combatPower < kind.combatPower) kind = k.kind;
             return true;
         }
 
