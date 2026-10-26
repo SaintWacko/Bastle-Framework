@@ -493,8 +493,8 @@ namespace BastleFramework
         // A world source's switch, its explanation in the tooltip; the source's own sliders
         // are only drawn while it is on. While the open game overrides the switch, the box
         // shows the game's value, greyed and locked, with a line saying where to change it;
-        // the settings' own value is kept for new games. The sliders follow the settings'
-        // value and stay editable, because the numbers are never per game. The master switch
+        // the settings' own value is kept for new games. The sliders show while either the
+        // game or the settings has the source on, and stay editable: numbers are never per game. The master switch
         // asks for the game's value instead, since it dims the columns below it.
         private static bool Source(Listing_Standard l, BastleWorldFeature feature, string key, ref bool value, bool tooltip = true, bool returnGameValue = false)
         {
@@ -516,7 +516,7 @@ namespace BastleFramework
             Hint(l, source != null
                 ? "BF_Settings_WorldOverriddenBy".Translate(source).ToString()
                 : "BF_Settings_WorldOverridden".Translate().ToString());
-            return returnGameValue ? shown : value;
+            return returnGameValue ? shown : shown || value;
         }
 
         private static void Frequency(Listing_Standard l, ref float value)
