@@ -124,7 +124,7 @@
   <BF_Settings_Wild>Wild animals</BF_Settings_Wild>
   <BF_Settings_WildHint>On a new map and for every animal that wanders in later.</BF_Settings_WildHint>
   <BF_Settings_AnimalEvents>Animal events</BF_Settings_AnimalEvents>
-  <BF_Settings_AnimalEventsHint>Manhunter packs and ambushes, herd migrations, thrumbo passes, farm animals wandering in, alphabeavers and frenzied animals. The whole group is one kind of bastle and shares what you learn about it.</BF_Settings_AnimalEventsHint>
+  <BF_Settings_AnimalEventsHint>Manhunter ambushes, herd migrations, thrumbo passes, farm animals wandering in, alphabeavers and frenzied animals. The whole group is one kind of bastle and shares what you learn about it. Manhunter packs are left to the bastle pack event below.</BF_Settings_AnimalEventsHint>
   <BF_Settings_GroupAnimals>Animals with raiders and caravans</BF_Settings_GroupAnimals>
   <BF_Settings_GroupAnimalsHint>Pack animals and fighting animals in raids, caravans and settlement defences. They are added danger: the group keeps its size.</BF_Settings_GroupAnimalsHint>
   <BF_Settings_TraderAnimals>Animals for sale</BF_Settings_TraderAnimals>
