@@ -132,15 +132,27 @@ namespace BastleFramework
             base.Notify_GeneratedByQuestGen(part, slate, outExtraDescriptionRules, outExtraDescriptionConstants);
             Pawn alpha = BastleHuntQuest.MakeAlpha(part.parms, part.site.Tile);
             BastleTrait rumor = null;
+            // Left empty when no alpha could be made, so the map doesn't bring a bastle the
+            // quest said wasn't there (GenStep_BastleLair only makes one when this is null).
+            part.things = new ThingOwner<Pawn>(part, oneStackOnly: true) { dontTickContents = true };
             if (alpha != null)
             {
                 part.parms.animalKind = alpha.kindDef;
                 rumor = BastleHuntQuest.RevealRumor(alpha);
-                part.things = new ThingOwner<Pawn>(part, oneStackOnly: true) { dontTickContents = true };
                 part.things.TryAdd(alpha);
             }
 
+            // Another quest can take this part by its tag without checking the kind.
+            if (part.parms.animalKind == null)
+                ManhunterPackGenStepUtility.TryGetAnimalsKind(part.parms.points, part.site.Tile, out part.parms.animalKind);
             PawnKindDef kind = part.parms.animalKind;
+            if (kind == null)
+            {
+                outExtraDescriptionConstants.Add("count", "0");
+                outExtraDescriptionConstants.Add("hasAlpha", "False");
+                outExtraDescriptionConstants.Add("hasRumor", "False");
+                return;
+            }
             int count = BastleHuntQuest.AnimalCount(kind, part.parms.points);
             outExtraDescriptionRules.Add(new Rule_String("kindLabel", kind.label));
             outExtraDescriptionRules.Add(new Rule_String("kindLabelPlural", kind.GetLabelPlural()));
@@ -185,13 +197,17 @@ namespace BastleFramework
             if (siteParms.points <= 0f) siteParms.points = BastleHuntQuest.PackPoints(siteParms.threatPoints);
 
             Pawn alpha = null;
-            if (part?.things != null && part.things.Any)
+            if (part?.things != null)
             {
-                alpha = part.things[0] as Pawn;
-                part.things.Remove(alpha);
-                if (alpha != null && (alpha.Destroyed || alpha.Dead)) alpha = null;
+                if (part.things.Any)
+                {
+                    alpha = part.things[0] as Pawn;
+                    part.things.Remove(alpha);
+                    if (alpha != null && (alpha.Destroyed || alpha.Dead)) alpha = null;
+                }
             }
-            if (alpha == null) alpha = BastleHuntQuest.MakeAlpha(siteParms, map.Tile);
+            // A lair made without its quest (dev tools, another mod's site) has no holder yet.
+            else alpha = BastleHuntQuest.MakeAlpha(siteParms, map.Tile);
 
             PawnKindDef kind = alpha?.kindDef ?? siteParms.animalKind;
             if (kind == null && !ManhunterPackGenStepUtility.TryGetAnimalsKind(siteParms.points, map.Tile, out kind)) return;
