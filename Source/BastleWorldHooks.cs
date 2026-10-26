@@ -141,9 +141,15 @@ namespace BastleFramework
         new[] { typeof(PawnGroupMakerParms), typeof(PawnGroupMaker), typeof(bool) })]
     internal static class Patch_PawnGroupKindWorker_GeneratePawns_World
     {
-        static void Prefix() => BastleWorldScopes.groupDepth++;
+        // The trader worker spends parms.points on the trader and its guards as it goes; the
+        // animals are read from the group's points as it was asked for.
+        static void Prefix(PawnGroupMakerParms parms, out float __state)
+        {
+            BastleWorldScopes.groupDepth++;
+            __state = parms?.points ?? 0f;
+        }
 
-        static void Postfix(PawnGroupMakerParms parms, List<Pawn> __result)
+        static void Postfix(PawnGroupMakerParms parms, List<Pawn> __result, float __state)
         {
             if (parms?.faction == null || parms.faction.IsPlayer || __result.NullOrEmpty()
                 || !BastleWorld.Enabled(BastleWorldFeature.GroupAnimals)) return;
@@ -159,7 +165,7 @@ namespace BastleFramework
                 if (candidates.Count == 0) return;
                 int max = ext != null && ext.maxAnimals >= 0 ? ext.maxAnimals : s.groupAnimalMax;
                 int count = Mathf.Min(candidates.Count, Rand.RangeInclusive(1, Mathf.Max(1, max)));
-                float points = parms.points > 0f ? parms.points : BastleWorld.ThreatPointsNow(Current.Game.FindMap(parms.tile));
+                float points = __state > 0f ? __state : BastleWorld.ThreatPointsNow(Current.Game.FindMap(parms.tile));
                 points *= Mathf.Max(0f, ext?.pointFactor ?? 1f) * s.convertedStrength;
                 foreach (var p in candidates.InRandomOrder())
                 {
