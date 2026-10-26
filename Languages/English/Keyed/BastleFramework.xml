@@ -124,13 +124,13 @@
   <BF_Settings_Wild>Wild animals</BF_Settings_Wild>
   <BF_Settings_WildHint>On a new map and for every animal that wanders in later.</BF_Settings_WildHint>
   <BF_Settings_AnimalEvents>Animal events</BF_Settings_AnimalEvents>
-  <BF_Settings_AnimalEventsHint>Manhunter packs, herd migrations, thrumbo passes, wanderers and self-tamers. The whole group is one kind of bastle and shares what you learn about it.</BF_Settings_AnimalEventsHint>
+  <BF_Settings_AnimalEventsHint>Manhunter packs and ambushes, herd migrations, thrumbo passes, farm animals wandering in, alphabeavers and frenzied animals. The whole group is one kind of bastle and shares what you learn about it.</BF_Settings_AnimalEventsHint>
   <BF_Settings_GroupAnimals>Animals with raiders and caravans</BF_Settings_GroupAnimals>
   <BF_Settings_GroupAnimalsHint>Pack animals and fighting animals in raids, caravans and settlement defences. They are added danger: the group keeps its size.</BF_Settings_GroupAnimalsHint>
   <BF_Settings_TraderAnimals>Animals for sale</BF_Settings_TraderAnimals>
   <BF_Settings_TraderAnimalsHint>The trader knows some of each one's traits (none to all, at random).</BF_Settings_TraderAnimalsHint>
   <BF_Settings_RewardAnimals>Reward animals</BF_Settings_RewardAnimals>
-  <BF_Settings_RewardAnimalsHint>Animals a quest gives you.</BF_Settings_RewardAnimalsHint>
+  <BF_Settings_RewardAnimalsHint>Animals among a quest's item rewards. The quest giver knows some of each one's traits. Vanilla's rewards never include animals, so this only matters with mods that add them.</BF_Settings_RewardAnimalsHint>
   <BF_Settings_ChancePerAnimal>Chance per animal</BF_Settings_ChancePerAnimal>
   <BF_Settings_ChancePerEvent>Chance per event</BF_Settings_ChancePerEvent>
   <BF_Settings_ChancePerGroup>Chance per group</BF_Settings_ChancePerGroup>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -112,9 +113,12 @@ namespace BastleFramework
 
         /// <summary>The raid points a storyteller would use here now; the whole world's
         /// (every colony and caravan together) when there is no map.</summary>
-        public static float ThreatPointsNow(Map map)
+        public static float ThreatPointsNow(Map map) => ThreatPointsNow((IIncidentTarget)map);
+
+        /// <summary>As ThreatPointsNow(map), for a map, a caravan or the world.</summary>
+        public static float ThreatPointsNow(IIncidentTarget target)
         {
-            try { return StorytellerUtility.DefaultThreatPointsNow(map ?? (IIncidentTarget)Find.World); }
+            try { return StorytellerUtility.DefaultThreatPointsNow(target ?? Find.World); }
             catch (Exception e)
             {
                 Log.ErrorOnce("[Bastle Framework] Could not read threat points; world bastles use the minimum: " + e, 0x42465750);
@@ -137,34 +141,33 @@ namespace BastleFramework
                 return false;
             }
         }
-    }
 
-    /// <summary>Wild animals, on a new map and as they wander in later. Every caller goes
-    /// through SpawnRandomWildAnimalAt, which generates each herd member with
-    /// PawnGenerator.GeneratePawn while the map is known here.</summary>
-    [HarmonyPatch(typeof(WildAnimalSpawner), nameof(WildAnimalSpawner.SpawnRandomWildAnimalAt))]
-    internal static class Patch_WildAnimalSpawner_SpawnRandomWildAnimalAt
-    {
-        internal static Map spawningOn;
-
-        static void Prefix(Map ___map, out Map __state)
+        /// <summary>As MakeBastle, but the copy of a pack leader: same traits, one discovery
+        /// group.</summary>
+        public static bool CopyPackLeader(Pawn leader, Pawn pawn)
         {
-            __state = spawningOn;
-            spawningOn = BastleWorld.Enabled(BastleWorldFeature.WildAnimals) ? ___map : null;
+            try { return BastleUtility.CopyBastle(leader, pawn, linkDiscovery: true) != null; }
+            catch (Exception e)
+            {
+                Log.ErrorOnce("[Bastle Framework] Could not copy a world bastle onto " + pawn + ": " + e, 0x42465752);
+                return false;
+            }
         }
 
-        static void Finalizer(Map __state) => spawningOn = __state;
-    }
-
-    [HarmonyPatch(typeof(PawnGenerator), nameof(PawnGenerator.GeneratePawn), new[] { typeof(PawnGenerationRequest) })]
-    internal static class Patch_PawnGenerator_GeneratePawn_World
-    {
-        static void Postfix(Pawn __result)
+        /// <summary>Whoever offers a bastle (a trader, a quest giver) knows part of it: a
+        /// share from none to all of its hidden traits, picked at random, is discovered
+        /// without a message.</summary>
+        public static void RevealShare(Pawn pawn)
         {
-            var map = Patch_WildAnimalSpawner_SpawnRandomWildAnimalAt.spawningOn;
-            if (map == null || !Rand.Chance(BastleFrameworkMod.Settings.wildChance) || !BastleWorld.Eligible(__result)) return;
-            var s = BastleFrameworkMod.Settings;
-            BastleWorld.MakeBastle(__result, BastleWorld.RollTraitPoints(BastleWorld.ThreatPointsNow(map) * s.wildStrength));
+            var bastle = BastleUtility.PeekBastle(pawn);
+            if (bastle == null) return;
+            var hidden = bastle.TraitsForReading.Where(t => !t.discovered).ToList();
+            int known = Rand.RangeInclusive(0, hidden.Count);
+            foreach (var t in hidden.InRandomOrder())
+            {
+                if (known-- <= 0) break;
+                t.Discover(notify: false);
+            }
         }
     }
 }
