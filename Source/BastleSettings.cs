@@ -78,8 +78,6 @@ namespace BastleFramework
         public int groupAnimalMax = 2;
         public bool traderAnimalsEnabled = true;
         public float traderAnimalChance = 0.1f;
-        public bool rewardAnimalsEnabled = true;
-        public float rewardAnimalChance = 0.25f;
         public bool sightingEnabled = true;
         public float sightingFrequency = 1f;
         public bool packEnabled = true;
@@ -145,8 +143,6 @@ namespace BastleFramework
             groupAnimalMax = 2;
             traderAnimalsEnabled = true;
             traderAnimalChance = 0.1f;
-            rewardAnimalsEnabled = true;
-            rewardAnimalChance = 0.25f;
             sightingEnabled = true;
             sightingFrequency = 1f;
             packEnabled = true;
@@ -225,8 +221,6 @@ namespace BastleFramework
             Scribe_Values.Look(ref groupAnimalMax, "groupAnimalMax", 2);
             Scribe_Values.Look(ref traderAnimalsEnabled, "traderAnimalsEnabled", true);
             Scribe_Values.Look(ref traderAnimalChance, "traderAnimalChance", 0.1f);
-            Scribe_Values.Look(ref rewardAnimalsEnabled, "rewardAnimalsEnabled", true);
-            Scribe_Values.Look(ref rewardAnimalChance, "rewardAnimalChance", 0.25f);
             Scribe_Values.Look(ref sightingEnabled, "sightingEnabled", true);
             Scribe_Values.Look(ref sightingFrequency, "sightingFrequency", 1f);
             Scribe_Values.Look(ref packEnabled, "packEnabled", true);
@@ -473,8 +467,6 @@ namespace BastleFramework
             }
             if (Source(l, "BF_Settings_TraderAnimals", ref traderAnimalsEnabled))
                 Slider(l, "BF_Settings_ChancePerAnimal", ref traderAnimalChance, 0f, 1f, traderAnimalChance.ToStringPercent(), null, 0.01f);
-            if (Source(l, "BF_Settings_RewardAnimals", ref rewardAnimalsEnabled))
-                Slider(l, "BF_Settings_ChancePerAnimal", ref rewardAnimalChance, 0f, 1f, rewardAnimalChance.ToStringPercent(), null, 0.01f);
             l.End();
 
             l = new Listing_Standard();

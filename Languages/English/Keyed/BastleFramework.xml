@@ -117,8 +117,8 @@
   <BF_Settings_WildStrengthHint>Share of the map's current raid points a wild bastle's traits are read from.</BF_Settings_WildStrengthHint>
   <BF_Settings_ConvertedStrength>Converted event strength</BF_Settings_ConvertedStrength>
   <BF_Settings_ConvertedStrengthHint>Share of an animal event's or group's points read from the curve. Those bastles are extra danger: the event keeps its full size.</BF_Settings_ConvertedStrengthHint>
-  <BF_Settings_OfferedStrength>Sold and reward strength</BF_Settings_OfferedStrength>
-  <BF_Settings_OfferedStrengthHint>Share of the raid points where the animal is offered: the map a trader visits, or all your colonies together for settlements and quests.</BF_Settings_OfferedStrengthHint>
+  <BF_Settings_OfferedStrength>Trader stock strength</BF_Settings_OfferedStrength>
+  <BF_Settings_OfferedStrengthHint>Share of the raid points where the animal is sold: the map a trader visits, or all your colonies together for settlements.</BF_Settings_OfferedStrengthHint>
   <BF_Settings_WorldConversion>Animals the game already makes</BF_Settings_WorldConversion>
   <BF_Settings_WorldHiddenHint>Their traits are hidden, except some of those a trader sells.</BF_Settings_WorldHiddenHint>
   <BF_Settings_Wild>Wild animals</BF_Settings_Wild>
@@ -129,8 +129,6 @@
   <BF_Settings_GroupAnimalsHint>Pack animals and fighting animals in raids, caravans and settlement defences. They are added danger: the group keeps its size.</BF_Settings_GroupAnimalsHint>
   <BF_Settings_TraderAnimals>Animals for sale</BF_Settings_TraderAnimals>
   <BF_Settings_TraderAnimalsHint>The trader knows some of each one's traits (none to all, at random).</BF_Settings_TraderAnimalsHint>
-  <BF_Settings_RewardAnimals>Reward animals</BF_Settings_RewardAnimals>
-  <BF_Settings_RewardAnimalsHint>Animals among a quest's item rewards. The quest giver knows some of each one's traits. Vanilla's rewards never include animals, so this only matters with mods that add them.</BF_Settings_RewardAnimalsHint>
   <BF_Settings_ChancePerAnimal>Chance per animal</BF_Settings_ChancePerAnimal>
   <BF_Settings_ChancePerEvent>Chance per event</BF_Settings_ChancePerEvent>
   <BF_Settings_ChancePerGroup>Chance per group</BF_Settings_ChancePerGroup>

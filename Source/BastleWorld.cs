@@ -16,7 +16,6 @@ namespace BastleFramework
         AnimalEvents,
         GroupAnimals,
         TraderAnimals,
-        RewardAnimals,
         Sighting,
         Pack,
         Rampage,
@@ -52,7 +51,6 @@ namespace BastleFramework
                 case BastleWorldFeature.AnimalEvents: return s.animalEventsEnabled;
                 case BastleWorldFeature.GroupAnimals: return s.groupAnimalsEnabled;
                 case BastleWorldFeature.TraderAnimals: return s.traderAnimalsEnabled;
-                case BastleWorldFeature.RewardAnimals: return s.rewardAnimalsEnabled;
                 case BastleWorldFeature.Sighting: return s.sightingEnabled;
                 case BastleWorldFeature.Pack: return s.packEnabled;
                 case BastleWorldFeature.Rampage: return s.rampageEnabled;

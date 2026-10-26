@@ -220,33 +220,4 @@ namespace BastleFramework
             catch (Exception e) { Log.ErrorOnce("[Bastle Framework] Could not make bastles of trader stock: " + e, 0x42465754); }
         }
     }
-
-    /// <summary>Animals among a quest's item rewards. Vanilla's reward pool has none; mods that
-    /// add animals to it are covered.</summary>
-    [HarmonyPatch(typeof(Reward_Items), nameof(Reward_Items.InitFromValue))]
-    internal static class Patch_RewardItems_InitFromValue_World
-    {
-        static void Postfix(Reward_Items __instance, ref float valueActuallyUsed)
-        {
-            var items = __instance.items;
-            if (items.NullOrEmpty() || !BastleWorld.Enabled(BastleWorldFeature.RewardAnimals)) return;
-            try
-            {
-                var s = BastleFrameworkMod.Settings;
-                float points = -1f;
-                bool changed = false;
-                foreach (var t in items)
-                {
-                    if (!(t is Pawn p) || !Rand.Chance(s.rewardAnimalChance) || !BastleWorld.Eligible(p)) continue;
-                    if (points < 0f) points = BastleWorld.ThreatPointsNow((Map)null) * s.offeredStrength;
-                    if (!BastleWorld.MakeBastle(p, BastleWorld.RollTraitPoints(points))) continue;
-                    BastleWorld.RevealShare(p);
-                    changed = true;
-                }
-                // Traits raise the animal's market value; the quest's reward budget should see it.
-                if (changed) valueActuallyUsed = __instance.TotalMarketValue;
-            }
-            catch (Exception e) { Log.ErrorOnce("[Bastle Framework] Could not make bastles of quest rewards: " + e, 0x42465755); }
-        }
-    }
 }
