@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -51,10 +53,11 @@ namespace BastleFramework
             return map.mapTemperature.SeasonAndOutdoorTemperatureAcceptableFor(kind.race);
         }
 
-        internal static bool TryFindRampageKind(Map map, float points, out PawnKindDef kind)
+        internal static bool TryFindRampageKind(Map map, float points, out PawnKindDef kind, HashSet<PawnKindDef> refused = null)
         {
             kind = null;
             var kinds = WildKinds(map, true);
+            if (refused != null) kinds.RemoveAll(k => refused.Contains(k.kind));
             if (kinds.Count == 0) return false;
             float most = points * RampageKindShare;
             var fitting = kinds.FindAll(k => k.kind.combatPower <= most);
@@ -68,6 +71,40 @@ namespace BastleFramework
             foreach (var k in kinds)
                 if (k.kind.combatPower < kind.combatPower) kind = k.kind;
             return true;
+        }
+
+        /// <summary>Whether any trait can roll at one of these rarities with the current
+        /// rarity weights (a player can weight a rarity to 0).</summary>
+        internal static bool AnyTraitRollsAt(HashSet<BastleRarity> rarities)
+        {
+            var weights = BastleFrameworkMod.Settings.rarityWeights;
+            foreach (var def in DefDatabase<BastleTraitDef>.AllDefsListForReading)
+            {
+                if (def.commonality <= 0f) continue;
+                foreach (var r in rarities)
+                    if (weights[(int)r] > 0f && def.FitsAt(r)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Generates an animal and makes it a bastle. A content mod's trait filters
+        /// can refuse a whole race, so a kind that rolled nothing is set aside and another
+        /// picked, a few times, before the event gives up. forced (parms.pawnKind) is tried once.</summary>
+        internal static Pawn TryMakeBastle(Map map, PawnKindDef forced, Func<HashSet<PawnKindDef>, PawnKindDef> pick, Func<Pawn, bool> make)
+        {
+            var refused = new HashSet<PawnKindDef>();
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                var kind = forced ?? pick(refused);
+                if (kind == null) return null;
+                if (refused.Contains(kind)) continue;
+                var pawn = Generate(kind, map);
+                if (make(pawn)) return pawn;
+                Discard(pawn);
+                if (forced != null) return null;
+                refused.Add(kind);
+            }
+            return null;
         }
 
         internal static bool TryFindEntryCell(Map map, out IntVec3 cell, float extraRoadChance = 0f)
@@ -113,20 +150,13 @@ namespace BastleFramework
         {
             Map map = (Map)parms.target;
             if (!BastleEvents.TryFindEntryCell(map, out IntVec3 entry, 0.2f)) return false;
-            PawnKindDef kind = parms.pawnKind;
-            if (kind == null)
-            {
-                if (!BastleEvents.WildKinds(map, false).TryRandomElementByWeight(k => k.weight, out var pick)) return false;
-                kind = pick.kind;
-            }
-
-            Pawn pawn = BastleEvents.Generate(kind, map);
+            var kinds = BastleEvents.WildKinds(map, false);
             float points = BastleWorld.ThreatPointsNow(map) * BastleFrameworkMod.Settings.sightingStrength;
-            if (!BastleWorld.MakeBastle(pawn, BastleWorld.RollTraitPoints(points)))
-            {
-                BastleEvents.Discard(pawn);
-                return false;
-            }
+            Pawn pawn = BastleEvents.TryMakeBastle(map, parms.pawnKind,
+                refused => kinds.Where(k => !refused.Contains(k.kind)).TryRandomElementByWeight(k => k.weight, out var pick) ? pick.kind : null,
+                p => BastleWorld.MakeBastle(p, BastleWorld.RollTraitPoints(points)));
+            if (pawn == null) return false;
+            PawnKindDef kind = pawn.kindDef;
             GenSpawn.Spawn(pawn, CellFinder.RandomClosewalkCellNear(entry, map, 5), map, Rot4.Random);
             QuestUtility.AddQuestTag(pawn, parms.questTag);
             pawn.mindState.exitMapAfterTick = Find.TickManager.TicksGame + Rand.Range(90000, 150000);
@@ -162,20 +192,23 @@ namespace BastleFramework
             Map map = (Map)parms.target;
             float points = BastleEvents.PointsOf(parms, map);
             float countPoints = CountPoints(points);
-            PawnKindDef kind = parms.pawnKind;
-            if (kind == null && !AggressiveAnimalIncidentUtility.TryFindAggressiveAnimalKind(countPoints, map, out kind)) return false;
             IntVec3 entry = parms.spawnCenter;
             if (!entry.IsValid && !BastleEvents.TryFindEntryCell(map, out entry)) return false;
 
-            List<Pawn> pack = AggressiveAnimalIncidentUtility.GenerateAnimals(kind, map.Tile, countPoints, parms.pawnCount);
-            if (pack.Count == 0) return false;
-            Pawn leader = pack[0];
-            if (!BastleWorld.MakeBastle(leader, BastleWorld.RollTraitPoints(points)))
+            // Vanilla's picker is random, so asking again after a refused kind can give another.
+            Pawn leader = BastleEvents.TryMakeBastle(map, parms.pawnKind,
+                refused => AggressiveAnimalIncidentUtility.TryFindAggressiveAnimalKind(countPoints, map, out var k) ? k : null,
+                p => BastleWorld.MakeBastle(p, BastleWorld.RollTraitPoints(points)));
+            if (leader == null) return false;
+            PawnKindDef kind = leader.kindDef;
+            int count = parms.pawnCount > 0 ? parms.pawnCount : AggressiveAnimalIncidentUtility.GetAnimalsCount(kind, countPoints);
+            var pack = new List<Pawn> { leader };
+            for (int i = 1; i < count; i++)
             {
-                foreach (var p in pack) BastleEvents.Discard(p);
-                return false;
+                Pawn p = BastleEvents.Generate(kind, map);
+                BastleWorld.CopyPackLeader(leader, p);
+                pack.Add(p);
             }
-            for (int i = 1; i < pack.Count; i++) BastleWorld.CopyPackLeader(leader, pack[i]);
 
             Rot4 rot = Rot4.FromAngleFlat((map.Center - entry).AngleFlat);
             foreach (var p in pack)
@@ -201,26 +234,24 @@ namespace BastleFramework
         {
             if (!BastleWorld.Enabled(BastleWorldFeature.Rampage)) return false;
             Map map = (Map)parms.target;
-            return BastleEvents.TryFindRampageKind(map, BastleEvents.PointsOf(parms, map), out _) && BastleEvents.TryFindEntryCell(map, out _);
+            return BastleEvents.AnyTraitRollsAt(BastleEvents.RareAndUp)
+                && BastleEvents.TryFindRampageKind(map, BastleEvents.PointsOf(parms, map), out _) && BastleEvents.TryFindEntryCell(map, out _);
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             Map map = (Map)parms.target;
             float points = BastleEvents.PointsOf(parms, map);
-            PawnKindDef kind = parms.pawnKind;
-            if (kind == null && !BastleEvents.TryFindRampageKind(map, points, out kind)) return false;
             IntVec3 entry = parms.spawnCenter;
             if (!entry.IsValid && !BastleEvents.TryFindEntryCell(map, out entry)) return false;
 
-            Pawn pawn = BastleEvents.Generate(kind, map);
             var request = new BastleRollRequest { allowedRarities = BastleEvents.RareAndUp };
             float traitPoints = BastleWorld.RollTraitPoints(points * BastleFrameworkMod.Settings.rampageStrength);
-            if (!BastleWorld.MakeBastle(pawn, traitPoints, request))
-            {
-                BastleEvents.Discard(pawn);
-                return false;
-            }
+            Pawn pawn = BastleEvents.TryMakeBastle(map, parms.pawnKind,
+                refused => BastleEvents.TryFindRampageKind(map, points, out var k, refused) ? k : null,
+                p => BastleWorld.MakeBastle(p, traitPoints, request));
+            if (pawn == null) return false;
+            PawnKindDef kind = pawn.kindDef;
             GenSpawn.Spawn(pawn, CellFinder.RandomClosewalkCellNear(entry, map, 5), map, Rot4.FromAngleFlat((map.Center - entry).AngleFlat));
             QuestUtility.AddQuestTag(pawn, parms.questTag);
             BastleEvents.MakeManhunter(pawn);

@@ -483,7 +483,7 @@ namespace BastleFramework
             if (Source(l, BastleWorldFeature.Sighting, "BF_Settings_Sighting", ref sightingEnabled))
             {
                 Frequency(l, ref sightingFrequency);
-                Slider(l, "BF_Settings_EventStrength", ref sightingStrength, 0f, 4f, sightingStrength.ToStringPercent(), null, 0.05f);
+                Slider(l, "BF_Settings_EventStrength", ref sightingStrength, 0.1f, 4f, sightingStrength.ToStringPercent(), null, 0.05f);
             }
             if (Source(l, BastleWorldFeature.Pack, "BF_Settings_Pack", ref packEnabled))
             {
@@ -493,7 +493,7 @@ namespace BastleFramework
             if (Source(l, BastleWorldFeature.Rampage, "BF_Settings_Rampage", ref rampageEnabled))
             {
                 Frequency(l, ref rampageFrequency);
-                Slider(l, "BF_Settings_EventStrength", ref rampageStrength, 0f, 4f, rampageStrength.ToStringPercent(), null, 0.05f);
+                Slider(l, "BF_Settings_EventStrength", ref rampageStrength, 0.1f, 4f, rampageStrength.ToStringPercent(), null, 0.05f);
             }
             if (Source(l, BastleWorldFeature.HuntQuest, "BF_Settings_HuntQuest", ref huntQuestEnabled))
                 Frequency(l, ref huntQuestFrequency);
