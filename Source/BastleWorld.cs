@@ -66,15 +66,24 @@ namespace BastleFramework
             return game != null && game.worldOverrides.TryGetValue(feature, out bool v) ? v : (bool?)null;
         }
 
-        /// <summary>Where a player changes this game's overrides, shown on the World settings
-        /// tab beside each overridden switch, e.g. "Dungeon Madness's world configurator".
-        /// Set it once at startup, already translated. Null shows a generic line.</summary>
-        public static string OverrideSource;
+        /// <summary>Where the player changes this game's overrides, as last given to
+        /// SetForGame: a Keyed key (translated when shown) or plain text. Null if none.</summary>
+        public static string OverrideSourceForGame
+        {
+            get
+            {
+                string source = BastleGameComponent.Instance?.worldOverrideSource;
+                if (source.NullOrEmpty()) return null;
+                return source.CanTranslate() ? source.Translate().ToString() : source;
+            }
+        }
 
         /// <summary>Overrides a feature for the current game only (null goes back to the
         /// settings). Call it once the game exists: from a new-colony window, after
-        /// Current.Game is set, or at any point in play.</summary>
-        public static void SetForGame(BastleWorldFeature feature, bool? enabled)
+        /// Current.Game is set, or at any point in play. source names where the player can
+        /// change it (a Keyed key such as "DM_WorldConfigurator", or plain text); it is saved
+        /// with the game and shown beside each overridden switch on the World settings tab.</summary>
+        public static void SetForGame(BastleWorldFeature feature, bool? enabled, string source = null)
         {
             var game = BastleGameComponent.Instance;
             if (game == null)
@@ -84,6 +93,7 @@ namespace BastleFramework
             }
             if (enabled.HasValue) game.worldOverrides[feature] = enabled.Value;
             else game.worldOverrides.Remove(feature);
+            if (source != null) game.worldOverrideSource = source;
         }
 
         public static readonly float[] CurveThreatPoints = { 100f, 500f, 1500f, 3000f, 6000f };

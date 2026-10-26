@@ -129,7 +129,7 @@
   <BF_Settings_GroupAnimalsHint>Pack animals and fighting animals in raids, caravans and settlement defences. They are added danger: the group keeps its size.</BF_Settings_GroupAnimalsHint>
   <BF_Settings_TraderAnimals>Animals for sale</BF_Settings_TraderAnimals>
   <BF_Settings_TraderAnimalsHint>The trader knows some of each one's traits (none to all, at random).</BF_Settings_TraderAnimalsHint>
-  <BF_Settings_WorldOverridden>Set for this game by the mod that started it. Change it there; this setting applies to new games.</BF_Settings_WorldOverridden>
+  <BF_Settings_WorldOverridden>Set for this game by another mod. Change it there; this setting applies to new games.</BF_Settings_WorldOverridden>
   <BF_Settings_WorldOverriddenBy>Set for this game. Change it in {0}; this setting applies to new games.</BF_Settings_WorldOverriddenBy>
   <BF_Settings_ChancePerAnimal>Chance per animal</BF_Settings_ChancePerAnimal>
   <BF_Settings_ChancePerEvent>Chance per event</BF_Settings_ChancePerEvent>

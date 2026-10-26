@@ -426,7 +426,7 @@ namespace BastleFramework
             const float gap = 18f;
             var top = new Listing_Standard();
             top.Begin(r);
-            bool masterOn = Source(top, BastleWorldFeature.World, "BF_Settings_WorldEnabled", ref worldEnabled, false);
+            bool masterOn = Source(top, BastleWorldFeature.World, "BF_Settings_WorldEnabled", ref worldEnabled, false, true);
             Hint(top, "BF_Settings_WorldEnabledHint".Translate());
             float used = top.CurHeight + 4f;
             top.End();
@@ -493,9 +493,10 @@ namespace BastleFramework
         // A world source's switch, its explanation in the tooltip; the source's own sliders
         // are only drawn while it is on. While the open game overrides the switch, the box
         // shows the game's value, greyed and locked, with a line saying where to change it;
-        // the settings' own value is kept for new games. The sliders stay editable because
-        // the numbers are never per game.
-        private static bool Source(Listing_Standard l, BastleWorldFeature feature, string key, ref bool value, bool tooltip = true)
+        // the settings' own value is kept for new games. The sliders follow the settings'
+        // value and stay editable, because the numbers are never per game. The master switch
+        // asks for the game's value instead, since it dims the columns below it.
+        private static bool Source(Listing_Standard l, BastleWorldFeature feature, string key, ref bool value, bool tooltip = true, bool returnGameValue = false)
         {
             l.Gap(6f);
             string tip = tooltip ? (key + "Hint").Translate().ToString() : null;
@@ -506,13 +507,16 @@ namespace BastleFramework
                 return value;
             }
             bool shown = forGame.Value;
-            Rect row = l.GetRect(Text.LineHeight);
+            string label = key.Translate();
+            Rect row = l.GetRect(Text.CalcHeight(label, l.ColumnWidth));
             if (tip != null) TooltipHandler.TipRegion(row, tip);
-            Widgets.CheckboxLabeled(row, key.Translate(), ref shown, disabled: true);
-            Hint(l, BastleWorld.OverrideSource != null
-                ? "BF_Settings_WorldOverriddenBy".Translate(BastleWorld.OverrideSource).ToString()
+            Widgets.CheckboxLabeled(row, label, ref shown, disabled: true);
+            l.Gap(l.verticalSpacing);
+            string source = BastleWorld.OverrideSourceForGame;
+            Hint(l, source != null
+                ? "BF_Settings_WorldOverriddenBy".Translate(source).ToString()
                 : "BF_Settings_WorldOverridden".Translate().ToString());
-            return shown;
+            return returnGameValue ? shown : value;
         }
 
         private static void Frequency(Listing_Standard l, ref float value)
@@ -537,9 +541,10 @@ namespace BastleFramework
         {
             if (text.NullOrEmpty()) return;
             Text.Font = GameFont.Tiny;
-            GUI.color = Color.gray;
+            Color before = GUI.color;
+            GUI.color = Color.gray * new Color(1f, 1f, 1f, before.a);
             l.Label(text);
-            GUI.color = Color.white;
+            GUI.color = before;
             Text.Font = GameFont.Small;
             l.Gap(4f);
         }

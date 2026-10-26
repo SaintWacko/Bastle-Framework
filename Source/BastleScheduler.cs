@@ -48,6 +48,7 @@ namespace BastleFramework
         private List<int> riseTicks = new List<int>();
         private int lastDiscoveryGroup;
         internal Dictionary<BastleWorldFeature, bool> worldOverrides = new Dictionary<BastleWorldFeature, bool>();
+        internal string worldOverrideSource;
 
         public BastleGameComponent(Game game)
         {
@@ -105,6 +106,7 @@ namespace BastleFramework
             Scribe_Collections.Look(ref riseTicks, "riseTicks", LookMode.Value);
             Scribe_Values.Look(ref lastDiscoveryGroup, "lastDiscoveryGroup", 0);
             Scribe_Collections.Look(ref worldOverrides, "worldOverrides", LookMode.Value, LookMode.Value);
+            Scribe_Values.Look(ref worldOverrideSource, "worldOverrideSource");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 risingPawns = risingPawns ?? new List<Pawn>();
