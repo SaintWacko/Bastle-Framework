@@ -59,17 +59,15 @@ namespace BastleFramework
             var kinds = WildKinds(map, true);
             if (refused != null) kinds.RemoveAll(k => refused.Contains(k.kind));
             if (kinds.Count == 0) return false;
-            float most = points * RampageKindShare;
-            var fitting = kinds.FindAll(k => k.kind.combatPower <= most);
-            if (fitting.TryRandomElementByWeight(k => k.weight, out var pick))
-            {
-                kind = pick.kind;
-                return true;
-            }
-            // Too few points for any of them: the weakest still comes, with the traits.
-            kind = kinds[0].kind;
-            foreach (var k in kinds)
-                if (k.kind.combatPower < kind.combatPower) kind = k.kind;
+            // With too few points for any of them (an early colony), the cap rises to twice the
+            // weakest kind's power. Taking only the weakest made every early rampage the first
+            // 20-power kind in the biome list, a sparrow every time.
+            float weakest = float.MaxValue;
+            foreach (var k in kinds) weakest = Mathf.Min(weakest, k.kind.combatPower);
+            float most = Mathf.Max(points * RampageKindShare, weakest * 2f);
+            kinds.RemoveAll(k => k.kind.combatPower > most);
+            if (!kinds.TryRandomElementByWeight(k => k.weight, out var pick)) return false;
+            kind = pick.kind;
             return true;
         }
 
