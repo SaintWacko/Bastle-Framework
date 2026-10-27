@@ -470,7 +470,7 @@ namespace BastleFramework
                 if (!BastleOutbreakQuest.CanAttend(f, allowHostile: true))
                 {
                     if (f != null && !f.def.permanentEnemy && f.HostileTo(Faction.OfPlayer) && !BastleTruce.Available)
-                        Log.Warning("[Bastle Framework] " + f.Name + " is hostile and the outbreak truce is unavailable this session (see the earlier warning), so it does not attend.");
+                        Log.Warning("[Bastle Framework] " + f.Name + " is hostile and the outbreak truce patches did not apply this session, so it does not attend.");
                     continue;
                 }
                 float points = Mathf.Max(arrivalPackPoints * BastleFrameworkMod.Settings.outbreakAllyShare,
@@ -646,6 +646,9 @@ namespace BastleFramework
         }
 
         public override bool AddFleeToil => false;
+
+        // A faction removed from the world while its fighters were here loads as null.
+        public override bool LostImportantReferenceDuringLoading => faction == null;
 
         public override StateGraph CreateGraph()
         {
