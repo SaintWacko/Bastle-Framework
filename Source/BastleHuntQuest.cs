@@ -158,6 +158,7 @@ namespace BastleFramework
             outExtraDescriptionRules.Add(new Rule_String("kindLabelPlural", kind.GetLabelPlural()));
             outExtraDescriptionRules.Add(new Rule_String("packLabel", count - 1 + " " + GenLabel.BestKindLabel(kind, Gender.None, plural: count - 1 != 1, count - 1)));
             outExtraDescriptionRules.Add(new Rule_String("rumorTrait", rumor != null ? rumor.Override?.label ?? rumor.def.label : ""));
+            outExtraDescriptionRules.Add(new Rule_String("count", count.ToString()));
             outExtraDescriptionConstants.Add("count", count.ToString());
             outExtraDescriptionConstants.Add("hasAlpha", (alpha != null).ToString());
             outExtraDescriptionConstants.Add("hasRumor", (rumor != null).ToString());

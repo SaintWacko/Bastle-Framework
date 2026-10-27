@@ -231,6 +231,8 @@ namespace BastleFramework
             outExtraDescriptionRules.Add(new Rule_String("kindLabelPlural", kind?.GetLabelPlural() ?? ""));
             outExtraDescriptionRules.Add(new Rule_String("rumorTrait", rumor != null ? rumor.Override?.label ?? rumor.def.label : ""));
             outExtraDescriptionRules.Add(new Rule_String("alphaCount", alphas.ToString()));
+            // A rule for the text and a constant for the conditions: the grammar needs both.
+            outExtraDescriptionRules.Add(new Rule_String("count", (count + alphas).ToString()));
             outExtraDescriptionConstants.Add("count", (count + alphas).ToString());
             outExtraDescriptionConstants.Add("alphaCount", alphas.ToString());
             outExtraDescriptionConstants.Add("hasStrain", (strain != null).ToString());
@@ -421,20 +423,20 @@ namespace BastleFramework
                 return;
             }
             if (Find.TickManager.TicksGame - colonyArrivedTick < ArrivalDelayTicks) return;
-            alliesArrived = true;
-            BringAttendees(map);
+            // Retried every check until the colony is on the map and an edge cell is found.
+            alliesArrived = BringAttendees(map);
         }
 
-        private void BringAttendees(Map map)
+        private bool BringAttendees(Map map)
         {
             var colony = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
-            if (colony.Count == 0) return;
+            if (colony.Count == 0) return false;
             arrivalPackPoints = PackPointsNow;
             IntVec3 anchor = colony[0].Position;
             IntVec3 sum = IntVec3.Zero;
             foreach (var p in colony) sum += p.Position;
             var centroid = new IntVec3(sum.x / colony.Count, 0, sum.z / colony.Count);
-            if (!TryFindEdgeCellNear(map, centroid, anchor, out IntVec3 entry)) return;
+            if (!TryFindEdgeCellNear(map, centroid, anchor, out IntVec3 entry)) return false;
 
             var arrived = new List<Pawn>();
             var names = new List<string>();
@@ -465,10 +467,11 @@ namespace BastleFramework
                 arrived.AddRange(pawns);
                 names.Add(f.NameColored.Resolve());
             }
-            if (arrived.Count == 0) return;
+            if (arrived.Count == 0) return true;
             Find.LetterStack.ReceiveLetter("BF_OutbreakAlliesArrivedLabel".Translate(),
                 "BF_OutbreakAlliesArrivedText".Translate(names.ToCommaList(useAnd: true), kind?.GetLabelPlural() ?? ""),
                 LetterDefOf.NeutralEvent, arrived, quest: quest);
+            return true;
         }
 
         // The edge nearest the colonists, reachable from where they stand, so the attendees

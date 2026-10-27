@@ -276,6 +276,7 @@ namespace BastleFramework
             huntAlphaShare = Mathf.Clamp(huntAlphaShare, 0f, 0.8f);
             Scribe_Values.Look(ref outbreakQuestEnabled, "outbreakQuestEnabled", true);
             Scribe_Values.Look(ref outbreakQuestFrequency, "outbreakQuestFrequency", 1f);
+            outbreakQuestFrequency = Mathf.Clamp(outbreakQuestFrequency, 0f, 3f);
             Scribe_Values.Look(ref outbreakSize, "outbreakSize", 2f);
             outbreakSize = Mathf.Clamp(outbreakSize, 1f, 5f);
             Scribe_Values.Look(ref outbreakStrength, "outbreakStrength", 1f);
@@ -285,15 +286,21 @@ namespace BastleFramework
             Scribe_Values.Look(ref outbreakTraitShare, "outbreakTraitShare", 0.35f);
             outbreakTraitShare = Mathf.Clamp(outbreakTraitShare, 0f, 0.8f);
             Scribe_Values.Look(ref outbreakGrowth, "outbreakGrowth", 0.05f);
+            outbreakGrowth = Mathf.Clamp(outbreakGrowth, 0f, 0.25f);
             Scribe_Values.Look(ref outbreakGrowthCap, "outbreakGrowthCap", 2f);
             outbreakGrowthCap = Mathf.Clamp(outbreakGrowthCap, 1f, 5f);
             Scribe_Values.Look(ref outbreakAllyShare, "outbreakAllyShare", 0.4f);
             outbreakAllyShare = Mathf.Clamp(outbreakAllyShare, 0.1f, 1.5f);
             Scribe_Values.Look(ref outbreakSecondFactionChance, "outbreakSecondFactionChance", 0.5f);
+            outbreakSecondFactionChance = Mathf.Clamp01(outbreakSecondFactionChance);
             Scribe_Values.Look(ref outbreakAllyGoodwill, "outbreakAllyGoodwill", 20);
+            outbreakAllyGoodwill = Mathf.Clamp(outbreakAllyGoodwill, 0, 50);
             Scribe_Values.Look(ref outbreakFailGoodwill, "outbreakFailGoodwill", 10);
+            outbreakFailGoodwill = Mathf.Clamp(outbreakFailGoodwill, 0, 50);
             Scribe_Values.Look(ref outbreakUncontainedDays, "outbreakUncontainedDays", 45f);
+            outbreakUncontainedDays = Mathf.Clamp(outbreakUncontainedDays, 0f, 120f);
             Scribe_Values.Look(ref outbreakSpreadFrequency, "outbreakSpreadFrequency", 1f);
+            outbreakSpreadFrequency = Mathf.Clamp(outbreakSpreadFrequency, 0f, 3f);
         }
 
         // ---- window --------------------------------------------------------------
@@ -573,13 +580,13 @@ namespace BastleFramework
             top.End();
 
             var body = new Rect(r.x, r.y + used, r.width, r.height - used);
-            float half = (body.width - gap) / 2f;
+            float third = (body.width - 2f * gap) / 3f;
             Color before = GUI.color;
             if (!(BastleWorld.GetForGame(BastleWorldFeature.World) ?? worldEnabled))
                 GUI.color = new Color(1f, 1f, 1f, 0.5f);
 
             var l = new Listing_Standard();
-            l.Begin(new Rect(body.x, body.y, half, body.height));
+            l.Begin(new Rect(body.x, body.y, third, body.height));
             if (Source(l, BastleWorldFeature.HuntQuest, "BF_Settings_HuntQuest", ref huntQuestEnabled))
             {
                 Frequency(l, ref huntQuestFrequency);
@@ -588,9 +595,11 @@ namespace BastleFramework
             }
             l.End();
 
+            // The outbreak takes two columns: one would run off the bottom of the window.
             l = new Listing_Standard();
-            l.Begin(new Rect(body.x + half + gap, body.y, half, body.height));
-            if (Source(l, BastleWorldFeature.OutbreakQuest, "BF_Settings_OutbreakQuest", ref outbreakQuestEnabled))
+            l.Begin(new Rect(body.x + third + gap, body.y, third, body.height));
+            bool outbreakOn = Source(l, BastleWorldFeature.OutbreakQuest, "BF_Settings_OutbreakQuest", ref outbreakQuestEnabled);
+            if (outbreakOn)
             {
                 Frequency(l, ref outbreakQuestFrequency);
                 SubHead(l, "BF_Settings_OutbreakSection");
@@ -600,6 +609,13 @@ namespace BastleFramework
                 Slider(l, "BF_Settings_PackTraitShare", ref outbreakTraitShare, 0f, 0.8f, outbreakTraitShare.ToStringPercent(), null, 0.05f);
                 Slider(l, "BF_Settings_OutbreakGrowth", ref outbreakGrowth, 0f, 0.25f, outbreakGrowth.ToStringPercent(), null, 0.01f);
                 Slider(l, "BF_Settings_OutbreakGrowthCap", ref outbreakGrowthCap, 1f, 5f, "x" + outbreakGrowthCap.ToStringByStyle(ToStringStyle.FloatMaxTwo), null, 0.25f);
+            }
+            l.End();
+
+            l = new Listing_Standard();
+            l.Begin(new Rect(body.x + 2f * (third + gap), body.y, third, body.height));
+            if (outbreakOn)
+            {
                 SubHead(l, "BF_Settings_OutbreakAlliesSection");
                 Slider(l, "BF_Settings_OutbreakAllyShare", ref outbreakAllyShare, 0.1f, 1.5f, outbreakAllyShare.ToStringPercent(), null, 0.05f);
                 Slider(l, "BF_Settings_OutbreakSecondFaction", ref outbreakSecondFactionChance, 0f, 1f, outbreakSecondFactionChance.ToStringPercent(), null, 0.05f);
