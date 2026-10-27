@@ -101,6 +101,7 @@ namespace BastleFramework
         public float outbreakGrowthCap = 2f;
         public float outbreakAllyShare = 0.4f;
         public float outbreakSecondFactionChance = 0.5f;
+        public float outbreakHostileChance = 0.35f;
         public int outbreakAllyGoodwill = 20;
         public int outbreakFailGoodwill = 10;
         public float outbreakUncontainedDays = 45f;
@@ -184,6 +185,7 @@ namespace BastleFramework
             outbreakGrowthCap = 2f;
             outbreakAllyShare = 0.4f;
             outbreakSecondFactionChance = 0.5f;
+            outbreakHostileChance = 0.35f;
             outbreakAllyGoodwill = 20;
             outbreakFailGoodwill = 10;
             outbreakUncontainedDays = 45f;
@@ -293,6 +295,8 @@ namespace BastleFramework
             outbreakAllyShare = Mathf.Clamp(outbreakAllyShare, 0.1f, 1.5f);
             Scribe_Values.Look(ref outbreakSecondFactionChance, "outbreakSecondFactionChance", 0.5f);
             outbreakSecondFactionChance = Mathf.Clamp01(outbreakSecondFactionChance);
+            Scribe_Values.Look(ref outbreakHostileChance, "outbreakHostileChance", 0.35f);
+            outbreakHostileChance = Mathf.Clamp01(outbreakHostileChance);
             Scribe_Values.Look(ref outbreakAllyGoodwill, "outbreakAllyGoodwill", 20);
             outbreakAllyGoodwill = Mathf.Clamp(outbreakAllyGoodwill, 0, 50);
             Scribe_Values.Look(ref outbreakFailGoodwill, "outbreakFailGoodwill", 10);
@@ -619,6 +623,7 @@ namespace BastleFramework
                 SubHead(l, "BF_Settings_OutbreakAlliesSection");
                 Slider(l, "BF_Settings_OutbreakAllyShare", ref outbreakAllyShare, 0.1f, 1.5f, outbreakAllyShare.ToStringPercent(), null, 0.05f);
                 Slider(l, "BF_Settings_OutbreakSecondFaction", ref outbreakSecondFactionChance, 0f, 1f, outbreakSecondFactionChance.ToStringPercent(), null, 0.05f);
+                Slider(l, "BF_Settings_OutbreakHostileChance", ref outbreakHostileChance, 0f, 1f, outbreakHostileChance.ToStringPercent(), "BF_Settings_OutbreakHostileChanceHint", 0.05f);
                 float allyGoodwill = outbreakAllyGoodwill;
                 Slider(l, "BF_Settings_OutbreakAllyGoodwill", ref allyGoodwill, 0f, 50f, "+" + Mathf.RoundToInt(allyGoodwill), null, 1f);
                 outbreakAllyGoodwill = Mathf.RoundToInt(allyGoodwill);

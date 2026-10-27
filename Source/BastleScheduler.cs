@@ -55,6 +55,7 @@ namespace BastleFramework
             // A new game or a load: drop anything queued in the previous one.
             BastleScheduler.Clear();
             BastleUtility.ClearRegistry();
+            BastleTruce.Clear();
         }
 
         public static BastleGameComponent Instance => Current.Game?.GetComponent<BastleGameComponent>();

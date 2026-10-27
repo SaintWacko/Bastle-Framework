@@ -49,11 +49,11 @@ namespace BastleFramework
         internal static float PackPoints(float threatPoints)
             => threatPoints * (1f - BastleFrameworkMod.Settings.outbreakTraitShare);
 
-        /// <summary>The faction can attend: a humanlike faction with a leader and fighters,
-        /// at peace with the colony (phase 1 has no truce).</summary>
-        internal static bool CanAttend(Faction f)
+        /// <summary>The faction can attend: a visible humanlike faction with fighters, never a
+        /// permanent enemy. Hostile ones only when allowed and the truce patches applied.</summary>
+        internal static bool CanAttend(Faction f, bool allowHostile = false)
             => f != null && !f.IsPlayer && !f.Hidden && !f.defeated && !f.temporary && f.def.humanlikeFaction
-               && !f.def.permanentEnemy && !f.HostileTo(Faction.OfPlayer)
+               && !f.def.permanentEnemy && (!f.HostileTo(Faction.OfPlayer) || (allowHostile && BastleTruce.Available))
                && f.def.pawnGroupMakers != null && f.def.pawnGroupMakers.Any(m => m.kindDef == PawnGroupKindDefOf.Combat);
 
         /// <summary>The outbreak quest part that owns this site, if any.</summary>
@@ -116,8 +116,9 @@ namespace BastleFramework
         }
     }
 
-    /// <summary>Picks who attends: the asker (a faction leader, stored as asker) and,
-    /// at outbreakSecondFactionChance, a second faction (secondFaction, else null).</summary>
+    /// <summary>Picks who attends: the asker (a non-hostile faction's leader, stored as asker)
+    /// and, at outbreakSecondFactionChance, a second faction (secondFaction, else null), drawn
+    /// from the hostile factions at outbreakHostileChance and from the peaceful ones otherwise.</summary>
     public class QuestNode_GetBastleOutbreakFactions : QuestNode
     {
         [NoTranslate] public SlateRef<string> storeAskerAs = "asker";
@@ -136,21 +137,29 @@ namespace BastleFramework
             QuestGen.AddQuestDescriptionConstants(new Dictionary<string, string>
             {
                 { "hasSecondFaction", QuestGen.slate.Get<bool>("hasSecondFaction").ToString() },
+                { "secondHostile", QuestGen.slate.Get<bool>("secondHostile").ToString() },
             });
         }
 
         private bool TrySetVars(Slate slate)
         {
-            var factions = Find.FactionManager.AllFactionsListForReading.Where(BastleOutbreakQuest.CanAttend).ToList();
-            var askers = factions.Where(f => f.leader != null && !f.leader.Dead
+            var all = Find.FactionManager.AllFactionsListForReading;
+            var peaceful = all.Where(f => BastleOutbreakQuest.CanAttend(f)).ToList();
+            var askers = peaceful.Where(f => f.leader != null && !f.leader.Dead
                 && !(f.leader.IsWorldPawn() && Find.WorldPawns.GetSituation(f.leader) == WorldPawnSituation.ReservedByQuest)).ToList();
             if (!askers.TryRandomElement(out var asker)) return false;
             Faction second = null;
             if (Rand.Chance(BastleFrameworkMod.Settings.outbreakSecondFactionChance))
-                factions.Where(f => f != asker).TryRandomElement(out second);
+            {
+                var pool = Rand.Chance(BastleFrameworkMod.Settings.outbreakHostileChance)
+                    ? all.Where(f => BastleOutbreakQuest.CanAttend(f, allowHostile: true) && f.HostileTo(Faction.OfPlayer))
+                    : peaceful.Where(f => f != asker);
+                pool.TryRandomElement(out second);
+            }
             slate.Set(storeAskerAs.GetValue(slate), asker.leader);
             slate.Set(storeSecondFactionAs.GetValue(slate), second);
             slate.Set("hasSecondFaction", second != null);
+            slate.Set("secondHostile", second != null && second.HostileTo(Faction.OfPlayer));
             return true;
         }
     }
@@ -295,6 +304,8 @@ namespace BastleFramework
         public Faction faction;
         public List<Pawn> pawns = new List<Pawn>();
         public int brought;
+        /// <summary>The colony broke the truce with this faction, or attacked it under one.</summary>
+        public bool betrayed;
 
         public int Survivors => pawns.Count(p => p != null && !p.Dead && p.Faction == faction && !p.IsPrisoner);
 
@@ -303,6 +314,7 @@ namespace BastleFramework
             Scribe_References.Look(ref faction, "faction");
             Scribe_Collections.Look(ref pawns, "pawns", LookMode.Reference);
             Scribe_Values.Look(ref brought, "brought", 0);
+            Scribe_Values.Look(ref betrayed, "betrayed", false);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 pawns = pawns ?? new List<Pawn>();
@@ -449,12 +461,12 @@ namespace BastleFramework
             // bringing the factions in again on every check.
             alliesArrived = true;
 
-            var arrived = new List<Pawn>();
-            var names = new List<string>();
+            var groups = new List<(OutbreakAttendee attendee, List<Pawn> pawns)>();
             foreach (var a in attendees)
             {
                 Faction f = a.faction;
-                if (!BastleOutbreakQuest.CanAttend(f)) continue;
+                // A faction that turned hostile since the quest was made still comes, under the truce.
+                if (!BastleOutbreakQuest.CanAttend(f, allowHostile: true)) continue;
                 float points = Mathf.Max(arrivalPackPoints * BastleFrameworkMod.Settings.outbreakAllyShare,
                     f.def.MinPointsToGeneratePawnGroup(PawnGroupKindDefOf.Combat));
                 var parms = new PawnGroupMakerParms
@@ -466,7 +478,19 @@ namespace BastleFramework
                     generateFightersOnly = true,
                 };
                 var pawns = PawnGroupMakerUtility.GeneratePawns(parms, warnOnZeroResults: false).ToList();
-                if (pawns.Count == 0) continue;
+                if (pawns.Count > 0) groups.Add((a, pawns));
+            }
+            if (groups.Count == 0) return;
+
+            // Before anything spawns: the attack target cache registers each pawn as it spawns,
+            // and must already see the truce.
+            BastleTruce.Begin(map, groups.Select(g => g.attendee.faction));
+            var arrived = new List<Pawn>();
+            var names = new List<string>();
+            var hostileNames = new List<string>();
+            foreach (var (a, pawns) in groups)
+            {
+                Faction f = a.faction;
                 foreach (var p in pawns)
                 {
                     if (!CellFinder.TryFindRandomSpawnCellForPawnNear(entry, map, out IntVec3 cell, 6)) cell = entry;
@@ -477,11 +501,19 @@ namespace BastleFramework
                 a.brought = pawns.Count;
                 arrived.AddRange(pawns);
                 names.Add(f.NameColored.Resolve());
+                if (f.HostileTo(Faction.OfPlayer)) hostileNames.Add(f.NameColored.Resolve());
             }
-            if (arrived.Count == 0) return;
-            Find.LetterStack.ReceiveLetter("BF_OutbreakAlliesArrivedLabel".Translate(),
-                "BF_OutbreakAlliesArrivedText".Translate(names.ToCommaList(useAnd: true), kind?.GetLabelPlural() ?? ""),
+            TaggedString text = "BF_OutbreakAlliesArrivedText".Translate(names.ToCommaList(useAnd: true), kind?.GetLabelPlural() ?? "");
+            if (hostileNames.Count > 0)
+                text += "\n\n" + "BF_OutbreakTruceArrivedText".Translate(hostileNames.ToCommaList(useAnd: true));
+            Find.LetterStack.ReceiveLetter("BF_OutbreakAlliesArrivedLabel".Translate(), text,
                 LetterDefOf.NeutralEvent, arrived, quest: quest);
+        }
+
+        public void Notify_TruceBroken(Faction f)
+        {
+            foreach (var a in attendees)
+                if (a.faction == f) a.betrayed = true;
         }
 
         // The edge nearest the colonists, reachable from where they stand, so the attendees
@@ -507,6 +539,11 @@ namespace BastleFramework
             foreach (var a in attendees)
             {
                 if (a.faction == null || a.brought <= 0) continue;
+                if (a.betrayed)
+                {
+                    lines.Add("BF_OutbreakBetrayedLine".Translate(a.faction.NameColored).Resolve());
+                    continue;
+                }
                 int survivors = a.Survivors;
                 int goodwill = Mathf.RoundToInt(most * survivors / (float)a.brought);
                 if (goodwill != 0 && !a.faction.defeated)

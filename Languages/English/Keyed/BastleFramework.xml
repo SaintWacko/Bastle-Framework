@@ -154,7 +154,7 @@
   <BF_Settings_QuestsHint>Quests also need "Bastles appear in the world" on the World tab. Frequency scales how often the storyteller offers each against its base chance; 0 is never.</BF_Settings_QuestsHint>
   <BF_Settings_Never>never</BF_Settings_Never>
   <BF_Settings_OutbreakQuest>Outbreak quests</BF_Settings_OutbreakQuest>
-  <BF_Settings_OutbreakQuestHint>A fast-breeding bastle strain has taken hold at a site nearby. A faction asks you to wipe it out, and sends fighters who arrive with you, sometimes with a second faction's. Every animal of the strain carries the same traits and shares what you learn about them; one to three alphas carry more traits, and the quest may name one of an alpha's. The outbreak grows each day until you get there. Each faction's goodwill depends on how many of its fighters survive. If you fail, the asker thinks less of you and the strain gets loose for a while, and packs of it can reach your colony.</BF_Settings_OutbreakQuestHint>
+  <BF_Settings_OutbreakQuestHint>A fast-breeding bastle strain has taken hold at a site nearby. A faction asks you to wipe it out, and sends fighters who arrive with you, sometimes with a second faction's, which may be a hostile one under a truce. Every animal of the strain carries the same traits and shares what you learn about them; one to three alphas carry more traits, and the quest may name one of an alpha's. The outbreak grows each day until you get there. Each faction's goodwill depends on how many of its fighters survive. If you fail, the asker thinks less of you and the strain gets loose for a while, and packs of it can reach your colony.</BF_Settings_OutbreakQuestHint>
   <BF_Settings_OutbreakSection>The outbreak</BF_Settings_OutbreakSection>
   <BF_Settings_OutbreakSize>Size</BF_Settings_OutbreakSize>
   <BF_Settings_OutbreakStrength>Strain strength</BF_Settings_OutbreakStrength>
@@ -164,6 +164,8 @@
   <BF_Settings_OutbreakAlliesSection>Other factions</BF_Settings_OutbreakAlliesSection>
   <BF_Settings_OutbreakAllyShare>Fighters each faction brings</BF_Settings_OutbreakAllyShare>
   <BF_Settings_OutbreakSecondFaction>Chance of a second faction</BF_Settings_OutbreakSecondFaction>
+  <BF_Settings_OutbreakHostileChance>Chance the second faction is hostile</BF_Settings_OutbreakHostileChance>
+  <BF_Settings_OutbreakHostileChanceHint>A hostile faction (never a permanent enemy) fights under a truce that holds on the site only. Attacking one of its fighters on purpose, or taking one prisoner, breaks the truce and its goodwill.</BF_Settings_OutbreakHostileChanceHint>
   <BF_Settings_OutbreakAllyGoodwill>Goodwill if all survive</BF_Settings_OutbreakAllyGoodwill>
   <BF_Settings_OutbreakFailSection>Failure</BF_Settings_OutbreakFailSection>
   <BF_Settings_OutbreakFailGoodwill>Goodwill lost with the asker</BF_Settings_OutbreakFailGoodwill>
@@ -190,11 +192,22 @@
   <BF_OutbreakAlliesArrivedText>Fighters from {0} have arrived to fight the {1} beside you.
 
 They will hunt the outbreak until it is gone, then leave. Each faction will think better of you the more of its people survive.</BF_OutbreakAlliesArrivedText>
+  <!-- {0}: the hostile factions' names joined with "and". -->
+  <BF_OutbreakTruceArrivedText>{0} are hostile to you, but have agreed to a truce on this map: nobody here will attack anyone else from the factions at the outbreak. Attacking their fighters on purpose, or taking one of them prisoner, breaks the truce.</BF_OutbreakTruceArrivedText>
   <BF_OutbreakContainedLabel>Outbreak contained</BF_OutbreakContainedLabel>
   <!-- {0}: the strain's kind, plural. -->
   <BF_OutbreakContainedText>The {0} are dead, and the outbreak is over. The factions who fought beside you remember how many of their people came home:</BF_OutbreakContainedText>
   <!-- {0}: faction name. {1}: survivors. {2}: fighters sent. {3}: goodwill change with sign. -->
   <BF_OutbreakSurvivorsLine>{0}: {1} of {2} survived, goodwill {3}</BF_OutbreakSurvivorsLine>
+  <!-- {0}: faction name. -->
+  <BF_OutbreakBetrayedLine>{0}: you broke the truce, no goodwill</BF_OutbreakBetrayedLine>
+
+  <!-- Truce. {0}: faction name. -->
+  <BF_TruceBrokenLabel>Truce broken: {0}</BF_TruceBrokenLabel>
+  <BF_TruceBrokenAttackedHostile>Your people attacked fighters from {0} on purpose, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people. They will not be paid goodwill for the outbreak.</BF_TruceBrokenAttackedHostile>
+  <BF_TruceBrokenAttacked>Your people attacked fighters from {0} on purpose, and the truce with them is over. They will not be paid goodwill for the outbreak.</BF_TruceBrokenAttacked>
+  <BF_TruceBrokenCapturedHostile>Your people took one of the fighters from {0} prisoner, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people. They will not be paid goodwill for the outbreak.</BF_TruceBrokenCapturedHostile>
+  <BF_TruceBrokenCaptured>Your people took one of the fighters from {0} prisoner, and the truce with them is over. They will not be paid goodwill for the outbreak.</BF_TruceBrokenCaptured>
   <!-- {0}: the strain's kind. -->
   <BF_OutbreakEscapedLabel>Outbreak uncontained: {0}</BF_OutbreakEscapedLabel>
   <!-- {0}: the strain's kind, plural. -->
