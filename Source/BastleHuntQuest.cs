@@ -73,6 +73,17 @@ namespace BastleFramework
             best?.Discover(notify: false);
             return best;
         }
+
+        /// <summary>Rules rumorTrait (the label) and rumorText (the trait's rumor phrase), and the
+        /// constant rumor: none, phrase (the trait has a rumor) or label (it doesn't, so the
+        /// text has to name it).</summary>
+        internal static void AddRumorRules(BastleTrait rumor, List<Rule> rules, Dictionary<string, string> constants)
+        {
+            string phrase = rumor?.Rumor;
+            rules.Add(new Rule_String("rumorTrait", rumor?.BaseLabel ?? ""));
+            rules.Add(new Rule_String("rumorText", phrase ?? ""));
+            constants.Add("rumor", rumor == null ? "none" : phrase != null ? "phrase" : "label");
+        }
     }
 
     /// <summary>
@@ -150,18 +161,17 @@ namespace BastleFramework
             {
                 outExtraDescriptionConstants.Add("count", "0");
                 outExtraDescriptionConstants.Add("hasAlpha", "False");
-                outExtraDescriptionConstants.Add("hasRumor", "False");
+                BastleHuntQuest.AddRumorRules(null, outExtraDescriptionRules, outExtraDescriptionConstants);
                 return;
             }
             int count = BastleHuntQuest.AnimalCount(kind, part.parms.points);
             outExtraDescriptionRules.Add(new Rule_String("kindLabel", kind.label));
             outExtraDescriptionRules.Add(new Rule_String("kindLabelPlural", kind.GetLabelPlural()));
             outExtraDescriptionRules.Add(new Rule_String("packLabel", count - 1 + " " + GenLabel.BestKindLabel(kind, Gender.None, plural: count - 1 != 1, count - 1)));
-            outExtraDescriptionRules.Add(new Rule_String("rumorTrait", rumor != null ? rumor.Override?.label ?? rumor.def.label : ""));
+            BastleHuntQuest.AddRumorRules(rumor, outExtraDescriptionRules, outExtraDescriptionConstants);
             outExtraDescriptionRules.Add(new Rule_String("count", count.ToString()));
             outExtraDescriptionConstants.Add("count", count.ToString());
             outExtraDescriptionConstants.Add("hasAlpha", (alpha != null).ToString());
-            outExtraDescriptionConstants.Add("hasRumor", (rumor != null).ToString());
         }
 
         public override string GetPostProcessedThreatLabel(Site site, SitePart sitePart)

@@ -58,8 +58,9 @@
         <li>questDescription(hasAlpha==False)->[asker_nameFull], [asker_faction_leaderTitle] of [asker_faction_name], has sent us a message. A pack of manhunting [kindLabelPlural] has made its lair nearby, and [asker_faction_name] has lost people to it.\n\n[asker_nameDef] is asking us to kill them all. At the site, [sitePart0_description].</li>
         <li>killWhat(count==1)->kill it</li>
         <li>killWhat(count>1)->kill it, and every animal that runs with it</li>
-        <li>rumorParagraph(hasRumor==True)->\n\nThose who escaped it speak of one trait: [rumorTrait]. Nobody knows what else it carries.</li>
-        <li>rumorParagraph(hasRumor==False)->\n\nNobody who saw it up close has lived to say what it can do.</li>
+        <li>rumorParagraph(rumor==phrase)->\n\nThose who escaped it say it [rumorText]. Nobody knows what else it carries.</li>
+        <li>rumorParagraph(rumor==label)->\n\nThose who escaped it have a name for something it carries: [rumorTrait]. Nobody knows what else it has.</li>
+        <li>rumorParagraph(rumor==none)->\n\nNobody who saw it up close has lived to say what it can do.</li>
       </rulesStrings>
     </questDescriptionRules>
     <root Class="QuestNode_Sequence">

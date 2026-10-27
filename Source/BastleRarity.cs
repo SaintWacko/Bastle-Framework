@@ -46,6 +46,7 @@ namespace BastleFramework
         [MustTranslate] public string description;
         [MustTranslate] public string namePrefix;
         [MustTranslate] public string nameSuffix;
+        [MustTranslate] public string rumor;
 
         public HediffStage stage;
         public List<BastleTraitHediff> hediffs;

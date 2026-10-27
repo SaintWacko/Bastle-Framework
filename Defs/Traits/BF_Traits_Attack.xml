@@ -6,6 +6,7 @@
     <defName>BF_Venomous</defName>
     <label>venomous</label>
     <description>Its bite carries a poison that builds up in the victim's body.</description>
+    <rumor>has a poisoned bite</rumor>
     <namePrefix>venomous</namePrefix>
     <!-- Scales with rarity; from Epic up its fangs are replaced by stronger ones. -->
     <scalesWithRarity>true</scalesWithRarity>
@@ -22,6 +23,7 @@
         <label>virulent</label>
         <namePrefix>virulent</namePrefix>
         <description>Its bite carries a virulent poison that overwhelms the victim within moments.</description>
+        <rumor>has a bite whose poison overwhelms a victim within moments</rumor>
         <hediffs>
           <li><hediff>BF_VirulentFangs</hediff></li>
         </hediffs>
@@ -34,6 +36,7 @@
     <defName>BF_Firebreather</defName>
     <label>firebreather</label>
     <description>It can spit a stream of burning bile at anything that threatens it.</description>
+    <rumor>spits streams of burning bile</rumor>
     <nameSuffix>the firebreather</nameSuffix>
     <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -51,6 +54,7 @@
     <defName>BF_Razorclawed</defName>
     <label>razorclawed</label>
     <description>Its natural weapons are sharper and heavier than they should be.</description>
+    <rumor>strikes harder and cuts deeper than any of its kind</rumor>
     <namePrefix>razorclawed</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
@@ -65,6 +69,7 @@
     <defName>BF_Frenzied</defName>
     <label>frenzied</label>
     <description>It attacks in a wild flurry: faster, but less accurate.</description>
+    <rumor>attacks in a wild flurry</rumor>
     <namePrefix>frenzied</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
@@ -80,6 +85,7 @@
     <defName>BF_Bonebreaker</defName>
     <label>bonebreaker</label>
     <description>It strikes with crushing force. A blow can leave the victim stunned.</description>
+    <rumor>hits hard enough to leave a grown man stunned</rumor>
     <nameSuffix>the bonebreaker</nameSuffix>
     <rarity>Rare</rarity>
     <discoverWhen>
@@ -96,6 +102,7 @@
     <defName>BF_Stormborn</defName>
     <label>stormborn</label>
     <description>Static crackles across its body. Its strikes carry an electric shock that stuns machines.</description>
+    <rumor>crackles with a shock that stops machines dead</rumor>
     <namePrefix>stormborn</namePrefix>
     <rarity>Rare</rarity>
     <visible>true</visible>
@@ -121,6 +128,7 @@
     <defName>BF_Quilled</defName>
     <label>quilled</label>
     <description>It can flick a volley of barbed quills at enemies up to 15 tiles away.</description>
+    <rumor>flings barbed quills from well out of reach</rumor>
     <namePrefix>quilled</namePrefix>
     <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -139,6 +147,7 @@
     <defName>BF_AcidSpitting</defName>
     <label>acid-spitting</label>
     <description>It can spray sticky acid over an area, burning whatever it lands on.</description>
+    <rumor>sprays acid that eats into whatever it lands on</rumor>
     <namePrefix>acid-spitting</namePrefix>
     <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -157,6 +166,7 @@
     <defName>BF_Dread</defName>
     <label>dread</label>
     <description>Its howl can send nearby enemies fleeing in terror.</description>
+    <rumor>has a howl that sends people running in terror</rumor>
     <nameSuffix>of dread</nameSuffix>
     <rarity>Epic</rarity>
     <discoverWhen>
@@ -172,6 +182,7 @@
     <defName>BF_Leaping</defName>
     <label>leaping</label>
     <description>Its powerful legs let it leap up to 10 tiles to land beside its prey.</description>
+    <rumor>leaps from far off to land beside its prey</rumor>
     <namePrefix>leaping</namePrefix>
     <rarity>Uncommon</rarity>
     <discoverWhen>
@@ -186,6 +197,7 @@
     <defName>BF_Vampiric</defName>
     <label>vampiric</label>
     <description>Its wounds close as it feeds. Part of the damage it deals in melee to living flesh heals it.</description>
+    <rumor>heals as it feeds on those it wounds</rumor>
     <namePrefix>vampiric</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -203,6 +215,7 @@
     <defName>BF_Bloodthirsty</defName>
     <label>bloodthirsty</label>
     <description>It has lost its taste for plants and hunts for meat instead.</description>
+    <rumor>has a taste for flesh</rumor>
     <namePrefix>bloodthirsty</namePrefix>
     <requiresFlesh>true</requiresFlesh>
     <diet>
@@ -217,6 +230,7 @@
     <defName>BF_Volatile</defName>
     <label>volatile</label>
     <description>Something unstable builds inside it. When it dies, it explodes.</description>
+    <rumor>explodes when it dies</rumor>
     <namePrefix>volatile</namePrefix>
     <rarity>Uncommon</rarity>
     <discoverWhen><li>Dies</li></discoverWhen>

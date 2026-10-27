@@ -57,6 +57,9 @@ namespace BastleFramework
         /// <summary>The rarity override in effect, or null.</summary>
         public BastleRarityOverride Override => def.OverrideAt(Rarity);
 
+        /// <summary>The override's rumor, else the def's; null when neither has one.</summary>
+        public string Rumor => Override?.rumor.NullOrEmpty() == false ? Override.rumor : def.rumor.NullOrEmpty() ? null : def.rumor;
+
         [Unsaved] private HediffStage scaledStage;
         [Unsaved] private int scaledFor = -1;
 
@@ -118,7 +121,8 @@ namespace BastleFramework
         public virtual bool VisualsActive => HasVisuals && (discovered || def.showVisualsWhenHidden);
 
         /// <summary>Label without the rarity ("Flaming").</summary>
-        public string BaseLabelCap => (Override?.label ?? def.label).CapitalizeFirst();
+        public string BaseLabel => Override?.label ?? def.label;
+        public string BaseLabelCap => BaseLabel.CapitalizeFirst();
 
         /// <summary>"Flaming (rare)" once discovered, "???" before.</summary>
         public virtual string Label => discovered

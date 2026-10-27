@@ -229,14 +229,13 @@ namespace BastleFramework
             int count = kind != null ? BastleHuntQuest.AnimalCount(kind, part.parms.points) : 0;
             outExtraDescriptionRules.Add(new Rule_String("kindLabel", kind?.label ?? ""));
             outExtraDescriptionRules.Add(new Rule_String("kindLabelPlural", kind?.GetLabelPlural() ?? ""));
-            outExtraDescriptionRules.Add(new Rule_String("rumorTrait", rumor != null ? rumor.Override?.label ?? rumor.def.label : ""));
+            BastleHuntQuest.AddRumorRules(rumor, outExtraDescriptionRules, outExtraDescriptionConstants);
             outExtraDescriptionRules.Add(new Rule_String("alphaCount", alphas.ToString()));
             // A rule for the text and a constant for the conditions: the grammar needs both.
             outExtraDescriptionRules.Add(new Rule_String("count", (count + alphas).ToString()));
             outExtraDescriptionConstants.Add("count", (count + alphas).ToString());
             outExtraDescriptionConstants.Add("alphaCount", alphas.ToString());
             outExtraDescriptionConstants.Add("hasStrain", (strain != null).ToString());
-            outExtraDescriptionConstants.Add("hasRumor", (rumor != null).ToString());
         }
 
         public override string GetPostProcessedThreatLabel(Site site, SitePart sitePart)

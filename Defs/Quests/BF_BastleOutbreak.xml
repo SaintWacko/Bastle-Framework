@@ -86,8 +86,11 @@
         <li>questDescription(hasStrain==False)->[asker_nameFull], [asker_faction_leaderTitle] of [asker_faction_name], has sent us a message. Manhunting [kindLabelPlural] are breeding nearby, and if nobody stops them, they will take over the region.\n\n[asker_nameDef] is asking us to kill them all. At the site, [sitePart0_description].\n\n[alliesParagraph]</li>
         <li>alliesParagraph(hasSecondFaction==True)->Fighters from [asker_faction_name] and [secondFaction_name] will arrive with us and fight beside us. Each faction will think better of us the more of its people survive.</li>
         <li>alliesParagraph(hasSecondFaction==False)->Fighters from [asker_faction_name] will arrive with us and fight beside us. They will think better of us the more of their people survive.</li>
-        <li>rumorParagraph(hasRumor==True)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence] Those who escaped speak of one thing an alpha can do: [rumorTrait].</li>
-        <li>rumorParagraph(hasRumor==False)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence]</li>
+        <li>rumorParagraph(rumor==phrase)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence] Those who escaped say [alphaRef] [rumorText].</li>
+        <li>rumorParagraph(rumor==label)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence] Those who escaped have a name for something [alphaRef] carries: [rumorTrait].</li>
+        <li>alphaRef(alphaCount==1)->the alpha</li>
+        <li>alphaRef(alphaCount>1)->one of the alphas</li>
+        <li>rumorParagraph(rumor==none)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence]</li>
         <li>alphaSentence(alphaCount==1)->One alpha leads them, and carries more.</li>
         <li>alphaSentence(alphaCount>1)->[alphaCount] alphas lead them, and each carries more.</li>
         <li>alphaSentence(alphaCount==0)-></li>

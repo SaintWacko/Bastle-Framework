@@ -15,6 +15,7 @@
     <defName>BF_Flaming</defName>
     <label>flaming</label>
     <description>Its body burns without being consumed. Fire barely hurts it and it shrugs off the cold.</description>
+    <rumor>burns like a torch and never burns out</rumor>
     <visible>true</visible>
     <namePrefix>flaming</namePrefix>
     <rarity>Uncommon</rarity>
@@ -57,6 +58,7 @@
         <label>infernal</label>
         <namePrefix>infernal</namePrefix>
         <description>Its body is a living blaze. Fire can't hurt it, and anything that strikes it in melee is burned and may catch fire.</description>
+        <rumor>is a living blaze that sets alight whatever strikes it</rumor>
         <glow>
           <radius>8</radius>
           <color>(255,120,40,0)</color>
@@ -83,6 +85,7 @@
     <defName>BF_Swift</defName>
     <label>swift</label>
     <description>It moves faster than others of its kind.</description>
+    <rumor>runs down anything that tries to flee</rumor>
     <namePrefix>swift</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags><li>BF_Speed</li></exclusionTags>
@@ -100,6 +103,7 @@
       <li>
         <minRarity>Epic</minRarity>
         <description>It moves much faster than others of its kind, and can leap up to 10 tiles to land beside its prey.</description>
+        <rumor>runs down anything that flees, and leaps on its prey from far off</rumor>
         <abilities><li>BF_Leap</li></abilities>
         <aiThinkTree>BF_LeapAtTarget</aiThinkTree>
       </li>
@@ -110,6 +114,7 @@
     <defName>BF_Regenerating</defName>
     <label>regenerating</label>
     <description>Its wounds close with unnatural speed.</description>
+    <rumor>shrugs off wounds that close as you watch</rumor>
     <namePrefix>regenerating</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <!-- Regrows lost parts from Legendary up (RegrowthParams.minRarity). -->
@@ -118,6 +123,7 @@
       <li>
         <minRarity>Legendary</minRarity>
         <description>Its wounds close with unnatural speed, and lost limbs grow back, one every few hours.</description>
+        <rumor>regrows the limbs it loses</rumor>
       </li>
     </rarityOverrides>
     <exclusionTags><li>BF_Healing</li></exclusionTags>
@@ -132,6 +138,7 @@
     <defName>BF_Emberborn</defName>
     <label>emberborn</label>
     <description>Fire cannot harm it, and it is at home in great heat.</description>
+    <rumor>walks through fire without a mark</rumor>
     <namePrefix>emberborn</namePrefix>
     <rarity>Uncommon</rarity>
     <exclusionTags><li>BF_FireAffinity</li></exclusionTags>
@@ -152,6 +159,7 @@
     <defName>BF_Unfeeling</defName>
     <label>unfeeling</label>
     <description>It feels no pain, and keeps fighting through wounds that would drop others.</description>
+    <rumor>keeps fighting through wounds that should have dropped it</rumor>
     <namePrefix>unfeeling</namePrefix>
     <rarity>Uncommon</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -166,6 +174,7 @@
     <defName>BF_Evasive</defName>
     <label>evasive</label>
     <description>It slips aside from blows that should land.</description>
+    <rumor>slips aside from blows that should have landed</rumor>
     <namePrefix>phantom</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen>
@@ -183,6 +192,7 @@
     <defName>BF_Shelled</defName>
     <label>shelled</label>
     <description>A heavy shell covers its body. Blades skip off it, but the weight slows it down.</description>
+    <rumor>wears a shell that blades skip off</rumor>
     <namePrefix>shelled</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <disallowConstructs>true</disallowConstructs>
@@ -204,6 +214,7 @@
     <defName>BF_ToxicBlooded</defName>
     <label>toxic-blooded</label>
     <description>Poison and toxic air barely affect it.</description>
+    <rumor>breathes poisoned air without harm</rumor>
     <namePrefix>toxic-blooded</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -224,6 +235,7 @@
     <defName>BF_Thorned</defName>
     <label>thorned</label>
     <description>Sharp barbs cover its body. Anything that strikes it in melee is cut.</description>
+    <rumor>is covered in barbs that cut anyone who strikes it</rumor>
     <namePrefix>thorned</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
@@ -240,6 +252,7 @@
     <defName>BF_Colossal</defName>
     <label>colossal</label>
     <description>It is far bigger than others of its kind: tougher and harder-hitting, but a little slower.</description>
+    <rumor>towers over the rest of its kind</rumor>
     <namePrefix>colossal</namePrefix>
     <rarity>Rare</rarity>
     <visible>true</visible>
@@ -260,6 +273,7 @@
     <defName>BF_Stonehide</defName>
     <label>stonehide</label>
     <description>Its hide is as dense as rock. Blunt blows barely bruise it.</description>
+    <rumor>has a hide like rock that clubs barely bruise</rumor>
     <namePrefix>stonehide</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <exclusionTags><li>BF_Toughness</li></exclusionTags>

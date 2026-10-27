@@ -11,6 +11,7 @@
     <defName>BF_Rockgut</defName>
     <label>rockgut</label>
     <description>It grinds stone in its gut and lives on it when there is nothing better.</description>
+    <rumor>eats stone when there is nothing else</rumor>
     <namePrefix>rockgut</namePrefix>
     <allowMechanoids>false</allowMechanoids>
     <tags><li>Utility</li></tags>
@@ -29,6 +30,7 @@
     <defName>BF_Tireless</defName>
     <label>tireless</label>
     <description>It never sleeps, and never seems to tire.</description>
+    <rumor>never sleeps</rumor>
     <namePrefix>tireless</namePrefix>
     <rarity>Rare</rarity>
     <allowMechanoids>false</allowMechanoids>
@@ -47,6 +49,7 @@
     <defName>BF_Frugal</defName>
     <label>frugal</label>
     <description>It needs far less food than others of its kind.</description>
+    <rumor>goes for days without eating</rumor>
     <namePrefix>frugal</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <allowMechanoids>false</allowMechanoids>
@@ -65,6 +68,7 @@
     <defName>BF_Meaty</defName>
     <label>meaty</label>
     <description>Thick muscle and fat. It gives much more meat when butchered.</description>
+    <rumor>is heavy with muscle and fat</rumor>
     <namePrefix>meaty</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -85,6 +89,7 @@
     <defName>BF_FineHided</defName>
     <label>fine-hided</label>
     <description>A broad, flawless hide. It gives much more leather when butchered.</description>
+    <rumor>has a broad, flawless hide</rumor>
     <namePrefix>fine-hided</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -105,6 +110,7 @@
     <defName>BF_Packbeast</defName>
     <label>packbeast</label>
     <description>A broad back and strong legs. It can haul and carry far more than others of its kind.</description>
+    <rumor>is strong enough to carry off its kills whole</rumor>
     <namePrefix>packbeast</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <tags><li>Utility</li></tags>
@@ -124,6 +130,7 @@
     <defName>BF_GoldenFleeced</defName>
     <label>golden-fleeced</label>
     <description>Its fleece grows as fine gold thread. Shearing it gives gold instead of wool, about half as many units.</description>
+    <rumor>grows a fleece of gold thread</rumor>
     <namePrefix>golden-fleeced</namePrefix>
     <rarity>Rare</rarity>
     <visible>true</visible>
@@ -149,6 +156,7 @@
     <defName>BF_Luminous</defName>
     <label>luminous</label>
     <description>It gives off a soft, steady light, enough to light a room.</description>
+    <rumor>gives off a light that shows where it is at night</rumor>
     <namePrefix>luminous</namePrefix>
     <visible>true</visible>
     <pointCost>0.5</pointCost>
@@ -173,6 +181,7 @@
     <defName>BF_Frostfur</defName>
     <label>frostfur</label>
     <description>A thick, frost-white coat keeps it comfortable in bitter cold.</description>
+    <rumor>has a frost-white coat that shrugs off the bitterest cold</rumor>
     <namePrefix>frostfur</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -197,6 +206,7 @@
     <defName>BF_Sunhardened</defName>
     <label>sunhardened</label>
     <description>It is comfortable in heat that would kill others of its kind.</description>
+    <rumor>is at ease in heat that would kill others of its kind</rumor>
     <namePrefix>sunhardened</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <tags>

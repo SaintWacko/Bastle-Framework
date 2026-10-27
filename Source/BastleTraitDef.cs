@@ -153,6 +153,12 @@ namespace BastleFramework
         /// <summary>Words placed after the creature's kind once known ("of the deep").</summary>
         [MustTranslate] public string nameSuffix;
 
+        /// <summary>What a survivor would say about a creature with this trait, as a verb phrase
+        /// in the third person with no full stop ("towers over the rest of its kind"). Quests
+        /// put it after a subject: "Those who escaped it say it ...", "... one of the alphas ...".
+        /// Without one, the quest names the trait's label instead.</summary>
+        [MustTranslate] public string rumor;
+
         /// <summary>Order among prefixes/suffixes. Lower is further from the kind label.</summary>
         public int nameOrder;
 
