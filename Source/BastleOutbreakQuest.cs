@@ -412,7 +412,7 @@ namespace BastleFramework
         public override void QuestPartTick()
         {
             base.QuestPartTick();
-            if (alliesArrived || !Find.TickManager.TicksGame.IsHashIntervalTick(30)) return;
+            if (alliesArrived || Find.TickManager.TicksGame % 30 != 0) return;
             Map map = site?.Map;
             if (map == null) return;
             if (colonyArrivedTick < 0)
@@ -503,7 +503,7 @@ namespace BastleFramework
             if (lines.Count > 0)
                 Find.LetterStack.ReceiveLetter("BF_OutbreakContainedLabel".Translate(),
                     "BF_OutbreakContainedText".Translate(kind?.GetLabelPlural() ?? "") + "\n\n" + lines.ToLineList("  - "),
-                    LetterDefOf.PositiveEvent, quest: quest);
+                    LetterDefOf.PositiveEvent, (LookTargets)site, quest: quest);
         }
 
         private void Fail()
@@ -520,7 +520,7 @@ namespace BastleFramework
             held.TryTransferToContainer(strain, condition.held);
             Find.World.gameConditionManager.RegisterCondition(condition);
             Find.LetterStack.ReceiveLetter("BF_OutbreakEscapedLabel".Translate(strain.kindDef.label),
-                "BF_OutbreakEscapedText".Translate(strain.kindDef.GetLabelPlural()), LetterDefOf.NegativeEvent, quest: quest);
+                "BF_OutbreakEscapedText".Translate(strain.kindDef.GetLabelPlural()), LetterDefOf.NegativeEvent, LookTargets.Invalid, quest: quest);
         }
 
         public override void Notify_PawnDiscarded(Pawn pawn)
