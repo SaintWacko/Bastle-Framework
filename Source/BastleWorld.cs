@@ -20,6 +20,7 @@ namespace BastleFramework
         Pack,
         Rampage,
         HuntQuest,
+        OutbreakQuest,
     }
 
     /// <summary>
@@ -55,6 +56,7 @@ namespace BastleFramework
                 case BastleWorldFeature.Pack: return s.packEnabled;
                 case BastleWorldFeature.Rampage: return s.rampageEnabled;
                 case BastleWorldFeature.HuntQuest: return s.huntQuestEnabled;
+                case BastleWorldFeature.OutbreakQuest: return s.outbreakQuestEnabled;
                 default: return false;
             }
         }

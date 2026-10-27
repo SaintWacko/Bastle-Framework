@@ -24,6 +24,7 @@ namespace BastleFramework
         {
             base.WriteSettings();
             BastleHuntQuest.ApplyFrequency();
+            BastleOutbreakQuest.ApplyFrequency();
             if (Current.Game == null) return;
             foreach (var p in RimWorld.PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
                 BastleUtility.GetBastle(p)?.SettingsChanged();

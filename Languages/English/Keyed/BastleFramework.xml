@@ -2,7 +2,7 @@
 <LanguageData>
 
   <BF_UnknownTrait>???</BF_UnknownTrait>
-  <BF_UnknownTraitDesc>An unknown trait. It will reveal itself in time.</BF_UnknownTraitDesc>
+  <BF_UnknownTraitDesc>What could this creature be capable of?</BF_UnknownTraitDesc>
 
   <!-- {0}: the creature's label before the discovery. {1}: the trait's label. -->
   <BF_TraitDiscovered>{0} has revealed a hidden trait: {1}.</BF_TraitDiscovered>
@@ -116,7 +116,7 @@
   <BF_Settings_WildStrength>Wild bastle strength</BF_Settings_WildStrength>
   <BF_Settings_WildStrengthHint>Share of the map's current raid points a wild bastle's traits are read from.</BF_Settings_WildStrengthHint>
   <BF_Settings_ConvertedStrength>Converted event strength</BF_Settings_ConvertedStrength>
-  <BF_Settings_ConvertedStrengthHint>Share of an animal event's or group's points read from the curve. Those bastles are extra danger: the event keeps its full size.</BF_Settings_ConvertedStrengthHint>
+  <BF_Settings_ConvertedStrengthHint>Share of an animal event's or group's points read from the curve.</BF_Settings_ConvertedStrengthHint>
   <BF_Settings_OfferedStrength>Trader stock strength</BF_Settings_OfferedStrength>
   <BF_Settings_OfferedStrengthHint>Share of the raid points where the animal is sold: the map a trader visits, or all your colonies together for settlements.</BF_Settings_OfferedStrengthHint>
   <BF_Settings_WorldConversion>Animals the game already makes</BF_Settings_WorldConversion>
@@ -124,9 +124,9 @@
   <BF_Settings_Wild>Wild animals</BF_Settings_Wild>
   <BF_Settings_WildHint>On a new map and for every animal that wanders in later.</BF_Settings_WildHint>
   <BF_Settings_AnimalEvents>Animal events</BF_Settings_AnimalEvents>
-  <BF_Settings_AnimalEventsHint>Manhunter ambushes, herd migrations, thrumbo passes, farm animals wandering in, alphabeavers and frenzied animals. The whole group is one kind of bastle and shares what you learn about it. Manhunter packs are left to the bastle pack event below.</BF_Settings_AnimalEventsHint>
+  <BF_Settings_AnimalEventsHint>Manhunter ambushes, herd migrations, thrumbo passes, farm animals wandering in, alphabeavers and frenzied animals.</BF_Settings_AnimalEventsHint>
   <BF_Settings_GroupAnimals>Animals with raiders and caravans</BF_Settings_GroupAnimals>
-  <BF_Settings_GroupAnimalsHint>Pack animals and fighting animals in raids, caravans and settlement defences. They are added danger: the group keeps its size.</BF_Settings_GroupAnimalsHint>
+  <BF_Settings_GroupAnimalsHint>Pack animals and fighting animals in raids, caravans and settlement defences.</BF_Settings_GroupAnimalsHint>
   <BF_Settings_TraderAnimals>Animals for sale</BF_Settings_TraderAnimals>
   <BF_Settings_TraderAnimalsHint>The trader knows some of each one's traits (none to all, at random).</BF_Settings_TraderAnimalsHint>
   <BF_Settings_WorldOverridden>Set for this game by another mod. Change it there; this setting applies to new games.</BF_Settings_WorldOverridden>
@@ -150,6 +150,26 @@
   <BF_Settings_HuntQuestHint>A faction asks you to kill a bastle and the manhunting pack it leads at a site nearby, for vanilla rewards. The bastle's traits are all rare or better, and the quest names one of them. Strength is the share of the site's threat points its traits are read from; the points spent on the bastle leave the pack's size.</BF_Settings_HuntQuestHint>
   <BF_Settings_HuntAlphaShare>Points spent on the bastle</BF_Settings_HuntAlphaShare>
 
+  <BF_Settings_QuestsSection>Quests</BF_Settings_QuestsSection>
+  <BF_Settings_QuestsHint>Quests also need "Bastles appear in the world" on the World tab. Frequency scales how often the storyteller offers each against its base chance; 0 is never.</BF_Settings_QuestsHint>
+  <BF_Settings_Never>never</BF_Settings_Never>
+  <BF_Settings_OutbreakQuest>Outbreak quests</BF_Settings_OutbreakQuest>
+  <BF_Settings_OutbreakQuestHint>A fast-breeding bastle strain has taken hold at a site nearby. A faction asks you to wipe it out, and sends fighters who arrive with you, sometimes with a second faction's. Every animal of the strain carries the same traits and shares what you learn about them; one to three alphas carry more, and the quest names one. The outbreak grows each day until you get there. Each faction's goodwill depends on how many of its fighters survive. If you fail, the asker thinks less of you and the strain gets loose for a while, and packs of it can reach your colony.</BF_Settings_OutbreakQuestHint>
+  <BF_Settings_OutbreakSection>The outbreak</BF_Settings_OutbreakSection>
+  <BF_Settings_OutbreakSize>Size</BF_Settings_OutbreakSize>
+  <BF_Settings_OutbreakStrength>Strain strength</BF_Settings_OutbreakStrength>
+  <BF_Settings_OutbreakAlphaStrength>Alpha strength</BF_Settings_OutbreakAlphaStrength>
+  <BF_Settings_OutbreakGrowth>Growth per day</BF_Settings_OutbreakGrowth>
+  <BF_Settings_OutbreakGrowthCap>Most growth</BF_Settings_OutbreakGrowthCap>
+  <BF_Settings_OutbreakAlliesSection>Other factions</BF_Settings_OutbreakAlliesSection>
+  <BF_Settings_OutbreakAllyShare>Fighters each faction brings</BF_Settings_OutbreakAllyShare>
+  <BF_Settings_OutbreakSecondFaction>Chance of a second faction</BF_Settings_OutbreakSecondFaction>
+  <BF_Settings_OutbreakAllyGoodwill>Goodwill if all survive</BF_Settings_OutbreakAllyGoodwill>
+  <BF_Settings_OutbreakFailSection>Failure</BF_Settings_OutbreakFailSection>
+  <BF_Settings_OutbreakFailGoodwill>Goodwill lost with the asker</BF_Settings_OutbreakFailGoodwill>
+  <BF_Settings_OutbreakUncontainedDays>Uncontained for (days)</BF_Settings_OutbreakUncontainedDays>
+  <BF_Settings_OutbreakSpread>Spread frequency</BF_Settings_OutbreakSpread>
+
   <BF_Rarity_Common>common</BF_Rarity_Common>
   <BF_Rarity_Uncommon>uncommon</BF_Rarity_Uncommon>
   <BF_Rarity_Rare>rare</BF_Rarity_Rare>
@@ -163,5 +183,29 @@
   <BF_LightsickActive>Weakened by the light.</BF_LightsickActive>
   <BF_PartRegrown>{PAWN_labelShort} has regrown its {1}.</BF_PartRegrown>
   <BF_HydraSplit>{PAWN_labelShort} split as it died. {1} young ones sprang from its body.</BF_HydraSplit>
+
+  <!-- Outbreak quest -->
+  <BF_OutbreakAlliesArrivedLabel>Fighters arrived</BF_OutbreakAlliesArrivedLabel>
+  <!-- {0}: the factions' names joined with "and". {1}: the strain's kind, plural. -->
+  <BF_OutbreakAlliesArrivedText>Fighters from {0} have arrived to fight the {1} beside you.
+
+They will hunt the outbreak until it is gone, then leave. Each faction will think better of you the more of its people survive.</BF_OutbreakAlliesArrivedText>
+  <BF_OutbreakContainedLabel>Outbreak contained</BF_OutbreakContainedLabel>
+  <!-- {0}: the strain's kind, plural. -->
+  <BF_OutbreakContainedText>The {0} are dead, and the outbreak is over. The factions who fought beside you remember how many of their people came home:</BF_OutbreakContainedText>
+  <!-- {0}: faction name. {1}: survivors. {2}: fighters sent. {3}: goodwill change with sign. -->
+  <BF_OutbreakSurvivorsLine>{0}: {1} of {2} survived, goodwill {3}</BF_OutbreakSurvivorsLine>
+  <!-- {0}: the strain's kind. -->
+  <BF_OutbreakEscapedLabel>Outbreak uncontained: {0}</BF_OutbreakEscapedLabel>
+  <!-- {0}: the strain's kind, plural. -->
+  <BF_OutbreakEscapedText>The bastle {0} were not stopped, and the strain has spread beyond the site.
+
+Until other factions bring it under control, packs of these {0} may reach your colony. They carry the same traits as the ones at the site, and anything you learned about those is still known.</BF_OutbreakEscapedText>
+  <!-- {0}: the strain's kind. -->
+  <BF_OutbreakConditionLabel>uncontained outbreak ({0})</BF_OutbreakConditionLabel>
+  <!-- {0}: the strain's kind, plural. -->
+  <BF_OutbreakConditionDesc>A strain of bastle {0} is loose in the region. Manhunting packs of it may reach your colony until other factions bring it under control.</BF_OutbreakConditionDesc>
+  <!-- {0}: the strain's kind. -->
+  <BF_OutbreakCleanedUp>Other factions have cleaned up the {0} outbreak.</BF_OutbreakCleanedUp>
 
 </LanguageData>

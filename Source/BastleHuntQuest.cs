@@ -184,13 +184,17 @@ namespace BastleFramework
 
         public override int SeedPart => 820461337;
 
-        public override void Generate(Map map, GenStepParams parms)
+        internal static bool TryFindLairCenter(Map map, out IntVec3 center)
         {
             var traverse = TraverseParms.For(TraverseMode.NoPassClosedDoors).WithFenceblocked(true);
-            if (!RCellFinder.TryFindRandomCellNearTheCenterOfTheMapWith(
-                    x => CellValidator(x, map) && !x.Fogged(map) && map.reachability.CanReachMapEdge(x, traverse) && x.GetRoom(map).CellCount >= MinRoomCells,
-                    map, out IntVec3 center))
-                return;
+            return RCellFinder.TryFindRandomCellNearTheCenterOfTheMapWith(
+                x => CellValidator(x, map) && !x.Fogged(map) && map.reachability.CanReachMapEdge(x, traverse) && x.GetRoom(map).CellCount >= MinRoomCells,
+                map, out center);
+        }
+
+        public override void Generate(Map map, GenStepParams parms)
+        {
+            if (!TryFindLairCenter(map, out IntVec3 center)) return;
 
             SitePart part = parms.sitePart;
             var siteParms = part?.parms ?? new SitePartParams { threatPoints = defaultPointsRange.RandomInRange };
@@ -225,7 +229,7 @@ namespace BastleFramework
             }
         }
 
-        private static bool CellValidator(IntVec3 x, Map map)
+        internal static bool CellValidator(IntVec3 x, Map map)
         {
             if (!x.Standable(map)) return false;
             foreach (var r in MapGenerator.UsedRects)
