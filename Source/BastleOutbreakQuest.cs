@@ -423,20 +423,32 @@ namespace BastleFramework
                 return;
             }
             if (Find.TickManager.TicksGame - colonyArrivedTick < ArrivalDelayTicks) return;
-            // Retried every check until the colony is on the map and an edge cell is found.
-            alliesArrived = BringAttendees(map);
+            BringAttendees(map);
         }
 
-        private bool BringAttendees(Map map)
+        private void BringAttendees(Map map)
         {
             var colony = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
-            if (colony.Count == 0) return false;
+            if (colony.Count == 0)
+            {
+                colonyArrivedTick = -1;
+                return;
+            }
             arrivalPackPoints = PackPointsNow;
             IntVec3 anchor = colony[0].Position;
             IntVec3 sum = IntVec3.Zero;
             foreach (var p in colony) sum += p.Position;
             var centroid = new IntVec3(sum.x / colony.Count, 0, sum.z / colony.Count);
-            if (!TryFindEdgeCellNear(map, centroid, anchor, out IntVec3 entry)) return false;
+            if (!TryFindEdgeCellNear(map, centroid, anchor, out IntVec3 entry))
+            {
+                // Colonists walled off from every edge: the full edge search is costly, so
+                // it is tried again about every 250 ticks rather than every check.
+                colonyArrivedTick = Find.TickManager.TicksGame + 130;
+                return;
+            }
+            // Set before anything spawns: if a spawn throws, the quest logs it once instead of
+            // bringing the factions in again on every check.
+            alliesArrived = true;
 
             var arrived = new List<Pawn>();
             var names = new List<string>();
@@ -467,11 +479,10 @@ namespace BastleFramework
                 arrived.AddRange(pawns);
                 names.Add(f.NameColored.Resolve());
             }
-            if (arrived.Count == 0) return true;
+            if (arrived.Count == 0) return;
             Find.LetterStack.ReceiveLetter("BF_OutbreakAlliesArrivedLabel".Translate(),
                 "BF_OutbreakAlliesArrivedText".Translate(names.ToCommaList(useAnd: true), kind?.GetLabelPlural() ?? ""),
                 LetterDefOf.NeutralEvent, arrived, quest: quest);
-            return true;
         }
 
         // The edge nearest the colonists, reachable from where they stand, so the attendees
