@@ -441,17 +441,28 @@ namespace BastleFramework
             return true;
         }
 
+        // Quests write the subject before it and the full stop after it.
+        private static string RumorError(string phrase)
+        {
+            if (phrase.NullOrEmpty()) return null;
+            if (char.IsUpper(phrase[0]) || phrase.TrimEnd().EndsWith("."))
+                return $"rumor \"{phrase}\" should be a verb phrase that starts in lower case and has no full stop (\"towers over the rest of its kind\")";
+            return null;
+        }
+
         public override IEnumerable<string> ConfigErrors()
         {
             foreach (var e in base.ConfigErrors()) yield return e;
             if (traitClass == null || !typeof(BastleTrait).IsAssignableFrom(traitClass))
                 yield return $"traitClass {traitClass} is not a BastleTrait";
             if (commonality < 0f) yield return "commonality is negative";
+            if (RumorError(rumor) is string re) yield return re;
             if (rarityOverrides != null)
             {
                 if (!scalesWithRarity) yield return "has rarityOverrides but doesn't scale with rarity, so it only ever rolls at its own rarity and the overrides are never used";
                 foreach (var o in rarityOverrides)
                 {
+                    if (RumorError(o.rumor) is string ore) yield return $"rarityOverride at {o.minRarity}: {ore}";
                     if (o.minRarity <= rarity) yield return $"rarityOverride at {o.minRarity} is not above the trait's own rarity ({rarity}); set the base fields instead";
                     if (o.hediffs != null && !visible)
                         foreach (var h in o.hediffs)

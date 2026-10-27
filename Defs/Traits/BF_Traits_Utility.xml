@@ -110,7 +110,7 @@
     <defName>BF_Packbeast</defName>
     <label>packbeast</label>
     <description>A broad back and strong legs. It can haul and carry far more than others of its kind.</description>
-    <rumor>is strong enough to carry off its kills whole</rumor>
+    <rumor>carries loads that would break others of its kind</rumor>
     <namePrefix>packbeast</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <tags><li>Utility</li></tags>

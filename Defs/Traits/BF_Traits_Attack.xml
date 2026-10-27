@@ -54,7 +54,7 @@
     <defName>BF_Razorclawed</defName>
     <label>razorclawed</label>
     <description>Its natural weapons are sharper and heavier than they should be.</description>
-    <rumor>strikes harder and cuts deeper than any of its kind</rumor>
+    <rumor>strikes harder and cuts deeper than any other of its kind</rumor>
     <namePrefix>razorclawed</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
@@ -85,7 +85,7 @@
     <defName>BF_Bonebreaker</defName>
     <label>bonebreaker</label>
     <description>It strikes with crushing force. A blow can leave the victim stunned.</description>
-    <rumor>hits hard enough to leave a grown man stunned</rumor>
+    <rumor>hits hard enough to leave its victims stunned</rumor>
     <nameSuffix>the bonebreaker</nameSuffix>
     <rarity>Rare</rarity>
     <discoverWhen>
