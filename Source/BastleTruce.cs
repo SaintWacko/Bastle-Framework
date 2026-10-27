@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
@@ -13,9 +14,12 @@ namespace BastleFramework
     /// (their caravans at home, their raiders already on the home map, and any goodwill change
     /// recomputing the relation), so instead the faction-relation calls inside GenHostility.HostileTo
     /// and the projectile friendly-fire checks are rewritten to ask HostileOn, which knows the map.
+    /// Every relation call in those methods is rewritten, the prisoner host-faction checks included,
+    /// so a colony prisoner of an outside faction is not hostile to the truce parties there either.
     /// Mental states, predators, prison breaks and manhunters are separate checks in vanilla and
     /// are untouched. About 230 other direct Faction.HostileTo calls (name colours, trading,
-    /// reservations) still see the real relation.
+    /// reservations) still see the real relation, and so does any projectile class that overrides
+    /// ImpactSomething without calling base.
     /// </summary>
     public static class BastleTruce
     {
@@ -246,6 +250,8 @@ namespace BastleFramework
     [HarmonyPatch]
     internal static class Patch_Projectile_Truce
     {
+        private static bool Prepare() => TargetMethods().Any();
+
         private static IEnumerable<MethodBase> TargetMethods()
         {
             var intercept = AccessTools.DeclaredMethod(typeof(Projectile), "CheckForFreeIntercept");

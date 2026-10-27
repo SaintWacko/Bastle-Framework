@@ -151,10 +151,11 @@ namespace BastleFramework
             Faction second = null;
             if (Rand.Chance(BastleFrameworkMod.Settings.outbreakSecondFactionChance))
             {
-                var pool = Rand.Chance(BastleFrameworkMod.Settings.outbreakHostileChance)
-                    ? all.Where(f => BastleOutbreakQuest.CanAttend(f, allowHostile: true) && f.HostileTo(Faction.OfPlayer))
-                    : peaceful.Where(f => f != asker);
-                pool.TryRandomElement(out second);
+                // With no hostile faction to invite, the second faction is still a peaceful one,
+                // so the second-faction chance means what its slider says.
+                if (!Rand.Chance(BastleFrameworkMod.Settings.outbreakHostileChance)
+                    || !all.Where(f => BastleOutbreakQuest.CanAttend(f, allowHostile: true) && f.HostileTo(Faction.OfPlayer)).TryRandomElement(out second))
+                    peaceful.Where(f => f != asker).TryRandomElement(out second);
             }
             slate.Set(storeAskerAs.GetValue(slate), asker.leader);
             slate.Set(storeSecondFactionAs.GetValue(slate), second);
@@ -466,7 +467,12 @@ namespace BastleFramework
             {
                 Faction f = a.faction;
                 // A faction that turned hostile since the quest was made still comes, under the truce.
-                if (!BastleOutbreakQuest.CanAttend(f, allowHostile: true)) continue;
+                if (!BastleOutbreakQuest.CanAttend(f, allowHostile: true))
+                {
+                    if (f != null && !f.def.permanentEnemy && f.HostileTo(Faction.OfPlayer) && !BastleTruce.Available)
+                        Log.Warning("[Bastle Framework] " + f.Name + " is hostile and the outbreak truce is unavailable this session (see the earlier warning), so it does not attend.");
+                    continue;
+                }
                 float points = Mathf.Max(arrivalPackPoints * BastleFrameworkMod.Settings.outbreakAllyShare,
                     f.def.MinPointsToGeneratePawnGroup(PawnGroupKindDefOf.Combat));
                 var parms = new PawnGroupMakerParms
@@ -650,7 +656,9 @@ namespace BastleFramework
             graph.AddToil(exit);
             var done = new Transition(hunt, exit);
             done.AddTrigger(new Trigger_TickCondition(() => !GenHostility.AnyHostileActiveThreatTo(Map, faction), 250));
-            done.AddPreAction(new TransitionAction_Message("MessageFriendlyFightersLeaving".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
+            // A hostile faction under the truce is not "friendly".
+            string leaving = faction.HostileTo(Faction.OfPlayer) ? "BF_OutbreakFightersLeaving" : "MessageFriendlyFightersLeaving";
+            done.AddPreAction(new TransitionAction_Message(leaving.Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
             done.AddPreAction(new TransitionAction_EnsureHaveExitDestination());
             done.AddPostAction(new TransitionAction_EndAllJobs());
             graph.AddTransition(done);

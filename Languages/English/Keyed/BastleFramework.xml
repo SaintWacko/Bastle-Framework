@@ -191,7 +191,9 @@
   <!-- {0}: the factions' names joined with "and". {1}: the strain's kind, plural. -->
   <BF_OutbreakAlliesArrivedText>Fighters from {0} have arrived to fight the {1} beside you.
 
-They will hunt the outbreak until it is gone, then leave. Each faction will think better of you the more of its people survive.</BF_OutbreakAlliesArrivedText>
+They will hunt the outbreak until it is gone, then leave. Each faction will think better of you the more of its people survive. A faction whose fighters you attack on purpose, or take prisoner, gets no goodwill for it.</BF_OutbreakAlliesArrivedText>
+  <!-- {0}: the faction's people, plural and capitalised. {1}: faction name. -->
+  <BF_OutbreakFightersLeaving>{0} from {1} are leaving the outbreak site.</BF_OutbreakFightersLeaving>
   <!-- {0}: the hostile factions' names joined with "and". -->
   <BF_OutbreakTruceArrivedText>{0} are hostile to you, but have agreed to a truce on this map: nobody here will attack anyone else from the factions at the outbreak. Attacking their fighters on purpose, or taking one of them prisoner, breaks the truce.</BF_OutbreakTruceArrivedText>
   <BF_OutbreakContainedLabel>Outbreak contained</BF_OutbreakContainedLabel>
