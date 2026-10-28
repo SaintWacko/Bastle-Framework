@@ -71,7 +71,8 @@
   </ThingDef>
 
   <!-- Core: a jump. Not offensive, so the built-in combat casting leaves it alone; the
-       BF_LeapAtTarget think tree jumps it next to whatever it is attacking or hunting. -->
+       BF_LeapAtTarget think tree jumps it next to whatever it is attacking or hunting.
+       With Ability AI, its Movement rule (Mods/AbilityAI/Patches) does that instead. -->
   <AbilityDef>
     <defName>BF_Leap</defName>
     <label>leap</label>

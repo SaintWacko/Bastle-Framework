@@ -42,7 +42,8 @@ namespace BastleFramework
             for (int i = 0; i < traits.Count; i++)
             {
                 var tree = traits[i].AiThinkTree;
-                if (tree?.thinkRoot == null || !BastleAbilityTraining.MayRunTreeOnOwn(pawn, traits[i])) continue;
+                if (tree?.thinkRoot == null || !BastleAbilityTraining.MayRunTreeOnOwn(pawn, traits[i])
+                    || BastleAbilityTraining.TreeHandedOff(pawn, traits[i])) continue;
                 var result = tree.thinkRoot.TryIssueJobPackage(pawn, default);
                 if (result.IsValid) return result.Job;
             }

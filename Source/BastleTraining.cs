@@ -31,7 +31,8 @@ namespace BastleFramework
         /// <summary>Set by an integration that gives the player its own autocast toggle for
         /// an ability (the Ability AI compat): true when that integration is the one deciding
         /// whether this pawn casts this ability on its own, so the "trained bastles also use
-        /// abilities on their own" setting stays out of its way.</summary>
+        /// abilities on their own" setting stays out of its way, and a trait's own aiThinkTree
+        /// stands down for that pawn (TreeHandedOff).</summary>
         public static Func<Pawn, Ability, bool> HasExternalAutocast;
 
         public static bool NeedsTraining(Pawn pawn) => pawn?.training != null && pawn.RaceProps.Animal;
@@ -146,7 +147,8 @@ namespace BastleFramework
         }
 
         /// <summary>The same rule for a trait's own aiThinkTree, which can cast anything it
-        /// likes. Bastle runs those trees itself, so no integration's autocast applies.</summary>
+        /// likes. An integration that decides the trait's abilities stands the tree down
+        /// separately (TreeHandedOff).</summary>
         internal static bool MayRunTreeOnOwn(Pawn pawn, BastleTrait trait)
         {
             if (!trait.discovered || pawn.Faction == null || !pawn.Faction.IsPlayer || pawn.InMentalState
@@ -154,6 +156,23 @@ namespace BastleFramework
             return IsTrained(pawn)
                 ? BastleFrameworkMod.Settings.trainedAbilitiesOnOwn
                 : BastleFrameworkMod.Settings.untrainedKnownAbilities;
+        }
+
+        // Vanilla's jump job givers (BF_LeapAtTarget) only ask CanCast, so Ability AI's
+        // AICanTargetNow stand-down never reaches them: without this, a leap with an Ability AI
+        // rule would be cast by both. A veto (hidden trait on a player pawn) makes the delegate
+        // answer false, so the tree keeps casting by instinct there.
+        internal static bool TreeHandedOff(Pawn pawn, BastleTrait trait)
+        {
+            var external = HasExternalAutocast;
+            var defs = trait.Abilities;
+            if (external == null || defs == null || pawn.abilities == null) return false;
+            for (int i = 0; i < defs.Count; i++)
+            {
+                var ability = pawn.abilities.GetAbility(defs[i]);
+                if (ability != null && external(pawn, ability)) return true;
+            }
+            return false;
         }
 
         internal static bool HasKnownAbilityTrait(Pawn pawn)

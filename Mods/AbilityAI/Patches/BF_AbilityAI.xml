@@ -3,13 +3,28 @@
      (saintwacko.AbilityAI) is active (LoadFolders.xml), so the AbilityAI.* class names here always resolve.
      Without it, JobGiver_BastleAbilities and vanilla cast these through aiCanUse in the base defs; Ability AI stands
      both down for every ability it handles, so the two never both cast one.
-     BF_Leap has no rules on purpose: the BF_LeapAtTarget think tree also leaps at prey during a hunt, which
-     Ability AI's Movement worker doesn't cover, and an extension would stand that tree down.
+     BF_Leap's BF_LeapAtTarget think tree is the fallback without Ability AI; with this rule it stands down for every
+     pawn Ability AI decides the leap for (BastleAbilityTraining.TreeHandedOff), since vanilla's jump job giver
+     ignores AICanTargetNow.
      The DLC abilities are wrapped in PatchOperationConditional on the def itself: the def is MayRequire, and a bare
      xpath that finds nothing logs a patch failure.
      The workers and their fields are described in Ability AI's AbilityAIWorkers.cs and AbilityAIWorkersTargeted.cs.
      One top-level operation per ability, so a renamed ability loses only its own rules. -->
 <Patch>
+  <!-- Gap-close only, as the tree: next to the enemy or, during a hunt, the prey. minGapDistance matches the leap's
+       minRange (3.5) rounded up, so it leaps wherever the tree would have. -->
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/AbilityDef[defName="BF_Leap"]</xpath>
+    <value>
+      <li Class="AbilityAI.AbilityAIExtension">
+        <workerClass>AbilityAI.AbilityAIWorker_Movement</workerClass>
+        <modes>GapClose</modes>
+        <minGapDistance>4</minGapDistance>
+        <whileHunting>true</whileHunting>
+      </li>
+    </value>
+  </Operation>
+
   <Operation Class="PatchOperationAddModExtension">
     <xpath>Defs/AbilityDef[defName="BF_QuillVolley"]</xpath>
     <value>
