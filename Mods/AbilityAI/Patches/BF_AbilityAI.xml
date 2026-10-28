@@ -4,22 +4,22 @@
      Without it, JobGiver_BastleAbilities and vanilla cast these through aiCanUse in the base defs; Ability AI stands
      both down for every ability it handles, so the two never both cast one.
      BF_Leap's BF_LeapAtTarget think tree is the fallback without Ability AI; with this rule it stands down for every
-     pawn Ability AI decides the leap for (BastleAbilityTraining.TreeHandedOff), since vanilla's jump job giver
-     ignores AICanTargetNow.
+     pawn Ability AI decides the leap for while it is after a pawn (BastleAbilityTraining.TreeHandedOff), since
+     vanilla's jump job giver ignores AICanTargetNow. Leaps at a door or turret stay with the tree.
      The DLC abilities are wrapped in PatchOperationConditional on the def itself: the def is MayRequire, and a bare
      xpath that finds nothing logs a patch failure.
      The workers and their fields are described in Ability AI's AbilityAIWorkers.cs and AbilityAIWorkersTargeted.cs.
      One top-level operation per ability, so a renamed ability loses only its own rules. -->
 <Patch>
-  <!-- Gap-close only, as the tree: next to the enemy or, during a hunt, the prey. minGapDistance matches the leap's
-       minRange (3.5) rounded up, so it leaps wherever the tree would have. -->
+  <!-- Gap-close only, as the tree: next to the enemy or, during a hunt, the prey. minGapDistance is the leap's
+       minRange, as the tree uses. -->
   <Operation Class="PatchOperationAddModExtension">
     <xpath>Defs/AbilityDef[defName="BF_Leap"]</xpath>
     <value>
       <li Class="AbilityAI.AbilityAIExtension">
         <workerClass>AbilityAI.AbilityAIWorker_Movement</workerClass>
         <modes>GapClose</modes>
-        <minGapDistance>4</minGapDistance>
+        <minGapDistance>3.5</minGapDistance>
         <whileHunting>true</whileHunting>
       </li>
     </value>

@@ -162,17 +162,22 @@ namespace BastleFramework
         // AICanTargetNow stand-down never reaches them: without this, a leap with an Ability AI
         // rule would be cast by both. A veto (hidden trait on a player pawn) makes the delegate
         // answer false, so the tree keeps casting by instinct there.
+        // Only when every ability the trait grants is handed off: a content tree may also cast
+        // one nothing else would. And only while the current job aims at a pawn: Ability AI's
+        // gap-close takes an enemy pawn or the prey, so a leap at a door or a turret stays the tree's.
         internal static bool TreeHandedOff(Pawn pawn, BastleTrait trait)
         {
             var external = HasExternalAutocast;
             var defs = trait.Abilities;
-            if (external == null || defs == null || pawn.abilities == null) return false;
+            if (external == null || defs.NullOrEmpty() || pawn.abilities == null) return false;
+            var job = pawn.CurJob;
+            if (job != null && job.targetA.HasThing && !(job.targetA.Thing is Pawn)) return false;
             for (int i = 0; i < defs.Count; i++)
             {
                 var ability = pawn.abilities.GetAbility(defs[i]);
-                if (ability != null && external(pawn, ability)) return true;
+                if (ability != null && !external(pawn, ability)) return false;
             }
-            return false;
+            return true;
         }
 
         internal static bool HasKnownAbilityTrait(Pawn pawn)
