@@ -162,22 +162,29 @@ namespace BastleFramework
         // AICanTargetNow stand-down never reaches them: without this, a leap with an Ability AI
         // rule would be cast by both. A veto (hidden trait on a player pawn) makes the delegate
         // answer false, so the tree keeps casting by instinct there.
-        // Only when every ability the trait grants is handed off: a content tree may also cast
-        // one nothing else would. And only while the current job aims at a pawn: Ability AI's
-        // gap-close takes an enemy pawn or the prey, so a leap at a door or a turret stays the tree's.
+        // Only when every ability the trait grants (and the pawn has) is handed off: a content
+        // tree may also cast one nothing else would. And not during a melee attack or hunt that
+        // Ability AI's gap-close skips (it takes a standing hostile pawn or a standing prey), so a
+        // leap at a door, a turret or a downed target stays the tree's.
         internal static bool TreeHandedOff(Pawn pawn, BastleTrait trait)
         {
             var external = HasExternalAutocast;
             var defs = trait.Abilities;
             if (external == null || defs.NullOrEmpty() || pawn.abilities == null) return false;
             var job = pawn.CurJob;
-            if (job != null && job.targetA.HasThing && !(job.targetA.Thing is Pawn)) return false;
+            if (job != null && (job.def == JobDefOf.AttackMelee || job.def == JobDefOf.PredatorHunt)
+                && !(job.targetA.Thing is Pawn target && !target.Downed
+                     && (job.def == JobDefOf.PredatorHunt || target.HostileTo(pawn))))
+                return false;
+            bool any = false;
             for (int i = 0; i < defs.Count; i++)
             {
                 var ability = pawn.abilities.GetAbility(defs[i]);
-                if (ability != null && !external(pawn, ability)) return false;
+                if (ability == null) continue;
+                if (!external(pawn, ability)) return false;
+                any = true;
             }
-            return true;
+            return any;
         }
 
         internal static bool HasKnownAbilityTrait(Pawn pawn)
