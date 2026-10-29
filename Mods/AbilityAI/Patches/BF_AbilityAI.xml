@@ -4,8 +4,9 @@
      Without it, JobGiver_BastleAbilities and vanilla cast these through aiCanUse in the base defs; Ability AI stands
      both down for every ability it handles, so the two never both cast one.
      BF_Leap's BF_LeapAtTarget think tree is the fallback without Ability AI; with this rule it stands down for every
-     pawn Ability AI decides the leap for while it is after a pawn (BastleAbilityTraining.TreeHandedOff), since
-     vanilla's jump job giver ignores AICanTargetNow. Leaps at a door or turret stay with the tree.
+     pawn Ability AI decides the leap for (BastleAbilityTraining.TreeHandedOff), since vanilla's jump job giver
+     ignores AICanTargetNow. Leaps at what the gap-close skips (doors, turrets, downed or non-hostile pawns) are
+     lost until Ability AI covers them (request 5 in .circinus/handoff/ability-ai.md).
      The DLC abilities are wrapped in PatchOperationConditional on the def itself: the def is MayRequire, and a bare
      xpath that finds nothing logs a patch failure.
      The workers and their fields are described in Ability AI's AbilityAIWorkers.cs and AbilityAIWorkersTargeted.cs.
@@ -34,7 +35,8 @@
     </value>
   </Operation>
 
-  <!-- Biotech. 9 cells of acid around the target: no ally of the caster within 2 tiles of it -->
+  <!-- Biotech. 9 cells of acid: the target and the 8 around it (vanilla's SprayLiquid below 10 cells), so a circle
+       and not a line. No ally of the caster within 2 tiles of it, and none of its side's buildings. -->
   <Operation Class="PatchOperationConditional">
     <xpath>Defs/AbilityDef[defName="BF_AcidSpit"]</xpath>
     <match Class="PatchOperationAddModExtension">
@@ -44,29 +46,34 @@
           <workerClass>AbilityAI.AbilityAIWorker_AoEHostile</workerClass>
           <radius>1.9</radius>
           <avoidAllies>true</avoidAllies>
+          <avoidBuildings>true</avoidBuildings>
         </li>
       </value>
     </match>
   </Operation>
 
-  <!-- Biotech. The line is about 3 wide at its end. avoidAllies only looks around the target, not along the line,
-       so an ally between the caster and its target can still be burned (as with vanilla's fight AI). -->
+  <!-- Biotech. A cone 7.9 long and 3 wide at its end, read from the FireSpew comp. Any ally inside it drops the aim;
+       with avoidAllies the radius also keeps it off a target an ally is fighting, who may step in before the fire
+       is out. avoidBuildings: not over its own side's buildings. -->
   <Operation Class="PatchOperationConditional">
     <xpath>Defs/AbilityDef[defName="BF_FireBreath"]</xpath>
     <match Class="PatchOperationAddModExtension">
       <xpath>Defs/AbilityDef[defName="BF_FireBreath"]</xpath>
       <value>
         <li Class="AbilityAI.AbilityAIExtension">
-          <workerClass>AbilityAI.AbilityAIWorker_AoEHostile</workerClass>
+          <workerClass>AbilityAI.AbilityAIWorker_ConeHostile</workerClass>
           <radius>1.5</radius>
           <avoidAllies>true</avoidAllies>
+          <avoidBuildings>true</avoidBuildings>
         </li>
       </value>
     </match>
   </Operation>
 
-  <!-- Odyssey. Self-centred: AoEHostile centres on an enemy, so with radius and range both 23.9 it can count enemies
-       out of the howl's reach. Switch to a caster-centred worker once Ability AI has one. -->
+  <!-- Odyssey. Cast at an enemy, as vanilla's AI casts it, the howl's 23.9 radius is centred on that enemy, so
+       AoEHostile counts what it reaches. AoEHostileSelf would centre it on the caster, but Ability AI's final check
+       runs CompAbilityEffect_OnlyTargetHostiles.Valid on the caster, which always fails (request 6 in
+       .circinus/handoff/ability-ai.md). It only affects hostiles, so no avoidAllies. -->
   <Operation Class="PatchOperationConditional">
     <xpath>Defs/AbilityDef[defName="BF_DreadHowl"]</xpath>
     <match Class="PatchOperationAddModExtension">

@@ -163,19 +163,14 @@ namespace BastleFramework
         // rule would be cast by both. A veto (hidden trait on a player pawn) makes the delegate
         // answer false, so the tree keeps casting by instinct there.
         // Only when every ability the trait grants (and the pawn has) is handed off: a content
-        // tree may also cast one nothing else would. And not during a melee attack or hunt that
-        // Ability AI's gap-close skips (it takes a standing hostile pawn or a standing prey), so a
-        // leap at a door, a turret or a downed target stays the tree's.
+        // tree may also cast one nothing else would. Whatever the integration's rule leaves out
+        // (Ability AI's gap-close skips doors, turrets and downed targets) is left out here too,
+        // rather than this side copying the integration's rules for when it would act.
         internal static bool TreeHandedOff(Pawn pawn, BastleTrait trait)
         {
             var external = HasExternalAutocast;
             var defs = trait.Abilities;
             if (external == null || defs.NullOrEmpty() || pawn.abilities == null) return false;
-            var job = pawn.CurJob;
-            if (job != null && (job.def == JobDefOf.AttackMelee || job.def == JobDefOf.PredatorHunt)
-                && !(job.targetA.Thing is Pawn target && !target.Downed
-                     && (job.def == JobDefOf.PredatorHunt || target.HostileTo(pawn))))
-                return false;
             bool any = false;
             for (int i = 0; i < defs.Count; i++)
             {
