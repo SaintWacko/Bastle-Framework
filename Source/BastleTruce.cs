@@ -130,6 +130,9 @@ namespace BastleFramework
     {
         private List<Faction> factions = new List<Faction>();
         private List<Faction> brokenWithPlayer = new List<Faction>();
+        private Dictionary<Faction, int> paidGoodwill = new Dictionary<Faction, int>();
+        private List<Faction> paidKeys;
+        private List<int> paidValues;
 
         private const int CheckIntervalTicks = 60;
 
@@ -149,6 +152,13 @@ namespace BastleFramework
 
         public bool WithPlayer(Faction f) => f != null && factions.Contains(f) && !brokenWithPlayer.Contains(f);
 
+        /// <summary>The faction was given this much goodwill for the fight here, and loses it
+        /// if the colony breaks the truce before its fighters are gone.</summary>
+        public void Notify_GoodwillPaid(Faction f, int goodwill)
+        {
+            if (goodwill > 0 && WithPlayer(f)) paidGoodwill[f] = goodwill;
+        }
+
         public void Begin(IEnumerable<Faction> joining)
         {
             foreach (var f in joining)
@@ -164,12 +174,27 @@ namespace BastleFramework
             if (!WithPlayer(f)) return;
             brokenWithPlayer.Add(f);
             RefreshTargets(new List<Faction> { f });
-            BastleOutbreakQuest.PartFor(map.Parent)?.Notify_TruceBroken(f);
+            var outbreak = BastleOutbreakQuest.PartFor(map.Parent);
+            outbreak?.Notify_TruceBroken(f);
+            string goodwillLine = null;
+            if (paidGoodwill.TryGetValue(f, out int paid))
+            {
+                paidGoodwill.Remove(f);
+                if (!f.defeated)
+                {
+                    Faction.OfPlayer.TryAffectGoodwillWith(f, -paid, canSendMessage: false, reason: BastleOutbreakDefOf.BF_OutbreakTruceBroken);
+                    goodwillLine = "BF_TruceBrokenGoodwillLost".Translate(paid);
+                }
+            }
+            else if (outbreak != null) goodwillLine = "BF_TruceBrokenNoGoodwill".Translate();
+            // After the goodwill is taken back, which may have made them hostile again.
             bool hostile = f.HostileTo(Faction.OfPlayer);
             string key = captured
                 ? (hostile ? "BF_TruceBrokenCapturedHostile" : "BF_TruceBrokenCaptured")
                 : (hostile ? "BF_TruceBrokenAttackedHostile" : "BF_TruceBrokenAttacked");
-            Find.LetterStack.ReceiveLetter("BF_TruceBrokenLabel".Translate(f.Name), key.Translate(f.NameColored),
+            TaggedString text = key.Translate(f.NameColored);
+            if (goodwillLine != null) text += " " + goodwillLine;
+            Find.LetterStack.ReceiveLetter("BF_TruceBrokenLabel".Translate(f.Name), text,
                 hostile ? LetterDefOf.ThreatSmall : LetterDefOf.NegativeEvent, new List<Pawn>(map.mapPawns.SpawnedPawnsInFaction(f)));
         }
 
@@ -179,6 +204,7 @@ namespace BastleFramework
             var was = new List<Faction>(factions);
             factions.Clear();
             brokenWithPlayer.Clear();
+            paidGoodwill.Clear();
             BastleTruce.Unregister(this);
             RefreshTargets(was);
         }
@@ -219,10 +245,13 @@ namespace BastleFramework
         {
             Scribe_Collections.Look(ref factions, "factions", LookMode.Reference);
             Scribe_Collections.Look(ref brokenWithPlayer, "brokenWithPlayer", LookMode.Reference);
+            Scribe_Collections.Look(ref paidGoodwill, "paidGoodwill", LookMode.Reference, LookMode.Value, ref paidKeys, ref paidValues);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 factions = factions ?? new List<Faction>();
                 brokenWithPlayer = brokenWithPlayer ?? new List<Faction>();
+                paidGoodwill = paidGoodwill ?? new Dictionary<Faction, int>();
+                paidGoodwill.RemoveAll(kv => kv.Key == null);
                 factions.RemoveAll(f => f == null);
                 brokenWithPlayer.RemoveAll(f => f == null);
                 // Before the map's things respawn, so the attack target cache is built with the truce.

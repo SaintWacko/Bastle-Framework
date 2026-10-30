@@ -39,6 +39,11 @@
     <label>failed to stop an outbreak</label>
   </HistoryEventDef>
 
+  <HistoryEventDef>
+    <defName>BF_OutbreakTruceBroken</defName>
+    <label>broke the outbreak truce</label>
+  </HistoryEventDef>
+
   <IncidentDef>
     <defName>BF_BastleOutbreakSpread</defName>
     <label>outbreak spreads</label>

@@ -197,14 +197,14 @@
   <!-- {0}: the factions' names joined with "and". {1}: the strain's kind, plural. -->
   <BF_OutbreakAlliesArrivedText>Fighters from {0} have arrived to fight the {1} beside you.
 
-They will hunt the outbreak until it is gone, then leave. Each faction will think better of you the more of its people survive. A faction whose fighters you attack on purpose, or take prisoner, gets no goodwill for it.</BF_OutbreakAlliesArrivedText>
+They will hunt the outbreak until it is gone, then leave. Each faction will think better of you the more of its people survive. A faction whose fighters you attack on purpose, or take prisoner, before they have left the map gets no goodwill for it, and loses any it was already given.</BF_OutbreakAlliesArrivedText>
   <!-- {0}: the faction's people, plural and capitalised. {1}: faction name. -->
   <BF_OutbreakFightersLeaving>{0} from {1} are leaving the outbreak site.</BF_OutbreakFightersLeaving>
   <!-- {0}: the hostile factions' names joined with "and". -->
   <BF_OutbreakTruceArrivedText>{0} are hostile to you, but have agreed to a truce on this map: nobody here will attack anyone else from the factions at the outbreak. Attacking their fighters on purpose, or taking one of them prisoner, breaks the truce.</BF_OutbreakTruceArrivedText>
   <BF_OutbreakContainedLabel>Outbreak contained</BF_OutbreakContainedLabel>
   <!-- {0}: the strain's kind, plural. -->
-  <BF_OutbreakContainedText>The {0} are dead, and the outbreak is over. The factions who fought beside you remember how many of their people came home:</BF_OutbreakContainedText>
+  <BF_OutbreakContainedText>The {0} are dead, and the outbreak is over. The factions who fought beside you remember how many of their people came home. Attacking their fighters before they leave takes the goodwill back.</BF_OutbreakContainedText>
   <!-- {0}: faction name. {1}: survivors. {2}: fighters sent. {3}: goodwill change with sign. -->
   <BF_OutbreakSurvivorsLine>{0}: {1} of {2} survived, goodwill {3}</BF_OutbreakSurvivorsLine>
   <!-- {0}: faction name. -->
@@ -212,10 +212,14 @@ They will hunt the outbreak until it is gone, then leave. Each faction will thin
 
   <!-- Truce. {0}: faction name. -->
   <BF_TruceBrokenLabel>Truce broken: {0}</BF_TruceBrokenLabel>
-  <BF_TruceBrokenAttackedHostile>Your people attacked fighters from {0} on purpose, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people. They will not be paid goodwill for the outbreak.</BF_TruceBrokenAttackedHostile>
-  <BF_TruceBrokenAttacked>Your people attacked fighters from {0} on purpose, and the truce with them is over. They will not be paid goodwill for the outbreak.</BF_TruceBrokenAttacked>
-  <BF_TruceBrokenCapturedHostile>Your people took one of the fighters from {0} prisoner, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people. They will not be paid goodwill for the outbreak.</BF_TruceBrokenCapturedHostile>
-  <BF_TruceBrokenCaptured>Your people took one of the fighters from {0} prisoner, and the truce with them is over. They will not be paid goodwill for the outbreak.</BF_TruceBrokenCaptured>
+  <BF_TruceBrokenAttackedHostile>Your people attacked fighters from {0} on purpose, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people.</BF_TruceBrokenAttackedHostile>
+  <BF_TruceBrokenAttacked>Your people attacked fighters from {0} on purpose, and the truce with them is over.</BF_TruceBrokenAttacked>
+  <BF_TruceBrokenCapturedHostile>Your people took one of the fighters from {0} prisoner, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people.</BF_TruceBrokenCapturedHostile>
+  <BF_TruceBrokenCaptured>Your people took one of the fighters from {0} prisoner, and the truce with them is over.</BF_TruceBrokenCaptured>
+  <!-- Appended to a truce broken letter while the outbreak is still being fought. -->
+  <BF_TruceBrokenNoGoodwill>They will not be paid goodwill for the outbreak.</BF_TruceBrokenNoGoodwill>
+  <!-- Appended to a truce broken letter after the outbreak paid them. {0}: the goodwill taken back. -->
+  <BF_TruceBrokenGoodwillLost>The {0} goodwill they gave you for the outbreak is lost.</BF_TruceBrokenGoodwillLost>
   <!-- {0}: the strain's kind. -->
   <BF_OutbreakEscapedLabel>Outbreak uncontained: {0}</BF_OutbreakEscapedLabel>
   <!-- {0}: the strain's kind, plural. -->

@@ -18,6 +18,7 @@ namespace BastleFramework
         public static SitePartDef BF_BastleOutbreakSite;
         public static GameConditionDef BF_UncontainedOutbreak;
         public static HistoryEventDef BF_OutbreakFailed;
+        public static HistoryEventDef BF_OutbreakTruceBroken;
 
         static BastleOutbreakDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(BastleOutbreakDefOf));
     }
@@ -594,7 +595,13 @@ namespace BastleFramework
                 int survivors = a.Survivors;
                 int goodwill = Mathf.RoundToInt(most * survivors / (float)a.brought);
                 if (goodwill != 0 && !a.faction.defeated)
+                {
+                    int before = a.faction.PlayerGoodwill;
                     Faction.OfPlayer.TryAffectGoodwillWith(a.faction, goodwill, canSendMessage: false, reason: HistoryEventDefOf.QuestGoodwillReward);
+                    // The fighters are still on the map under the truce: attacking them on the
+                    // way out takes this back, and the quest is over by then, so the truce keeps it.
+                    BastleTruce.On(site?.Map)?.Notify_GoodwillPaid(a.faction, a.faction.PlayerGoodwill - before);
+                }
                 lines.Add("BF_OutbreakSurvivorsLine".Translate(a.faction.NameColored, survivors, a.brought, goodwill.ToStringWithSign()).Resolve());
             }
             if (lines.Count > 0)
