@@ -156,7 +156,9 @@ namespace BastleFramework
         /// if the colony breaks the truce before its fighters are gone.</summary>
         public void Notify_GoodwillPaid(Faction f, int goodwill)
         {
-            if (goodwill > 0 && WithPlayer(f)) paidGoodwill[f] = goodwill;
+            // Zero is kept too (a faction already at the cap): the fight is won, so a break
+            // afterwards must not claim they will not be paid.
+            if (goodwill >= 0 && WithPlayer(f)) paidGoodwill[f] = goodwill;
         }
 
         public void Begin(IEnumerable<Faction> joining)
@@ -180,10 +182,16 @@ namespace BastleFramework
             if (paidGoodwill.TryGetValue(f, out int paid))
             {
                 paidGoodwill.Remove(f);
-                if (!f.defeated)
+                if (paid > 0 && !f.defeated)
                 {
-                    Faction.OfPlayer.TryAffectGoodwillWith(f, -paid, canSendMessage: false, reason: BastleOutbreakDefOf.BF_OutbreakTruceBroken);
-                    goodwillLine = "BF_TruceBrokenGoodwillLost".Translate(paid);
+                    // The truce letter below says whether they are hostile now, so vanilla's
+                    // relations letter would only repeat it. Vanilla can enlarge a loss above the
+                    // faction's natural goodwill, so the letter shows what was really taken.
+                    int before = f.PlayerGoodwill;
+                    Faction.OfPlayer.TryAffectGoodwillWith(f, -paid, canSendMessage: false, canSendHostilityLetter: false,
+                        reason: BastleOutbreakDefOf.BF_OutbreakTruceBroken);
+                    int lost = before - f.PlayerGoodwill;
+                    if (lost > 0) goodwillLine = "BF_TruceBrokenGoodwillLost".Translate(lost);
                 }
             }
             else if (outbreak != null) goodwillLine = "BF_TruceBrokenNoGoodwill".Translate();
@@ -245,13 +253,12 @@ namespace BastleFramework
         {
             Scribe_Collections.Look(ref factions, "factions", LookMode.Reference);
             Scribe_Collections.Look(ref brokenWithPlayer, "brokenWithPlayer", LookMode.Reference);
-            Scribe_Collections.Look(ref paidGoodwill, "paidGoodwill", LookMode.Reference, LookMode.Value, ref paidKeys, ref paidValues);
+            Scribe_Collections.Look(ref paidGoodwill, "paidGoodwill", LookMode.Reference, LookMode.Value, ref paidKeys, ref paidValues, logNullErrors: false);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 factions = factions ?? new List<Faction>();
                 brokenWithPlayer = brokenWithPlayer ?? new List<Faction>();
                 paidGoodwill = paidGoodwill ?? new Dictionary<Faction, int>();
-                paidGoodwill.RemoveAll(kv => kv.Key == null);
                 factions.RemoveAll(f => f == null);
                 brokenWithPlayer.RemoveAll(f => f == null);
                 // Before the map's things respawn, so the attack target cache is built with the truce.
