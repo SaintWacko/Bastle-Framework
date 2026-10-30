@@ -751,26 +751,49 @@ namespace BastleFramework
         public int count = 2;
     }
 
+    /// <summary>On a HediffDef: a Hydra split gives the young this hediff too, at the
+    /// parent's severity. Scaria carries it (Patches/BF_HydraInherited.xml); a content mod
+    /// puts it on a hediff that keeps a creature in a state of its own (Dungeon Madness's
+    /// dungeon-mad).</summary>
+    public class BastleSplitInherited : DefModExtension { }
+
     /// <summary>When it dies, young copies of it (every other trait, its material and
     /// what the player knew about it) spring up beside the corpse. The copies don't get
-    /// this trait, so it happens once.</summary>
+    /// this trait, so it happens once. They take on the parent's mental state, its lord
+    /// and its BastleSplitInherited hediffs.</summary>
     public class BastleTrait_Hydra : BastleTrait
     {
         private HydraParams P => def.GetModExtension<HydraParams>() ?? Defaults;
         private static readonly HydraParams Defaults = new HydraParams();
 
+        // Read in Notify_PawnKilled: by Notify_PawnDied vanilla has dropped the pawn from
+        // its lord and nulled its mindState. Not saved; used on the next tick.
+        private MentalStateDef stateAtDeath;
+        private Lord lordAtDeath;
+
+        public override void Notify_PawnKilled()
+        {
+            var pawn = Pawn;
+            stateAtDeath = pawn?.MentalStateDef;
+            lordAtDeath = pawn?.GetLord();
+        }
+
         public override void Notify_PawnDied(DamageInfo? dinfo)
         {
             var pawn = Pawn;
+            var state = stateAtDeath;
+            var lord = lordAtDeath;
+            stateAtDeath = null;
+            lordAtDeath = null;
             if (pawn?.Corpse == null || !pawn.Corpse.Spawned) return;
             Pawn killer = dinfo?.Instigator as Pawn;
             int count = P.count;
             var ownDef = def;
             // Inside Pawn.Kill: spawn on the next tick.
-            BastleScheduler.NextTick(() => Split(pawn, killer, count, ownDef));
+            BastleScheduler.NextTick(() => Split(pawn, killer, count, ownDef, state, lord));
         }
 
-        private static void Split(Pawn pawn, Pawn killer, int count, BastleTraitDef ownDef)
+        private static void Split(Pawn pawn, Pawn killer, int count, BastleTraitDef ownDef, MentalStateDef state, Lord lord)
         {
             var corpse = pawn.Corpse;
             if (corpse == null || !corpse.Spawned) return;
@@ -791,9 +814,30 @@ namespace BastleFramework
                 spawned.Add(child);
             }
             if (spawned.Count == 0) return;
-            if (pawn.Faction == null)
+            var inherited = pawn.health.hediffSet.hediffs.Where(h => h.def.HasModExtension<BastleSplitInherited>()).ToList();
+            foreach (var c in spawned)
             {
-                if (killer?.Faction != null)
+                foreach (var h in inherited)
+                {
+                    if (c.health.hediffSet.HasHediff(h.def)) continue;
+                    var copy = HediffMaker.MakeHediff(h.def, c);
+                    copy.Severity = h.Severity;
+                    c.health.AddHediff(copy);
+                }
+                // The state may already be up: an inherited hediff can start it in PostAdd.
+                if (state != null && c.MentalStateDef != state)
+                    c.mindState.mentalStateHandler.TryStartMentalState(state, forced: true, forceWake: true, transitionSilently: true);
+            }
+            // A ritual's lord holds roles for the pawns it started with.
+            bool keepLord = lord != null && lord.faction == pawn.Faction && lord.Map == map
+                && map.lordManager.lords.Contains(lord) && !(lord.LordJob is LordJob_Ritual);
+            if (keepLord)
+            {
+                lord.AddPawns(spawned);
+            }
+            else if (pawn.Faction == null)
+            {
+                if (state == null && killer?.Faction != null)
                     foreach (var c in spawned)
                         c.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.Manhunter, forced: true, forceWake: true);
             }

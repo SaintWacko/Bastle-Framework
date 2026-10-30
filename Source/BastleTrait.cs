@@ -194,6 +194,10 @@ namespace BastleFramework
         /// to zero removes it): queue it for TickInterval.</summary>
         public virtual void Notify_PawnDamagedThing(Thing thing, DamageInfo dinfo, DamageWorker.DamageResult result) { }
 
+        /// <summary>The creature is about to die: its mental state, lord and needs are still
+        /// there, which they no longer are in Notify_PawnDied.</summary>
+        public virtual void Notify_PawnKilled() { }
+
         public virtual void Notify_PawnDied(DamageInfo? dinfo) { }
 
         /// <summary>Extra lines in the bastle hediff tooltip, only shown once discovered.</summary>

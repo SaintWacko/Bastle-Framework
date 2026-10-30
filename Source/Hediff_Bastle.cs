@@ -1046,6 +1046,13 @@ namespace BastleFramework
             }
         }
 
+        public override void Notify_PawnKilled()
+        {
+            base.Notify_PawnKilled();
+            for (int i = traits.Count - 1; i >= 0; i--)
+                traits[i].Notify_PawnKilled();
+        }
+
         public override void Notify_PawnDied(DamageInfo? dinfo, Hediff culprit = null)
         {
             base.Notify_PawnDied(dinfo, culprit);

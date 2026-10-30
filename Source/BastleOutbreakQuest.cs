@@ -703,7 +703,6 @@ namespace BastleFramework
             // A hostile faction under the truce is not "friendly".
             string leaving = faction.HostileTo(Faction.OfPlayer) ? "BF_OutbreakFightersLeaving" : "MessageFriendlyFightersLeaving";
             done.AddPreAction(new TransitionAction_Message(leaving.Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
-            done.AddPreAction(new TransitionAction_EnsureHaveExitDestination());
             done.AddPostAction(new TransitionAction_EndAllJobs());
             graph.AddTransition(done);
             return graph;

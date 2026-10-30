@@ -643,7 +643,7 @@ namespace BastleFramework
                 l.CheckboxLabeled("BF_Settings_OutbreakHostileFactions".Translate(), ref outbreakHostileFactions, "BF_Settings_OutbreakHostileFactionsHint".Translate());
                 float halfTop = l.CurHeight;
                 Slider(l, "BF_Settings_OutbreakFactionHalfDistance", ref outbreakFactionHalfDistance, 5f, OutbreakFactionHalfDistanceOff,
-                    outbreakFactionHalfDistance >= OutbreakFactionHalfDistanceOff ? "BF_Settings_NoPreference".Translate().ToString() : Mathf.RoundToInt(outbreakFactionHalfDistance).ToString(),
+                    outbreakFactionHalfDistance >= OutbreakFactionHalfDistanceOff ? "BF_Settings_NoPreference".Translate().ToString() : "BF_Settings_Tiles".Translate(Mathf.RoundToInt(outbreakFactionHalfDistance)).ToString(),
                     null, 1f);
                 TooltipHandler.TipRegion(new Rect(0f, halfTop, l.ColumnWidth, l.CurHeight - halfTop), "BF_Settings_OutbreakFactionHalfDistanceHint".Translate());
                 float allyGoodwill = outbreakAllyGoodwill;

@@ -168,9 +168,10 @@
   <BF_Settings_OutbreakSecondFaction>Chance of a second faction</BF_Settings_OutbreakSecondFaction>
   <BF_Settings_OutbreakHostileFactions>Hostile factions can join</BF_Settings_OutbreakHostileFactions>
   <BF_Settings_OutbreakHostileFactionsHint>The second faction may be one hostile to you (never a permanent enemy such as pirates). It fights under a truce that holds on the site only. Attacking one of its fighters on purpose, or taking one prisoner, breaks the truce and its goodwill. The asker is never hostile.</BF_Settings_OutbreakHostileFactionsHint>
-  <BF_Settings_OutbreakFactionHalfDistance>Faction distance for half the chance</BF_Settings_OutbreakFactionHalfDistance>
-  <BF_Settings_OutbreakFactionHalfDistanceHint>Factions with a settlement near the site are more likely to ask and to join. A faction this many tiles farther from the site than another, counting its closest settlement, is half as likely to be picked. At the top of the slider distance does not matter.</BF_Settings_OutbreakFactionHalfDistanceHint>
-  <BF_Settings_NoPreference>any</BF_Settings_NoPreference>
+  <BF_Settings_OutbreakFactionHalfDistance>Prefer nearby factions</BF_Settings_OutbreakFactionHalfDistance>
+  <BF_Settings_OutbreakFactionHalfDistanceHint>Factions with a settlement near the site are more likely to ask and to join. A faction this many tiles farther from the site than another, counting its closest settlement, is half as likely to be picked. Off: distance does not matter.</BF_Settings_OutbreakFactionHalfDistanceHint>
+  <BF_Settings_NoPreference>off</BF_Settings_NoPreference>
+  <BF_Settings_Tiles>{0} tiles</BF_Settings_Tiles>
   <BF_Settings_OutbreakAllyGoodwill>Goodwill if all survive</BF_Settings_OutbreakAllyGoodwill>
   <BF_Settings_OutbreakFailSection>Failure</BF_Settings_OutbreakFailSection>
   <BF_Settings_OutbreakFailGoodwill>Goodwill lost with the asker</BF_Settings_OutbreakFailGoodwill>
