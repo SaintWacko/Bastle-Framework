@@ -188,10 +188,13 @@ namespace BastleFramework
                     // relations letter would only repeat it. Vanilla can enlarge a loss above the
                     // faction's natural goodwill, so the letter shows what was really taken.
                     int before = f.PlayerGoodwill;
+                    bool wasAlly = f.PlayerRelationKind == FactionRelationKind.Ally;
                     Faction.OfPlayer.TryAffectGoodwillWith(f, -paid, canSendMessage: false, canSendHostilityLetter: false,
                         reason: BastleOutbreakDefOf.BF_OutbreakTruceBroken);
                     int lost = before - f.PlayerGoodwill;
                     if (lost > 0) goodwillLine = "BF_TruceBrokenGoodwillLost".Translate(lost);
+                    if (wasAlly && f.PlayerRelationKind != FactionRelationKind.Ally && !f.HostileTo(Faction.OfPlayer))
+                        goodwillLine = (goodwillLine != null ? goodwillLine + " " : "") + "BF_TruceBrokenNoLongerAllies".Translate();
                 }
             }
             else if (outbreak != null) goodwillLine = "BF_TruceBrokenNoGoodwill".Translate();

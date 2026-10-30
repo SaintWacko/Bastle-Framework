@@ -218,8 +218,10 @@ They will hunt the outbreak until it is gone, then leave. Each faction will thin
   <BF_TruceBrokenCaptured>Your people took one of the fighters from {0} prisoner, and the truce with them is over.</BF_TruceBrokenCaptured>
   <!-- Appended to a truce broken letter while the outbreak is still being fought. -->
   <BF_TruceBrokenNoGoodwill>They will not be paid goodwill for the outbreak.</BF_TruceBrokenNoGoodwill>
-  <!-- Appended to a truce broken letter after the outbreak paid them. {0}: the goodwill taken back. -->
-  <BF_TruceBrokenGoodwillLost>The {0} goodwill they gave you for the outbreak is lost.</BF_TruceBrokenGoodwillLost>
+  <!-- Appended to a truce broken letter after the outbreak paid them. {0}: the goodwill lost. -->
+  <BF_TruceBrokenGoodwillLost>You lose {0} goodwill with them for breaking the truce after the fight.</BF_TruceBrokenGoodwillLost>
+  <!-- Appended when losing that goodwill ended an alliance (vanilla's relations letter is not sent). -->
+  <BF_TruceBrokenNoLongerAllies>They are no longer your allies.</BF_TruceBrokenNoLongerAllies>
   <!-- {0}: the strain's kind. -->
   <BF_OutbreakEscapedLabel>Outbreak uncontained: {0}</BF_OutbreakEscapedLabel>
   <!-- {0}: the strain's kind, plural. -->
