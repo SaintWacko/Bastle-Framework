@@ -820,12 +820,16 @@ namespace BastleFramework
                 foreach (var h in inherited)
                 {
                     if (c.health.hediffSet.HasHediff(h.def)) continue;
-                    var copy = HediffMaker.MakeHediff(h.def, c);
-                    copy.Severity = h.Severity;
+                    if (h.Part != null && c.health.hediffSet.PartIsMissing(h.Part)) continue;
+                    // Same kind, so the same BodyDef: the parent's part record is the young's too.
+                    var copy = HediffMaker.MakeHediff(h.def, c, h.Part);
+                    // A marked hediff may be what killed the parent; the young start just short of that.
+                    copy.Severity = h.def.lethalSeverity > 0f ? Mathf.Min(h.Severity, h.def.lethalSeverity * 0.9f) : h.Severity;
                     c.health.AddHediff(copy);
                 }
                 // The state may already be up: an inherited hediff can start it in PostAdd.
-                if (state != null && c.MentalStateDef != state)
+                // A social fight needs the opponent it was started with.
+                if (state != null && c.MentalStateDef != state && !typeof(MentalState_SocialFighting).IsAssignableFrom(state.stateClass))
                     c.mindState.mentalStateHandler.TryStartMentalState(state, forced: true, forceWake: true, transitionSilently: true);
             }
             // A ritual's lord holds roles for the pawns it started with.
