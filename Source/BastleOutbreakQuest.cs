@@ -720,7 +720,10 @@ namespace BastleFramework
             var exit = new LordToil_ExitMap(LocomotionUrgency.Walk);
             graph.AddToil(exit);
             var done = new Transition(hunt, exit);
-            done.AddTrigger(new Trigger_TickCondition(() => !GenHostility.AnyHostileActiveThreatTo(Map, faction), 250));
+            // Fogged threats count, as in Site.CheckAllEnemiesDefeated: animals pathing through a
+            // ruin's fogged rooms vanished from the check and the fighters left mid-fight.
+            // Dormant ones don't: a sleeping mech cluster would hold them on the map for good.
+            done.AddTrigger(new Trigger_TickCondition(() => !GenHostility.AnyHostileActiveThreatTo(Map, faction, canBeFogged: true), 250));
             // Picked when they leave: a hostile faction under the truce is not "friendly", and a
             // broken truce can make a faction hostile after the graph was built.
             done.AddPreAction(new TransitionAction_Custom(() =>
