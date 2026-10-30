@@ -693,8 +693,9 @@ namespace BastleFramework
             this.fallbackLocation = fallbackLocation;
         }
 
-        // Lord adds vanilla's panic flee to every toil (the faction's attackersDownPercentageRangeForAutoFlee,
-        // 40-70% lost), as it does for LordJob_AssistColony reinforcements.
+        // No AddFleeToil override: Lord adds vanilla's panic flee to every toil (the faction's
+        // attackersDownPercentageRangeForAutoFlee, 40-70% lost), as for LordJob_AssistColony.
+
         public const string TurnOnColonyMemo = "BF_TruceBroken";
 
         /// <summary>Sends a faction's fighters on the map back to the hunt after the truce with
@@ -720,9 +721,14 @@ namespace BastleFramework
             graph.AddToil(exit);
             var done = new Transition(hunt, exit);
             done.AddTrigger(new Trigger_TickCondition(() => !GenHostility.AnyHostileActiveThreatTo(Map, faction), 250));
-            // A hostile faction under the truce is not "friendly".
-            string leaving = faction.HostileTo(Faction.OfPlayer) ? "BF_OutbreakFightersLeaving" : "MessageFriendlyFightersLeaving";
-            done.AddPreAction(new TransitionAction_Message(leaving.Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
+            // Picked when they leave: a hostile faction under the truce is not "friendly", and a
+            // broken truce can make a faction hostile after the graph was built.
+            done.AddPreAction(new TransitionAction_Custom(() =>
+            {
+                string leaving = faction.HostileTo(Faction.OfPlayer) ? "BF_OutbreakFightersLeaving" : "MessageFriendlyFightersLeaving";
+                Messages.Message(leaving.Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name),
+                    new LookTargets(lord.ownedPawns), MessageTypeDefOf.NeutralEvent);
+            }));
             done.AddPostAction(new TransitionAction_EndAllJobs());
             graph.AddTransition(done);
             // Back to the hunt with the colony now a target; done fires again once nothing hostile is left.
