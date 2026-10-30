@@ -113,14 +113,18 @@
 
         <li Class="QuestNode_GetMap" />
 
-        <li Class="BastleFramework.QuestNode_GetBastleOutbreakFactions">
-          <storeAskerAs>asker</storeAskerAs>
-          <storeSecondFactionAs>secondFaction</storeSecondFactionAs>
-        </li>
+        <li Class="BastleFramework.QuestNode_SetBastleOutbreakSiteRange" />
 
         <li Class="QuestNode_GetSiteTile">
           <storeAs>siteTile</storeAs>
           <preferCloserTiles>true</preferCloserTiles>
+        </li>
+
+        <!-- After the site tile: the factions nearest the site are favoured. -->
+        <li Class="BastleFramework.QuestNode_GetBastleOutbreakFactions">
+          <tile>$siteTile</tile>
+          <storeAskerAs>asker</storeAskerAs>
+          <storeSecondFactionAs>secondFaction</storeSecondFactionAs>
         </li>
 
         <li Class="BastleFramework.QuestNode_GetBastleOutbreakParams">

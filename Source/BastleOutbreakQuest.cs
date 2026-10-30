@@ -116,11 +116,28 @@ namespace BastleFramework
         }
     }
 
+    /// <summary>Sets vanilla's siteDistRange slate value for the QuestNode_GetSiteTile after it.</summary>
+    public class QuestNode_SetBastleOutbreakSiteRange : QuestNode
+    {
+        protected override bool TestRunInt(Slate slate)
+        {
+            Set(slate);
+            return true;
+        }
+
+        protected override void RunInt() => Set(QuestGen.slate);
+
+        private static void Set(Slate slate) => slate.Set("siteDistRange", BastleFrameworkMod.Settings.outbreakSiteDistance);
+    }
+
     /// <summary>Picks who attends: the asker (a non-hostile faction's leader, stored as asker)
-    /// and, at outbreakSecondFactionChance, a second faction (secondFaction, else null), drawn
-    /// from the hostile factions at outbreakHostileChance and from the peaceful ones otherwise.</summary>
+    /// and, at outbreakSecondFactionChance, a second faction (secondFaction, else null) from
+    /// every faction that can attend, hostile ones too while outbreakHostileFactions is on.
+    /// Both picks favour factions with a settlement near the site: a faction
+    /// outbreakFactionHalfDistance tiles farther than another is half as likely.</summary>
     public class QuestNode_GetBastleOutbreakFactions : QuestNode
     {
+        public SlateRef<PlanetTile> tile;
         [NoTranslate] public SlateRef<string> storeAskerAs = "asker";
         [NoTranslate] public SlateRef<string> storeSecondFactionAs = "secondFaction";
 
@@ -144,24 +161,48 @@ namespace BastleFramework
         private bool TrySetVars(Slate slate)
         {
             var all = Find.FactionManager.AllFactionsListForReading;
-            var peaceful = all.Where(f => BastleOutbreakQuest.CanAttend(f)).ToList();
-            var askers = peaceful.Where(f => f.leader != null && !f.leader.Dead
+            var nearest = NearestSettlements(tile.GetValue(slate));
+            var askers = all.Where(f => BastleOutbreakQuest.CanAttend(f) && f.leader != null && !f.leader.Dead
                 && !(f.leader.IsWorldPawn() && Find.WorldPawns.GetSituation(f.leader) == WorldPawnSituation.ReservedByQuest)).ToList();
-            if (!askers.TryRandomElement(out var asker)) return false;
+            if (!TryPickNear(askers, nearest, out var asker)) return false;
             Faction second = null;
             if (Rand.Chance(BastleFrameworkMod.Settings.outbreakSecondFactionChance))
             {
-                // With no hostile faction to invite, the second faction is still a peaceful one,
-                // so the second-faction chance means what its slider says.
-                if (!Rand.Chance(BastleFrameworkMod.Settings.outbreakHostileChance)
-                    || !all.Where(f => BastleOutbreakQuest.CanAttend(f, allowHostile: true) && f.HostileTo(Faction.OfPlayer)).TryRandomElement(out second))
-                    peaceful.Where(f => f != asker).TryRandomElement(out second);
+                bool allowHostile = BastleFrameworkMod.Settings.outbreakHostileFactions;
+                TryPickNear(all.Where(f => f != asker && BastleOutbreakQuest.CanAttend(f, allowHostile)).ToList(), nearest, out second);
             }
             slate.Set(storeAskerAs.GetValue(slate), asker.leader);
             slate.Set(storeSecondFactionAs.GetValue(slate), second);
             slate.Set("hasSecondFaction", second != null);
             slate.Set("secondHostile", second != null && second.HostileTo(Faction.OfPlayer));
             return true;
+        }
+
+        /// <summary>Each faction's closest settlement to the tile, on the tile's layer.</summary>
+        private static Dictionary<Faction, float> NearestSettlements(PlanetTile tile)
+        {
+            var nearest = new Dictionary<Faction, float>();
+            if (!tile.Valid) return nearest;
+            foreach (var s in Find.WorldObjects.Settlements)
+            {
+                if (s.Faction == null || s.Tile.Layer != tile.Layer) continue;
+                float d = Find.WorldGrid.ApproxDistanceInTiles(tile, s.Tile);
+                if (!nearest.TryGetValue(s.Faction, out float best) || d < best) nearest[s.Faction] = d;
+            }
+            return nearest;
+        }
+
+        // Weights are taken relative to the closest candidate so a large world can't push
+        // them all to zero. A faction with no settlement on the layer is only picked when
+        // no candidate has one.
+        private static bool TryPickNear(List<Faction> candidates, Dictionary<Faction, float> nearest, out Faction picked)
+        {
+            float half = BastleFrameworkMod.Settings.outbreakFactionHalfDistance;
+            var near = candidates.Where(nearest.ContainsKey).ToList();
+            if (near.Count == 0 || half >= BastleSettings.OutbreakFactionHalfDistanceOff)
+                return candidates.TryRandomElement(out picked);
+            float closest = near.Min(f => nearest[f]);
+            return near.TryRandomElementByWeight(f => Mathf.Pow(0.5f, (nearest[f] - closest) / half), out picked);
         }
     }
 

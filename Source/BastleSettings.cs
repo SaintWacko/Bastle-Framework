@@ -101,7 +101,13 @@ namespace BastleFramework
         public float outbreakGrowthCap = 2f;
         public float outbreakAllyShare = 0.4f;
         public float outbreakSecondFactionChance = 0.5f;
-        public float outbreakHostileChance = 0.35f;
+        public bool outbreakHostileFactions = true;
+        public IntRange outbreakSiteDistance = new IntRange(10, 40);
+        public const int OutbreakSiteDistanceMin = 2;
+        public const int OutbreakSiteDistanceMax = 100;
+        public float outbreakFactionHalfDistance = 15f;
+        /// <summary>At this slider value nearby factions are not preferred at all.</summary>
+        public const float OutbreakFactionHalfDistanceOff = 60f;
         public int outbreakAllyGoodwill = 20;
         public int outbreakFailGoodwill = 10;
         public float outbreakUncontainedDays = 45f;
@@ -185,7 +191,9 @@ namespace BastleFramework
             outbreakGrowthCap = 2f;
             outbreakAllyShare = 0.4f;
             outbreakSecondFactionChance = 0.5f;
-            outbreakHostileChance = 0.35f;
+            outbreakHostileFactions = true;
+            outbreakSiteDistance = new IntRange(10, 40);
+            outbreakFactionHalfDistance = 15f;
             outbreakAllyGoodwill = 20;
             outbreakFailGoodwill = 10;
             outbreakUncontainedDays = 45f;
@@ -295,8 +303,12 @@ namespace BastleFramework
             outbreakAllyShare = Mathf.Clamp(outbreakAllyShare, 0.1f, 1.5f);
             Scribe_Values.Look(ref outbreakSecondFactionChance, "outbreakSecondFactionChance", 0.5f);
             outbreakSecondFactionChance = Mathf.Clamp01(outbreakSecondFactionChance);
-            Scribe_Values.Look(ref outbreakHostileChance, "outbreakHostileChance", 0.35f);
-            outbreakHostileChance = Mathf.Clamp01(outbreakHostileChance);
+            Scribe_Values.Look(ref outbreakHostileFactions, "outbreakHostileFactions", true);
+            Scribe_Values.Look(ref outbreakSiteDistance, "outbreakSiteDistance", new IntRange(10, 40));
+            outbreakSiteDistance.min = Mathf.Clamp(outbreakSiteDistance.min, OutbreakSiteDistanceMin, OutbreakSiteDistanceMax);
+            outbreakSiteDistance.max = Mathf.Clamp(outbreakSiteDistance.max, outbreakSiteDistance.min, OutbreakSiteDistanceMax);
+            Scribe_Values.Look(ref outbreakFactionHalfDistance, "outbreakFactionHalfDistance", 15f);
+            outbreakFactionHalfDistance = Mathf.Clamp(outbreakFactionHalfDistance, 5f, OutbreakFactionHalfDistanceOff);
             Scribe_Values.Look(ref outbreakAllyGoodwill, "outbreakAllyGoodwill", 20);
             outbreakAllyGoodwill = Mathf.Clamp(outbreakAllyGoodwill, 0, 50);
             Scribe_Values.Look(ref outbreakFailGoodwill, "outbreakFailGoodwill", 10);
@@ -613,6 +625,11 @@ namespace BastleFramework
                 Slider(l, "BF_Settings_PackTraitShare", ref outbreakTraitShare, 0f, 0.8f, outbreakTraitShare.ToStringPercent(), null, 0.05f);
                 Slider(l, "BF_Settings_OutbreakGrowth", ref outbreakGrowth, 0f, 0.25f, outbreakGrowth.ToStringPercent(), null, 0.01f);
                 Slider(l, "BF_Settings_OutbreakGrowthCap", ref outbreakGrowthCap, 1f, 5f, "x" + outbreakGrowthCap.ToStringByStyle(ToStringStyle.FloatMaxTwo), null, 0.25f);
+                Rect distLabel = l.GetRect(Text.LineHeight);
+                Widgets.Label(distLabel, "BF_Settings_OutbreakSiteDistance".Translate());
+                TooltipHandler.TipRegion(distLabel, "BF_Settings_OutbreakSiteDistanceHint".Translate());
+                Widgets.IntRange(l.GetRect(32f), 581720394, ref outbreakSiteDistance, OutbreakSiteDistanceMin, OutbreakSiteDistanceMax);
+                l.Gap(l.verticalSpacing);
             }
             l.End();
 
@@ -623,7 +640,12 @@ namespace BastleFramework
                 SubHead(l, "BF_Settings_OutbreakAlliesSection");
                 Slider(l, "BF_Settings_OutbreakAllyShare", ref outbreakAllyShare, 0.1f, 1.5f, outbreakAllyShare.ToStringPercent(), null, 0.05f);
                 Slider(l, "BF_Settings_OutbreakSecondFaction", ref outbreakSecondFactionChance, 0f, 1f, outbreakSecondFactionChance.ToStringPercent(), null, 0.05f);
-                Slider(l, "BF_Settings_OutbreakHostileChance", ref outbreakHostileChance, 0f, 1f, outbreakHostileChance.ToStringPercent(), "BF_Settings_OutbreakHostileChanceHint", 0.05f);
+                l.CheckboxLabeled("BF_Settings_OutbreakHostileFactions".Translate(), ref outbreakHostileFactions, "BF_Settings_OutbreakHostileFactionsHint".Translate());
+                float halfTop = l.CurHeight;
+                Slider(l, "BF_Settings_OutbreakFactionHalfDistance", ref outbreakFactionHalfDistance, 5f, OutbreakFactionHalfDistanceOff,
+                    outbreakFactionHalfDistance >= OutbreakFactionHalfDistanceOff ? "BF_Settings_NoPreference".Translate().ToString() : Mathf.RoundToInt(outbreakFactionHalfDistance).ToString(),
+                    null, 1f);
+                TooltipHandler.TipRegion(new Rect(0f, halfTop, l.ColumnWidth, l.CurHeight - halfTop), "BF_Settings_OutbreakFactionHalfDistanceHint".Translate());
                 float allyGoodwill = outbreakAllyGoodwill;
                 Slider(l, "BF_Settings_OutbreakAllyGoodwill", ref allyGoodwill, 0f, 50f, "+" + Mathf.RoundToInt(allyGoodwill), null, 1f);
                 outbreakAllyGoodwill = Mathf.RoundToInt(allyGoodwill);
