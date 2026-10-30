@@ -207,6 +207,7 @@ namespace BastleFramework
             if (goodwillLine != null) text += " " + goodwillLine;
             Find.LetterStack.ReceiveLetter("BF_TruceBrokenLabel".Translate(f.Name), text,
                 hostile ? LetterDefOf.ThreatSmall : LetterDefOf.NegativeEvent, new List<Pawn>(map.mapPawns.SpawnedPawnsInFaction(f)));
+            if (hostile) LordJob_BastleOutbreakAllies.TurnOnColony(map, f);
         }
 
         public void End()

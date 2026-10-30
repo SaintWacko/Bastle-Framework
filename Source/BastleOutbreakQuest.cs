@@ -693,7 +693,20 @@ namespace BastleFramework
             this.fallbackLocation = fallbackLocation;
         }
 
-        public override bool AddFleeToil => false;
+        // Lord adds vanilla's panic flee to every toil (the faction's attackersDownPercentageRangeForAutoFlee,
+        // 40-70% lost), as it does for LordJob_AssistColony reinforcements.
+        public const string TurnOnColonyMemo = "BF_TruceBroken";
+
+        /// <summary>Sends a faction's fighters on the map back to the hunt after the truce with
+        /// the colony broke and the faction is hostile: the exit duty never looks for enemies,
+        /// and Trigger_BecamePlayerEnemy can't fire because the relation itself never changed.</summary>
+        public static void TurnOnColony(Map map, Faction faction)
+        {
+            var lords = map.lordManager.lords;
+            for (int i = 0; i < lords.Count; i++)
+                if (lords[i].faction == faction && lords[i].LordJob is LordJob_BastleOutbreakAllies)
+                    lords[i].ReceiveMemo(TurnOnColonyMemo);
+        }
 
         // A faction removed from the world while its fighters were here loads as null.
         public override bool LostImportantReferenceDuringLoading => faction == null;
@@ -712,6 +725,11 @@ namespace BastleFramework
             done.AddPreAction(new TransitionAction_Message(leaving.Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
             done.AddPostAction(new TransitionAction_EndAllJobs());
             graph.AddTransition(done);
+            // Back to the hunt with the colony now a target; done fires again once nothing hostile is left.
+            var turn = new Transition(exit, hunt);
+            turn.AddTrigger(new Trigger_Memo(TurnOnColonyMemo));
+            turn.AddPostAction(new TransitionAction_EndAllJobs());
+            graph.AddTransition(turn);
             return graph;
         }
 
