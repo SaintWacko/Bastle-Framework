@@ -62,7 +62,7 @@ namespace BastleFramework
         public float materialNutritionPerUnit = 0.05f;
 
         // World (BastleWorld.cs). Defaults for new games; a game can override the switches.
-        public static readonly float[] DefaultWorldCurvePoints = { 1f, 2f, 4f, 6f, 9f };
+        public static readonly float[] DefaultWorldCurvePoints = { 1f, 2f, 3f, 5f, 8f };
         public bool worldEnabled = true;
         public float[] worldCurvePoints = (float[])DefaultWorldCurvePoints.Clone();
         public float worldPointVariance = 0.25f;
