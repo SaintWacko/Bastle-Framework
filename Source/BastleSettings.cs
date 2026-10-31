@@ -34,7 +34,7 @@ namespace BastleFramework
         // Generation and rarity (indexed by BastleRarity)
         public static readonly float[] DefaultRarityWeights = { 50f, 25f, 12f, 5f, 3f };
         public static readonly float[] DefaultRarityStrength = { 1f, 1.25f, 1.5f, 2f, 3f };
-        public static readonly float[] DefaultRarityPoints = { 1f, 2f, 4f, 7f, 11f };
+        public static readonly float[] DefaultRarityPoints = { 1f, 2f, 3f, 5f, 8f };
         public static readonly FloatRange DefaultPointTarget = new FloatRange(2f, 6f);
         public float[] rarityWeights = (float[])DefaultRarityWeights.Clone();
         public float[] rarityStrength = (float[])DefaultRarityStrength.Clone();
