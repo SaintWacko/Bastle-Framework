@@ -56,6 +56,62 @@ namespace BastleFramework
             return list;
         }
 
+        private static readonly int[] SpawnPoints = { 1, 3, 6, 10, 15, 20, 30 };
+
+        [DebugAction(Category, "Spawn bastle...", actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        private static List<DebugActionNode> SpawnBastle()
+        {
+            var kinds = DefDatabase<PawnKindDef>.AllDefs
+                .Where(k => k.RaceProps != null && k.RaceProps.Animal && !k.RaceProps.Dryad && k.combatPower > 0f)
+                .OrderBy(k => k.defName).ToList();
+            var big = kinds.Where(k => k.combatPower >= 100f).ToList();
+
+            var byKind = new DebugActionNode("pick kind");
+            foreach (var kind in kinds)
+                byKind.AddChild(PointsNode($"{kind.defName} ({kind.combatPower:0})", kind, null));
+            return new List<DebugActionNode>
+            {
+                PointsNode("random animal", null, kinds),
+                PointsNode("random big animal (combat power 100+)", null, big),
+                byKind,
+            };
+        }
+
+        private static DebugActionNode PointsNode(string label, PawnKindDef kind, List<PawnKindDef> pool)
+        {
+            var node = new DebugActionNode(label);
+            foreach (int points in SpawnPoints)
+            {
+                var pointsNode = new DebugActionNode($"{points} points");
+                pointsNode.AddChild(SpawnNode("manhunter", kind, pool, points, true));
+                pointsNode.AddChild(SpawnNode("wild", kind, pool, points, false));
+                node.AddChild(pointsNode);
+            }
+            return node;
+        }
+
+        // Traits are discovered on spawn so the name and the card show what was rolled; the
+        // overlays and effects show either way.
+        private static DebugActionNode SpawnNode(string label, PawnKindDef kind, List<PawnKindDef> pool, int points, bool manhunter) =>
+            new DebugActionNode(label, DebugActionType.ToolMap, () =>
+            {
+                var map = Find.CurrentMap;
+                var cell = UI.MouseCell();
+                if (!cell.InBounds(map) || !cell.Standable(map)) return;
+                var pawn = BastleEvents.TryMakeBastle(map.Tile, kind,
+                    refused => pool.Where(k => !refused.Contains(k)).TryRandomElementByWeight(k => k.combatPower, out var picked) ? picked : null,
+                    p => BastleWorld.MakeBastle(p, points));
+                if (pawn == null)
+                {
+                    Messages.Message("No bastle could be made (every kind tried refused the traits).", MessageTypeDefOf.RejectInput, false);
+                    return;
+                }
+                GenSpawn.Spawn(pawn, cell, map);
+                if (manhunter) BastleEvents.MakeManhunterNoExit(pawn);
+                BastleUtility.DiscoverAll(pawn, notify: false);
+                Report(pawn, BastleUtility.GetBastle(pawn)?.Traits ?? new List<BastleTrait>());
+            });
+
         private static void Report(Pawn p, List<BastleTrait> added)
         {
             Log.Message($"[Bastle Framework] Rolled {added.Count} trait(s) on {p} for {added.Sum(t => t.Points):0.#} points: "

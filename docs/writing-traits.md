@@ -33,7 +33,7 @@ Once a trait has shipped, keep its `defName`. Saved creatures refer to their tra
     <label>longstrider</label>
     <description>Its legs are longer than they should be. It covers ground quickly.</description>
     <rumor>outruns anything on open ground</rumor>
-    <namePrefix>longstrider</namePrefix>
+    <namePrefix>striding</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen>
       <li>Attacks</li>
@@ -83,7 +83,7 @@ A trait with `products` (wool or milk) only rolls on races that are shorn or mil
 
 ### Points and rarity
 
-Generation gives each creature a point target and adds traits until it reaches it. A trait's points are what it costs against that target. Set `pointCost` when a trait is clearly stronger or weaker than others of its rarity (Luminous costs 0.5 because a light does nothing in a fight). Each trait point also adds 10% health and some market value by default; both are in the settings. Points are never shown to the player.
+Generation gives each creature a point target and adds traits until it reaches it. A trait's points are what it costs against that target. Set `pointCost` when a trait is clearly stronger or weaker than others of its rarity (the utility trait Luminous costs 0.5: a light is worth less than the other utility traits' meat, wool or lower hunger, and at half a point it can fit beside another one in the small utility budget). Each trait point also adds 10% health and some market value by default; both are in the settings. Points are never shown to the player.
 
 The roller picks a rarity by its weight, then a trait at that rarity by commonality. A trait much cheaper than the target per remaining slot is made less likely, so a big target buys rarer traits instead of filling the trait cap with Commons. A trait that would leave the target out of reach of the slots left is skipped. A trait that would overshoot is held back in proportion to how far over it goes. The target is a minimum, so the last trait may go over.
 
