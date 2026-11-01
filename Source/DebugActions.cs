@@ -97,7 +97,16 @@ namespace BastleFramework
             {
                 var map = Find.CurrentMap;
                 var cell = UI.MouseCell();
-                if (!cell.InBounds(map) || !cell.Standable(map)) return;
+                if (!cell.InBounds(map) || !cell.Standable(map))
+                {
+                    Messages.Message("Pick a standable cell.", MessageTypeDefOf.RejectInput, false);
+                    return;
+                }
+                if (kind == null && pool.Count == 0)
+                {
+                    Messages.Message("No animal kind fits this pool.", MessageTypeDefOf.RejectInput, false);
+                    return;
+                }
                 var pawn = BastleEvents.TryMakeBastle(map.Tile, kind,
                     refused => pool.Where(k => !refused.Contains(k)).TryRandomElementByWeight(k => k.combatPower, out var picked) ? picked : null,
                     p => BastleWorld.MakeBastle(p, points));
