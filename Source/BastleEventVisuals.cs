@@ -856,8 +856,13 @@ namespace BastleFramework
             if (amount <= 0f || !BastleEventVisuals.On || !BastleEventVisuals.AnyHealVisuals) return;
             var pawn = __instance.pawn;
             if (pawn == null || !pawn.Spawned) return;
-            var bastle = BastleUtility.PeekBastle(pawn);
-            if (bastle != null) BastleEventVisuals.Play(bastle, BastleVisualEvent.Heal, null);
+            // A visual must never cut short the healing that called it.
+            try
+            {
+                var bastle = BastleUtility.PeekBastle(pawn);
+                if (bastle != null) BastleEventVisuals.Play(bastle, BastleVisualEvent.Heal, null);
+            }
+            catch (System.Exception e) { Log.ErrorOnce($"[Bastle Framework] heal visuals failed: {e}", 0x5EEA); }
         }
     }
 
@@ -869,8 +874,12 @@ namespace BastleFramework
         public static void Postfix(Verb_MeleeAttack __instance, Thing target)
         {
             if (!(target is Pawn pawn) || !BastleEventVisuals.On || !BastleEventVisuals.AnyDodgeVisuals) return;
-            var bastle = BastleUtility.PeekBastle(pawn);
-            if (bastle != null) BastleEventVisuals.Play(bastle, BastleVisualEvent.Dodge, __instance.CasterPawn);
+            try
+            {
+                var bastle = BastleUtility.PeekBastle(pawn);
+                if (bastle != null) BastleEventVisuals.Play(bastle, BastleVisualEvent.Dodge, __instance.CasterPawn);
+            }
+            catch (System.Exception e) { Log.ErrorOnce($"[Bastle Framework] dodge visuals failed: {e}", 0x5EEB); }
         }
     }
 }

@@ -191,6 +191,8 @@ namespace BastleFramework
             if ((toOther || center == BastleProcCenter.Other || minDistance > 0f) && !HasOther)
                 yield return $"{owner}: toOther, center Other and minDistance need a Hit, TakeDamage or Kill proc";
             if (toOther && IsArea) yield return $"{owner}: toOther can't go with a radius";
+            // A Kill proc's effects run a tick later, when the victim is a corpse: only its cell is left.
+            if (on == BastleProcEvent.Kill && toOther) yield return $"{owner}: a Kill proc can't use toOther (the victim is dead by then); use a radius with center Other";
             if (adaptSeconds > 0f && !toOther) yield return $"{owner}: adaptSeconds needs toOther";
             if (adaptFactor < 0f || adaptFactor >= 1f) yield return $"{owner}: adaptFactor must be at least 0 and below 1";
             if ((damageDef != null) != (damage > 0f)) yield return $"{owner}: damageDef and damage go together";
@@ -208,6 +210,9 @@ namespace BastleFramework
                     if (c?.ability == null) { yield return $"{owner}: a proc cast has no ability"; continue; }
                     if (c.ability.groupDef != null) yield return $"{owner}: proc cast {c.ability.defName} has a cooldown group, which would put the creature's own abilities on cooldown";
                     if (c.target != BastleProcCastTarget.Self && !HasOther) yield return $"{owner}: proc cast target {c.target} needs a Hit, TakeDamage or Kill proc";
+                    if (on == BastleProcEvent.Kill && c.target == BastleProcCastTarget.Other) yield return $"{owner}: a Kill proc can't cast at Other (the victim is dead by then); use OtherCell";
+                    // A proc cast runs the ability's effect comps only, never its verb (no projectile, no jump).
+                    if (c.ability.comps.NullOrEmpty()) yield return $"{owner}: proc cast {c.ability.defName} has no effect comps, so casting it does nothing (its verb never runs)";
                 }
                 if ((on == BastleProcEvent.Hit || on == BastleProcEvent.TakeDamage) && !HasCooldown && chance >= 1f)
                     yield return $"{owner}: a Hit or TakeDamage proc with casts needs a chance below 1 or a cooldown";
@@ -627,9 +632,15 @@ namespace BastleFramework
     {
         public static void Postfix(Pawn killed, Pawn killer)
         {
-            if (killer == null || killer == killed || !BastleProcs.AnyKillProcs) return;
-            var bastle = BastleUtility.PeekBastle(killer);
-            if (bastle != null) BastleProcs.OnEvent(bastle, BastleProcEvent.Kill, killed);
+            // A kill made by a proc's own damage doesn't set off another proc: a Kill proc with
+            // area damage would otherwise chain through a crowd.
+            if (killer == null || killer == killed || BastleCombatUtility.InExtraDamage || !BastleProcs.AnyKillProcs) return;
+            try
+            {
+                var bastle = BastleUtility.PeekBastle(killer);
+                if (bastle != null) BastleProcs.OnEvent(bastle, BastleProcEvent.Kill, killed);
+            }
+            catch (Exception e) { Log.ErrorOnce($"[Bastle Framework] kill proc check failed: {e}", 0x9A0F); }
         }
     }
 }
