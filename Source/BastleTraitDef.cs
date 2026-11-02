@@ -209,9 +209,15 @@ namespace BastleFramework
         /// <summary>Particle effecters kept running on the creature (embers, smoke).</summary>
         public List<EffecterDef> effecters;
 
-        /// <summary>Show overlays and effecters before the trait is discovered. They
-        /// give the trait away, so this is off by default.</summary>
+        /// <summary>Whether its looks show before it is discovered, as a hint (null: the
+        /// setting "Looks hint at unknown traits"). A surface's or an event visual's own
+        /// beforeIdentified overrides this. Showing reveals nothing.</summary>
+        public bool? visualsBeforeIdentified;
+
+        /// <summary>Older name: true is visualsBeforeIdentified true.</summary>
         public bool showVisualsWhenHidden;
+
+        public bool? VisualsBeforeIdentified => showVisualsWhenHidden ? true : visualsBeforeIdentified;
 
         /// <summary>Flickering fire sprites drawn on the creature's body.</summary>
         public List<BastleFlames> flames;
@@ -231,7 +237,7 @@ namespace BastleFramework
 
         /// <summary>One-off effects when something happens to it: a hit it lands, a blow it
         /// takes, a dodge, a heal, a deflected shot. Shown under the same rule as the other
-        /// visuals (known, or showVisualsWhenHidden), with the Event effects setting.</summary>
+        /// visuals (BastleTrait.ShowsVisual), with the Event effects setting.</summary>
         public List<BastleEventVisual> eventVisuals;
 
         /// <summary>Faded copies of it left behind while it runs.</summary>

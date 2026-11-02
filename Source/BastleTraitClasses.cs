@@ -514,7 +514,7 @@ namespace BastleFramework
                 return false;
             }
             var P = Params;
-            bool show = (discovered || def.showVisualsWhenHidden) && BastleFrameworkMod.Settings.effectsEnabled
+            bool show = ShowsVisual() && BastleFrameworkMod.Settings.effectsEnabled
                 && map == Find.CurrentMap && !pawn.Position.Fogged(map) && IsActive(pawn, P);
             if (!show) { DestroyGlow(); DestroyLinks(); return true; }
             if (gd == null) DestroyGlow();
@@ -584,7 +584,7 @@ namespace BastleFramework
         {
             var map = pawn.Map;
             if (map != Find.CurrentMap || !BastleFrameworkMod.Settings.effectsEnabled) return;
-            if (!(discovered || def.showVisualsWhenHidden) || pawn.Position.Fogged(map)) return;
+            if (!ShowsVisual() || pawn.Position.Fogged(map)) return;
             // PsycastAreaEffect is 2.3 tiles across at scale 1 and grows as it fades.
             float scale = P.pulseScale > 0f ? P.pulseScale : P.radius * 0.7f;
             FleckMaker.Static(pawn.DrawPos, map, P.pulseFleck, scale);

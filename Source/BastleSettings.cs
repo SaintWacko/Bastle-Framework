@@ -17,6 +17,9 @@ namespace BastleFramework
         public bool effectsEnabled = true;
         public bool surfacesEnabled = true;
         public bool eventEffectsEnabled = true;
+        // Looks play before their trait is identified, as a hint that something is there
+        // (Entad Framework's VisualsUnidentified); a def's or an entry's beforeIdentified overrides it.
+        public bool visualsUnidentified = true;
 
         // Procs (BastleProcs.cs)
         public bool procsEnabled = true;
@@ -129,6 +132,7 @@ namespace BastleFramework
             effectsEnabled = true;
             surfacesEnabled = true;
             eventEffectsEnabled = true;
+            visualsUnidentified = true;
             procsEnabled = true;
             procChanceFactor = 1f;
             procCooldownFactor = 1f;
@@ -223,6 +227,7 @@ namespace BastleFramework
             Scribe_Values.Look(ref effectsEnabled, "effectsEnabled", true);
             Scribe_Values.Look(ref surfacesEnabled, "surfacesEnabled", true);
             Scribe_Values.Look(ref eventEffectsEnabled, "eventEffectsEnabled", true);
+            Scribe_Values.Look(ref visualsUnidentified, "visualsUnidentified", true);
             Scribe_Values.Look(ref procsEnabled, "procsEnabled", true);
             Scribe_Values.Look(ref procChanceFactor, "procChanceFactor", 1f);
             procChanceFactor = Mathf.Clamp(procChanceFactor, 0f, 3f);
@@ -392,6 +397,7 @@ namespace BastleFramework
             Check(l, "BF_Settings_Effects", ref effectsEnabled, "BF_Settings_EffectsHint");
             Check(l, "BF_Settings_Surfaces", ref surfacesEnabled, "BF_Settings_SurfacesHint");
             Check(l, "BF_Settings_EventEffects", ref eventEffectsEnabled, "BF_Settings_EventEffectsHint");
+            Check(l, "BF_Settings_VisualsUnidentified", ref visualsUnidentified, "BF_Settings_VisualsUnidentifiedHint");
         }
 
         // Behaviour, procs, then health and value: in fewer columns the hints push the last

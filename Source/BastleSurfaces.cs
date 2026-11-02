@@ -22,6 +22,9 @@ namespace BastleFramework
         /// <summary>Humanlikes only: also draw it on the head.</summary>
         public bool includeHead = true;
 
+        /// <summary>Show before the trait is discovered (null: the trait's rule, then the setting).</summary>
+        public bool? beforeIdentified;
+
         [Unsaved] private PawnRenderNodeProperties bodyProps;
         [Unsaved] private PawnRenderNodeProperties headProps;
 
@@ -56,6 +59,7 @@ namespace BastleFramework
 
     /// <summary>One surface's draw this frame: the body's mesh and matrix as the render
     /// tree computed them, and the shape of the texture the body is showing.</summary>
+    [StaticConstructorOnStartup]
     public class BastleSurfaceDraw
     {
         public BastleShape shape;

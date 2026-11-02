@@ -16,7 +16,12 @@
     <label>flaming</label>
     <description>Its body burns without being consumed. Fire barely hurts it and it shrugs off the cold.</description>
     <rumor>burns like a torch and never burns out</rumor>
-    <visible>true</visible>
+    <!-- Hidden: its looks hint at it (setting Looks hint at unknown traits) and leave which trait, and how strong, to discovery. -->
+    <discoverWhen>
+      <li>TakesDamage</li>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
     <namePrefix>flaming</namePrefix>
     <rarity>Uncommon</rarity>
     <!-- Its fire resistance can't scale past Uncommon, so it rolls at Uncommon or,
@@ -146,7 +151,7 @@
         <afterimages>
           <intervalTicks>5</intervalTicks>
           <lifeTicks>22</lifeTicks>
-          <color>(0.85, 0.9, 1, 0.4)</color>
+          <color>(1, 0.85, 0.55, 0.45)</color>
         </afterimages>
       </li>
     </rarityOverrides>

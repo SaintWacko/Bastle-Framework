@@ -108,7 +108,12 @@
     <namePrefix>stormborn</namePrefix>
     <rarity>Rare</rarity>
     <scalesWithRarity>true</scalesWithRarity>
-    <visible>true</visible>
+    <!-- Hidden: its looks hint at it (setting Looks hint at unknown traits) and leave which trait, and how strong, to discovery. -->
+    <discoverWhen>
+      <li>UsesGrantedVerb</li>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
     <exclusionTags><li>BF_Element</li></exclusionTags>
     <tags><li>Storm</li></tags>
     <overlays>

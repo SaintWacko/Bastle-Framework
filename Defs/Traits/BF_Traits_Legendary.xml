@@ -40,7 +40,11 @@
     <rumor>wears mirror-bright scales that turn bullets aside</rumor>
     <namePrefix>mirror-scaled</namePrefix>
     <rarity>Legendary</rarity>
-    <visible>true</visible>
+    <!-- Hidden: its looks hint at it (setting Looks hint at unknown traits) and leave which trait, and how strong, to discovery. A deflection the player sees discovers it too. -->
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
     <!-- A bright band sweeps across it every few seconds, and glints wink on its scales. -->
     <surfaces>
       <li Class="BastleFramework.BastleSurface_Sheen" />

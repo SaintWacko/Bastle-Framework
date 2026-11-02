@@ -84,6 +84,87 @@
     <growthRate>0.35</growthRate>
   </FleckDef>
 
+  <!-- Frost mist for a coat that gives it off all the time: denser than the burst mist, since a
+       few at a time have to read as a cold body (Entad Framework's FrostMistWorn). -->
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_FrostMistCoat</defName>
+    <graphicData>
+      <texPath>Things/Mote/Smoke</texPath>
+      <color>(0.8, 0.92, 1, 0.75)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.2</fadeInTime>
+    <solidTime>0.4</solidTime>
+    <fadeOutTime>1.4</fadeOutTime>
+    <growthRate>0.4</growthRate>
+  </FleckDef>
+
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_FrostGlint</defName>
+    <graphicData>
+      <texPath>Things/Mote/BF_Glint</texPath>
+      <shaderType>MoteGlow</shaderType>
+      <color>(0.4, 0.68, 1)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.15</fadeInTime>
+    <solidTime>0.1</solidTime>
+    <fadeOutTime>0.45</fadeOutTime>
+  </FleckDef>
+
+  <!-- Frostfur: mist sliding down off the coat, two puffs a second, and the odd cold glint. -->
+  <EffecterDef>
+    <defName>BF_Effecter_FrostCoat</defName>
+    <children>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>BF_Fleck_FrostMistCoat</fleckDef>
+        <fleckUsesAngleForVelocity>true</fleckUsesAngleForVelocity>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.033</chancePerTick>
+        <scale>0.5~0.7</scale>
+        <angle>150~210</angle>
+        <speed>0.08~0.2</speed>
+        <rotationRate>-15~15</rotationRate>
+        <positionRadius>0.3</positionRadius>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>BF_Fleck_FrostGlint</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.006</chancePerTick>
+        <scale>0.2~0.3</scale>
+        <positionRadius>0.35</positionRadius>
+      </li>
+    </children>
+  </EffecterDef>
+
+  <!-- Rimeclawed: icy glints winking on it and a thin wisp now and then. -->
+  <EffecterDef>
+    <defName>BF_Effecter_Rime</defName>
+    <children>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>BF_Fleck_FrostGlint</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.02</chancePerTick>
+        <scale>0.2~0.32</scale>
+        <positionRadius>0.4</positionRadius>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>BF_Fleck_FrostMist</fleckDef>
+        <fleckUsesAngleForVelocity>true</fleckUsesAngleForVelocity>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.012</chancePerTick>
+        <scale>0.35~0.5</scale>
+        <angle>150~210</angle>
+        <speed>0.08~0.18</speed>
+        <positionRadius>0.3</positionRadius>
+      </li>
+    </children>
+  </EffecterDef>
+
   <!-- Cold air sinks: a little mist slides off the body and pools round the feet. -->
   <EffecterDef>
     <defName>BF_Effecter_FrostMist</defName>

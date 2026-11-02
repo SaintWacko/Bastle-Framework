@@ -423,7 +423,7 @@ namespace BastleFramework
         [Unsaved] private BastleAfterimages activeAfterimages;
         [Unsaved] private bool afterimagesResolved;
 
-        /// <summary>The afterimages it leaves while running: the first known trait's.</summary>
+        /// <summary>The afterimages it leaves while running: the first trait's that shows its looks.</summary>
         public BastleAfterimages ActiveAfterimages
         {
             get
@@ -445,7 +445,7 @@ namespace BastleFramework
         {
             var a = ActiveAfterimages;
             if (a == null || pawn.pather == null || !pawn.pather.Moving || !pawn.IsHashIntervalTick(Mathf.Max(1, a.intervalTicks))) return;
-            if (pawn.IsHiddenFromPlayer()) return;
+            if (pawn.IsHiddenFromPlayer() || !pawn.Position.ShouldSpawnMotesAt(pawn.Map, false)) return;
             BastleEventDraw.AddAfterimage(pawn, pawn.DrawPos, Vector3.zero, a.lifeTicks, a.color);
         }
 
@@ -523,8 +523,9 @@ namespace BastleFramework
         /// <summary>The mod settings changed: rebuild everything derived from them. The
         /// map component drops this bastle if it no longer has effecters or a light, and
         /// TickInterval picks it up again if it gained one.</summary>
-        internal void SettingsChanged()
+        internal void SettingsChanged(bool looksChanged = false)
         {
+            if (looksChanged) pawn?.Drawer?.renderer?.SetAllGraphicsDirty();
             activeEffecterDefs = null;
             glowResolved = false;
             afterimagesResolved = false;

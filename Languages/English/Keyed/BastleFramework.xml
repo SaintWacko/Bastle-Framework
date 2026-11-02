@@ -31,6 +31,8 @@
   <BF_Settings_SurfacesHint>Flames that crawl over a burning creature, the sheen and glints on mirror scales, and the like. Each look is built once per creature texture the first time it shows, which can cause a short stutter. Off: only the steady tints and glows show.</BF_Settings_SurfacesHint>
   <BF_Settings_EventEffects>Event effects</BF_Settings_EventEffects>
   <BF_Settings_EventEffectsHint>One-off effects when a bastle lands a hit, is struck, dodges, heals, turns a shot aside or a trait's proc goes off: flashes, lightning, ribbons of light and afterimages, and the afterimages fast bastles leave as they run. Off: none of these show; the procs still work.</BF_Settings_EventEffectsHint>
+  <BF_Settings_VisualsUnidentified>Looks hint at unknown traits</BF_Settings_VisualsUnidentified>
+  <BF_Settings_VisualsUnidentifiedHint>A bastle shows the looks of traits nobody has identified yet: flames on its coat, a sheen on its scales, frost drifting off it. They hint that something is there without saying what it is or how strong; the trait stays unknown until it is discovered the usual way. Off: a trait's looks only show once it is identified. Effects of procs always show, since a proc going off identifies its trait.</BF_Settings_VisualsUnidentifiedHint>
   <BF_Settings_ProcsSection>Procs</BF_Settings_ProcsSection>
   <BF_Settings_Procs>Traits with procs go off</BF_Settings_Procs>
   <BF_Settings_ProcsHint>Procs are trait effects that go off when something happens: a stun on a hit, a frost blast when struck, a heal when downed. Off: those traits do nothing beyond their other effects.</BF_Settings_ProcsHint>

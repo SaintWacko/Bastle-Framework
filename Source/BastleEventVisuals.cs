@@ -85,6 +85,9 @@ namespace BastleFramework
         public BastleAttackKind attack = BastleAttackKind.Any;
         /// <summary>Only when the other pawn is living flesh (a vampiric drink, not a bite on a mech).</summary>
         public bool otherFleshOnly;
+        /// <summary>Play before the trait is discovered (null: the trait's rule, then the setting).
+        /// Proc visuals ignore it: the proc identifies its trait.</summary>
+        public bool? beforeIdentified;
 
         private static int nextId;
         [Unsaved] private int id;
@@ -436,7 +439,7 @@ namespace BastleFramework
     {
         public int intervalTicks = 5;
         public int lifeTicks = 22;
-        public Color color = new Color(0.85f, 0.9f, 1f, 0.4f);
+        public Color color = new Color(1f, 0.85f, 0.55f, 0.45f);
     }
 
     /// <summary>Plays event visuals. Every entry point leaves after one settings read while
@@ -473,7 +476,7 @@ namespace BastleFramework
             return false;
         }
 
-        /// <summary>An event on the creature: every known trait's visuals for it.</summary>
+        /// <summary>An event on the creature: every trait's visuals for it that show now (ShowsVisual).</summary>
         internal static void Play(Hediff_Bastle bastle, BastleVisualEvent ev, Thing other, DamageInfo? dinfo = null)
         {
             if (!On) return;
@@ -484,11 +487,11 @@ namespace BastleFramework
             {
                 var t = traits[i];
                 var list = t.EventVisuals;
-                if (list == null || !(t.discovered || t.def.showVisualsWhenHidden)) continue;
+                if (list == null) continue;
                 for (int j = 0; j < list.Count; j++)
                 {
                     var v = list[j];
-                    if (v.on != ev || !Passes(v, pawn, other, dinfo, ev)) continue;
+                    if (v.on != ev || !t.ShowsVisual(v.beforeIdentified) || !Passes(v, pawn, other, dinfo, ev)) continue;
                     ctx.Reset(pawn.Map, pawn);
                     ctx.other = other;
                     if (other != null && other.MapHeld == pawn.Map) ctx.otherCell = other.PositionHeld;
@@ -656,7 +659,11 @@ namespace BastleFramework
         // whoever is in it next.
         private static readonly Dictionary<RenderTexture, Material> ghostMats = new Dictionary<RenderTexture, Material>();
         private static readonly List<RenderTexture> deadTextures = new List<RenderTexture>();
-        private const int PortraitPixels = 160;
+        // Per cell the portrait covers: Entad's 160 pixels over a person's two cells. A fixed
+        // 160 spread over a big animal's three or four cells drew it visibly softer than the
+        // animal beside it.
+        private const int PortraitPixelsPerCell = 80;
+        private const int MaxPortraitPixels = 320;
         // More than this on screen and the oldest go first: a running pack shouldn't render a
         // portrait each.
         private const int MaxGhosts = 48;
@@ -803,7 +810,8 @@ namespace BastleFramework
                 IntVec3 cell = pos.ToIntVec3();
                 if (!cell.InBounds(map) || cell.Fogged(map)) continue;
                 float cells = Cells(g.pawn);
-                var rt = PortraitsCache.Get(g.pawn, new Vector2(PortraitPixels, PortraitPixels), g.rot, default, 2f / cells,
+                float pixels = Mathf.Min(MaxPortraitPixels, Mathf.Round(cells * PortraitPixelsPerCell));
+                var rt = PortraitsCache.Get(g.pawn, new Vector2(pixels, pixels), g.rot, default, 2f / cells,
                     supersample: false, compensateForUIScale: false, healthStateOverride: PawnHealthState.Mobile);
                 if (rt == null) continue;
                 if (!ghostMats.TryGetValue(rt, out var mat))

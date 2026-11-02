@@ -107,11 +107,12 @@ namespace BastleFramework
             bool head = pawn.RaceProps.Humanlike && pawn.health.hediffSet.HasHead;
             foreach (var trait in bastle.TraitsForReading)
             {
-                if (!trait.VisualsActive) continue;
-                if (trait.Flames != null)
+                if (!trait.HasRenderVisuals) continue;
+                bool shows = trait.VisualsActive;
+                if (shows && trait.Flames != null)
                     foreach (var flames in trait.Flames)
                         yield return (new PawnRenderNode_BastleFlames(pawn, flames.Props, tree), null);
-                if (trait.Overlays != null)
+                if (shows && trait.Overlays != null)
                     foreach (var overlay in trait.Overlays)
                     {
                         yield return (new PawnRenderNode_BastleOverlay(pawn, overlay.PropsFor(false), tree), null);
@@ -121,6 +122,7 @@ namespace BastleFramework
                 if (trait.Surfaces != null)
                     foreach (var surface in trait.Surfaces)
                     {
+                        if (!trait.ShowsVisual(surface.beforeIdentified)) continue;
                         yield return (new PawnRenderNode_BastleSurface(pawn, surface.PropsFor(false), tree), null);
                         if (head && surface.includeHead)
                             yield return (new PawnRenderNode_BastleSurface(pawn, surface.PropsFor(true), tree), null);

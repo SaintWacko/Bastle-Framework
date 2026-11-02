@@ -345,12 +345,13 @@
       <li>Dies</li>
     </discoverWhen>
     <!-- Pale frost blended over the coat, so it shows on white fur too. -->
+    <effecters><li>BF_Effecter_Rime</li></effecters>
     <surfaces>
       <li Class="BastleFramework.BastleSurface_Flow">
-        <color>(0.8, 0.93, 1, 0.45)</color>
+        <color>(0.75, 0.9, 1, 0.7)</color>
         <coreColor>(1, 1, 1, 1)</coreColor>
-        <threshold>0.52</threshold>
-        <coreThreshold>0.82</coreThreshold>
+        <threshold>0.45</threshold>
+        <coreThreshold>0.7</coreThreshold>
         <additive>false</additive>
         <loopTicks>540</loopTicks>
         <scrolls>1</scrolls>
