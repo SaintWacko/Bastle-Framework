@@ -27,15 +27,25 @@
       <li>BF_FireAffinity</li>
     </exclusionTags>
     <tags><li>Fire</li></tags>
+    <!-- A steady orange glow over the whole body, with flames crawling up it on top. -->
     <overlays>
       <li>
-        <color>(1.0, 0.4, 0.05, 0.35)</color>
+        <color>(1.0, 0.4, 0.05, 0.25)</color>
         <scale>1.0</scale>
         <layer>1</layer>
         <pulseSpeed>1.3</pulseSpeed>
         <pulseMin>0.5</pulseMin>
       </li>
     </overlays>
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Flow">
+        <color>(1, 0.45, 0.08, 0.5)</color>
+        <threshold>0.5</threshold>
+        <coreThreshold>0.78</coreThreshold>
+        <loopTicks>360</loopTicks>
+        <frames>32</frames>
+      </li>
+    </surfaces>
     <effecters>
       <li>BF_Effecter_Embers</li>
     </effecters>
@@ -63,6 +73,30 @@
           <radius>8</radius>
           <color>(255,120,40,0)</color>
         </glow>
+        <overlays>
+          <li>
+            <color>(1.0, 0.35, 0.05, 0.35)</color>
+            <scale>1.0</scale>
+            <layer>1</layer>
+            <pulseSpeed>1.5</pulseSpeed>
+            <pulseMin>0.5</pulseMin>
+          </li>
+        </overlays>
+        <!-- Faster, denser flames than flaming: more of the noise shows, it rises three
+             times a loop (so more frames keep the step small), and it pulses. -->
+        <surfaces>
+          <li Class="BastleFramework.BastleSurface_Flow">
+            <color>(1, 0.4, 0.05, 0.8)</color>
+            <threshold>0.4</threshold>
+            <coreThreshold>0.7</coreThreshold>
+            <loopTicks>300</loopTicks>
+            <scrolls>3</scrolls>
+            <frames>48</frames>
+            <evolveCells>4</evolveCells>
+            <pulseSpeed>0.7</pulseSpeed>
+            <pulseMin>0.75</pulseMin>
+          </li>
+        </surfaces>
         <retaliation>
           <damageDef>Flame</damageDef>
           <amount>3</amount>

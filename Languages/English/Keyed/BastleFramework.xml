@@ -27,6 +27,8 @@
   <BF_Settings_LightRadius>Light radius</BF_Settings_LightRadius>
   <BF_Settings_Effects>Particle effects</BF_Settings_Effects>
   <BF_Settings_EffectsHint>Embers, smoke and other effecters. Tints and glows always show.</BF_Settings_EffectsHint>
+  <BF_Settings_Surfaces>Moving body effects</BF_Settings_Surfaces>
+  <BF_Settings_SurfacesHint>Flames that crawl over a burning creature, the sheen and glints on mirror scales, and the like. Each look is built once per creature texture the first time it shows, which can cause a short stutter. Off: only the steady tints and glows show.</BF_Settings_SurfacesHint>
   <BF_Settings_TraitsSection>Traits</BF_Settings_TraitsSection>
   <BF_Settings_Inherit>Inheritance chance</BF_Settings_Inherit>
   <BF_Settings_InheritHint>Multiplies each trait's own chance to pass to offspring.</BF_Settings_InheritHint>

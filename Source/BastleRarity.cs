@@ -56,6 +56,7 @@ namespace BastleFramework
         public List<BastleOverlay> overlays;
         public List<EffecterDef> effecters;
         public List<BastleFlames> flames;
+        public List<BastleSurface> surfaces;
         public BastleGlow glow;
         public float? healthScaleFactor;
         public float? drawSizeFactor;

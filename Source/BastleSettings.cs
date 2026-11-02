@@ -15,6 +15,7 @@ namespace BastleFramework
         public int lightFollowCells = 1;
         public float lightRadiusFactor = 1f;
         public bool effectsEnabled = true;
+        public bool surfacesEnabled = true;
 
         // Traits
         public float inheritChanceFactor = 1f;
@@ -119,6 +120,7 @@ namespace BastleFramework
             lightFollowCells = 1;
             lightRadiusFactor = 1f;
             effectsEnabled = true;
+            surfacesEnabled = true;
             inheritChanceFactor = 1f;
             discoveryMessages = true;
             abilityAI = true;
@@ -207,6 +209,7 @@ namespace BastleFramework
             Scribe_Values.Look(ref lightFollowCells, "lightFollowCells", 1);
             Scribe_Values.Look(ref lightRadiusFactor, "lightRadiusFactor", 1f);
             Scribe_Values.Look(ref effectsEnabled, "effectsEnabled", true);
+            Scribe_Values.Look(ref surfacesEnabled, "surfacesEnabled", true);
             Scribe_Values.Look(ref inheritChanceFactor, "inheritChanceFactor", 1f);
             Scribe_Values.Look(ref discoveryMessages, "discoveryMessages", true);
             Scribe_Values.Look(ref abilityAI, "abilityAI", true);
@@ -367,6 +370,7 @@ namespace BastleFramework
             lightFollowCells = Mathf.RoundToInt(follow);
             Slider(l, "BF_Settings_LightRadius", ref lightRadiusFactor, 0.25f, 2f, lightRadiusFactor.ToStringPercent(), null, 0.05f);
             Check(l, "BF_Settings_Effects", ref effectsEnabled, "BF_Settings_EffectsHint");
+            Check(l, "BF_Settings_Surfaces", ref surfacesEnabled, "BF_Settings_SurfacesHint");
         }
 
         // Behaviour on the left, health and value on the right: in one column the hints

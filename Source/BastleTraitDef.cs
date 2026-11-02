@@ -212,6 +212,10 @@ namespace BastleFramework
         /// <summary>Flickering fire sprites drawn on the creature's body.</summary>
         public List<BastleFlames> flames;
 
+        /// <summary>Moving effects masked to the creature's own shape: flames crawling up
+        /// it, a sheen sweeping across it, glints. Made at runtime from its texture.</summary>
+        public List<BastleSurface> surfaces;
+
         /// <summary>Scale effecters (spread and particle size) with the square root of
         /// body size, so a bear's embers cover a bear and a rat's cover a rat.</summary>
         public bool scaleEffectersWithBodySize = true;
@@ -221,8 +225,8 @@ namespace BastleFramework
         /// secret. Traits that glow are best made visible.</summary>
         public BastleGlow glow;
 
-        public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty() || !flames.NullOrEmpty() || glow != null;
-        public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty();
+        public bool HasVisuals => HasRenderVisuals || !effecters.NullOrEmpty() || glow != null;
+        public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty() || !surfaces.NullOrEmpty();
 
         // ---- rarity --------------------------------------------------------------
 
@@ -487,6 +491,14 @@ namespace BastleFramework
                         yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
             if (retaliation != null && retaliation.damageDef == null) yield return "retaliation has no damageDef";
+            if (surfaces != null)
+                foreach (var surface in surfaces)
+                    foreach (var e in surface.ConfigErrors()) yield return e;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    if (o.surfaces != null)
+                        foreach (var surface in o.surfaces)
+                            foreach (var e in surface.ConfigErrors()) yield return $"rarityOverride at {o.minRarity}: {e}";
             if (traitClass != null && typeof(BastleTrait_Aura).IsAssignableFrom(traitClass) && GetModExtension<AuraParams>() == null)
                 yield return "traitClass is BastleTrait_Aura but there is no AuraParams in modExtensions";
             if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(BastleTrait))

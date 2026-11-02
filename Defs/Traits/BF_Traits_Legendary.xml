@@ -41,13 +41,13 @@
     <namePrefix>mirror-scaled</namePrefix>
     <rarity>Legendary</rarity>
     <visible>true</visible>
-    <overlays>
-      <li>
-        <color>(0.85, 0.92, 1.0, 0.3)</color>
-        <pulseSpeed>1.6</pulseSpeed>
-        <pulseMin>0.4</pulseMin>
+    <!-- A bright band sweeps across it every few seconds, and glints wink on its scales. -->
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Sheen" />
+      <li Class="BastleFramework.BastleSurface_Glints">
+        <count>2</count>
       </li>
-    </overlays>
+    </surfaces>
     <deflect>
       <chance>0.35</chance>
     </deflect>

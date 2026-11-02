@@ -110,12 +110,13 @@ namespace BastleFramework
         public List<BastleOverlay> Overlays => Override?.overlays ?? def.overlays;
         public List<EffecterDef> Effecters => Override?.effecters ?? def.effecters;
         public List<BastleFlames> Flames => Override?.flames ?? def.flames;
+        public List<BastleSurface> Surfaces => Override?.surfaces ?? def.surfaces;
         public BastleGlow Glow => Override?.glow ?? def.glow;
         public string NamePrefix => Override?.namePrefix ?? def.namePrefix;
         public string NameSuffix => Override?.nameSuffix ?? def.nameSuffix;
 
-        public bool HasVisuals => !Overlays.NullOrEmpty() || !Effecters.NullOrEmpty() || !Flames.NullOrEmpty() || Glow != null;
-        public bool HasRenderVisuals => !Overlays.NullOrEmpty() || !Flames.NullOrEmpty();
+        public bool HasVisuals => HasRenderVisuals || !Effecters.NullOrEmpty() || Glow != null;
+        public bool HasRenderVisuals => !Overlays.NullOrEmpty() || !Flames.NullOrEmpty() || !Surfaces.NullOrEmpty();
 
         /// <summary>Whether this trait's overlays and effecters should show right now.</summary>
         public virtual bool VisualsActive => HasVisuals && (discovered || def.showVisualsWhenHidden);
