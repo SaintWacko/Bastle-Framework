@@ -140,11 +140,18 @@
     <tags><li>Utility</li></tags>
     <overlays>
       <li>
-        <color>(1.0, 0.82, 0.3, 0.3)</color>
+        <color>(1.0, 0.82, 0.3, 0.2)</color>
         <pulseSpeed>0.3</pulseSpeed>
         <pulseMin>0.6</pulseMin>
       </li>
     </overlays>
+    <!-- Light runs along the gold thread every few seconds. -->
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Sheen">
+        <color>(1, 0.85, 0.45, 0.5)</color>
+        <angle>20</angle>
+      </li>
+    </surfaces>
     <products>
       <woolDef>Gold</woolDef>
       <woolAmountFactor>0.5</woolAmountFactor>
@@ -186,7 +193,10 @@
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
     <disallowConstructs>true</disallowConstructs>
-    <exclusionTags><li>BF_Element</li></exclusionTags>
+    <exclusionTags>
+      <li>BF_Element</li>
+      <li>BF_ColdTolerance</li>
+    </exclusionTags>
     <tags>
       <li>Utility</li>
       <li>Cold</li>
@@ -195,6 +205,22 @@
       <li>JoinsColony</li>
       <li>Dies</li>
     </discoverWhen>
+    <!-- A faint drift of frost over the coat, blended so it shows on white fur. -->
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Flow">
+        <color>(0.85, 0.95, 1, 0.28)</color>
+        <coreColor>(1, 1, 1, 1)</coreColor>
+        <threshold>0.58</threshold>
+        <coreThreshold>0.88</coreThreshold>
+        <additive>false</additive>
+        <loopTicks>720</loopTicks>
+        <scrolls>1</scrolls>
+        <frames>24</frames>
+        <cellsAcross>9</cellsAcross>
+        <cellsUp>7</cellsUp>
+        <evolveCells>2</evolveCells>
+      </li>
+    </surfaces>
     <stage>
       <statOffsets>
         <ComfyTemperatureMin>-25</ComfyTemperatureMin>
@@ -209,6 +235,7 @@
     <rumor>is at ease in heat that would kill others of its kind</rumor>
     <namePrefix>sunhardened</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_HeatTolerance</li></exclusionTags>
     <tags>
       <li>Utility</li>
       <li>Heat</li>

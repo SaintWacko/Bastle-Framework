@@ -51,6 +51,18 @@
     <deflect>
       <chance>0.35</chance>
     </deflect>
+    <!-- A flash and a metal clank on every shot it turns aside. -->
+    <eventVisuals>
+      <li Class="BastleFramework.BastleVisual_Flecks">
+        <on>Deflect</on>
+        <fleck>ExplosionFlash</fleck>
+        <scale>1.4~1.8</scale>
+      </li>
+      <li Class="BastleFramework.BastleVisual_Effecter">
+        <on>Deflect</on>
+        <effecter>Deflect_Metal</effecter>
+      </li>
+    </eventVisuals>
   </BastleFramework.BastleTraitDef>
 
   <BastleFramework.BastleTraitDef>

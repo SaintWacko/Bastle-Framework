@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Proc traits: "when X happens, do Y" (Source/BastleProcs.cs). Going off where the player
+       can see it reveals the trait. Chances, cooldowns and strength are scaled by the Procs
+       settings on the Traits tab. Exclusion tags added here:
+       BF_Stun        one stunning blow (staggering, concussive, bonebreaker)
+       BF_MeleeAnswer one answer to being struck in melee (frostburst, shockwave, banishing) -->
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Staggering</defName>
+    <label>staggering</label>
+    <description>Now and then a blow from it leaves the victim reeling, stunned for a couple of seconds. The same victim shrugs off repeats within a few seconds more easily.</description>
+    <rumor>hits hard enough to leave a grown man reeling</rumor>
+    <namePrefix>staggering</namePrefix>
+    <rarity>Rare</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_Stun</li></exclusionTags>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>Hit</on>
+        <attack>Melee</attack>
+        <chance>0.08</chance>
+        <rarityScales>Chance</rarityScales>
+        <adaptSeconds>12</adaptSeconds>
+        <adaptFactor>0.5</adaptFactor>
+        <toOther>true</toOther>
+        <stunSeconds>2</stunSeconds>
+        <text>staggered</text>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Other</at><fleck>BF_Fleck_ImpactFlash</fleck><scale>1.2~1.5</scale></li>
+          <li Class="BastleFramework.BastleVisual_Ribbons"><from>Self</from><to>Other</to><color>(1, 0.88, 0.35)</color><strands>2~3</strands></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Concussive</defName>
+    <label>concussive</label>
+    <description>Its blows land with a dull crack. A quarter of its melee hits add a jolt of stun damage, weaker on a victim it has just jolted.</description>
+    <rumor>lands blows that leave its victims seeing stars</rumor>
+    <namePrefix>concussive</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_Stun</li></exclusionTags>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>Hit</on>
+        <attack>Melee</attack>
+        <chance>0.25</chance>
+        <rarityScales>Chance</rarityScales>
+        <adaptSeconds>10</adaptSeconds>
+        <adaptFactor>0.5</adaptFactor>
+        <toOther>true</toOther>
+        <damageDef>Stun</damageDef>
+        <damage>3</damage>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Other</at><fleck>BF_Fleck_ImpactFlash</fleck><scale>1.0~1.3</scale></li>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Other</at><fleck>MicroSparks</fleck><count>1~2</count><scale>0.6~0.9</scale><spread>0.25</spread></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Burdening</defName>
+    <label>burdening</label>
+    <description>Those it strikes sometimes feel the weight of every step afterwards: a tenth of its hits slow the victim to a crawl for about fifteen seconds.</description>
+    <rumor>leaves those it strikes dragging their feet</rumor>
+    <namePrefix>burdening</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>Hit</on>
+        <chance>0.1</chance>
+        <rarityScales>Chance</rarityScales>
+        <adaptSeconds>30</adaptSeconds>
+        <adaptFactor>0.5</adaptFactor>
+        <toOther>true</toOther>
+        <hediff>BF_Burdened</hediff>
+        <hediffSeconds>15</hediffSeconds>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Ribbons"><from>Self</from><to>Other</to><color>(0.45, 0.6, 1)</color></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Maddening</defName>
+    <label>maddening</label>
+    <description>Some it wounds forget which side they were on. Rarely, a hit drives the victim berserk (an animal turns manhunter), more often the more psychically sensitive it is. Once a day at most.</description>
+    <rumor>drives those it wounds mad</rumor>
+    <namePrefix>maddening</namePrefix>
+    <rarity>Epic</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>Hit</on>
+        <chance>0.05</chance>
+        <cooldownHours>20~28</cooldownHours>
+        <rarityScales>Cooldown</rarityScales>
+        <adaptSeconds>60</adaptSeconds>
+        <toOther>true</toOther>
+        <mentalState>Berserk</mentalState>
+        <animalMentalState>Manhunter</animalMentalState>
+        <psychic>true</psychic>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Ribbons"><from>Self</from><to>Other</to><color>(1, 0.25, 0.85)</color></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Harrowing</defName>
+    <label>harrowing</label>
+    <description>Those who see what it does to one of them lose the stomach for the rest. When it kills an enemy, each other enemy within 6 tiles may panic and flee, more likely the more psychically sensitive they are.</description>
+    <rumor>tears into its kills in a way that sends the rest running</rumor>
+    <namePrefix>harrowing</namePrefix>
+    <rarity>Rare</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>Kill</on>
+        <chance>0.25</chance>
+        <rarityScales>Chance</rarityScales>
+        <radius>6</radius>
+        <center>Other</center>
+        <targets>Enemies</targets>
+        <mentalState>PanicFlee</mentalState>
+        <mentalStateChance>0.35</mentalStateChance>
+        <psychic>true</psychic>
+        <text>harrowed</text>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Other</at><fleck>BF_Fleck_DreadWisp</fleck><count>10~13</count><scale>0.8~1.2</scale><speed>0.6~1.2</speed><spread>0.45</spread></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Frostburst</defName>
+    <label>frostburst</label>
+    <description>Cold mist pools at its feet. Strike it in melee and frost may burst out of it, chilling every enemy beside it: half speed and slower attacks for about fifteen seconds. Every 15 to 20 seconds at most.</description>
+    <rumor>breathes out a frost that freezes anyone who closes with it</rumor>
+    <namePrefix>frostburst</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_MeleeAnswer</li></exclusionTags>
+    <tags><li>Cold</li></tags>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <effecters><li>BF_Effecter_FrostMist</li></effecters>
+    <procs>
+      <li>
+        <on>TakeDamage</on>
+        <attack>Melee</attack>
+        <chance>0.3</chance>
+        <cooldownSeconds>15~20</cooldownSeconds>
+        <rarityScales>Cooldown</rarityScales>
+        <radius>1.9</radius>
+        <targets>Enemies</targets>
+        <hediff>BF_Chilled</hediff>
+        <hediffSeconds>15</hediffSeconds>
+        <text>chilled</text>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Self</at><fleck>BF_Fleck_FrostMist</fleck><count>8~10</count><scale>0.7~1.1</scale><speed>0.4~0.9</speed><spread>0.6</spread></li>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Affected</at><fleck>BF_Fleck_FrostMist</fleck><count>2~3</count><scale>0.5~0.8</scale><spread>0.3</spread></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Shockwave</defName>
+    <label>shockwave</label>
+    <description>Crowd it, and the air itself shoves back. Struck in melee, it can throw every enemy within 4 tiles three tiles away, stunned where they land. Anything bigger than a horse stays put. Every 20 to 30 seconds at most.</description>
+    <rumor>throws back everything that crowds it with a blast of air</rumor>
+    <namePrefix>repelling</namePrefix>
+    <rarity>Rare</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_MeleeAnswer</li></exclusionTags>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>TakeDamage</on>
+        <attack>Melee</attack>
+        <chance>0.25</chance>
+        <cooldownSeconds>20~30</cooldownSeconds>
+        <rarityScales>Cooldown</rarityScales>
+        <radius>3.9</radius>
+        <targets>Enemies</targets>
+        <pushDistance>3</pushDistance>
+        <fleck>PsycastAreaEffect</fleck>
+        <sound>Explosion_Stun</sound>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Banishing</defName>
+    <label>banishing</label>
+    <description>Those who come to blows with it are sometimes simply elsewhere. Struck in melee, it can skip the attacker 7 to 20 tiles away, stunned for a moment on arrival. Nothing much bigger than a bear can be moved. Every 30 to 45 seconds at most.</description>
+    <rumor>sends those who strike it somewhere else entirely</rumor>
+    <namePrefix>banishing</namePrefix>
+    <rarity>Rare</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_MeleeAnswer</li></exclusionTags>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>TakeDamage</on>
+        <attack>Melee</attack>
+        <chance>0.25</chance>
+        <cooldownSeconds>30~45</cooldownSeconds>
+        <rarityScales>Cooldown</rarityScales>
+        <toOther>true</toOther>
+        <skipDistance>7~20</skipDistance>
+        <stunSeconds>1.5</stunSeconds>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Fading</defName>
+    <label>fading</label>
+    <description>When it is badly hurt, the eye slides off it. Below half health, a hit makes it invisible to its enemies for about twenty seconds. Once every two days at most.</description>
+    <rumor>vanishes from sight when it is badly hurt</rumor>
+    <namePrefix>fading</namePrefix>
+    <rarity>Epic</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>TakeDamage</on>
+        <healthBelow>0.5</healthBelow>
+        <cooldownHours>40~56</cooldownHours>
+        <rarityScales>Cooldown</rarityScales>
+        <hediff>BF_Faded</hediff>
+        <hediffSeconds>20</hediffSeconds>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Afterimage"><count>4</count><lifeTicks>45</lifeTicks><color>(0.75, 0.8, 1, 0.5)</color></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_LastStand</defName>
+    <label>last stand</label>
+    <description>It refuses to go down. When downed, its worst wounds close by 40 hit points and it stops feeling pain for half a minute, often enough to get back up. Once a day at most.</description>
+    <rumor>gets back up after it has been cut down</rumor>
+    <nameSuffix>the unbowed</nameSuffix>
+    <rarity>Epic</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_Healing</li></exclusionTags>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>Downed</on>
+        <cooldownHours>20~28</cooldownHours>
+        <rarityScales>Cooldown</rarityScales>
+        <heal>40</heal>
+        <hediff>BF_LastStand</hediff>
+        <text>last stand</text>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Self</at><fleck>BF_Fleck_HealGlow</fleck><scale>2.2~2.6</scale></li>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Self</at><fleck>PsycastAreaEffect</fleck><scale>1.6~1.8</scale></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Adrenal</defName>
+    <label>adrenal</label>
+    <description>Pain makes it faster. Every wound floods it with adrenaline: for fifteen seconds after a hit it moves and attacks faster and feels less pain.</description>
+    <rumor>only gets faster the more you hurt it</rumor>
+    <namePrefix>adrenal</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>TakeDamage</on>
+        <hostileOnly>false</hostileOnly>
+        <hediff>BF_AdrenalRush</hediff>
+        <hediffSeconds>15</hediffSeconds>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Gorging</defName>
+    <label>gorging</label>
+    <description>It feeds on what it kills, there and then. Every kill fills a quarter of its hunger and closes 8 hit points of its wounds.</description>
+    <rumor>feeds on its kills before they have stopped twitching</rumor>
+    <namePrefix>gorging</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <allowMechanoids>false</allowMechanoids>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <procs>
+      <li>
+        <on>Kill</on>
+        <hostileOnly>false</hostileOnly>
+        <food>0.25</food>
+        <heal>8</heal>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Stream"><fleck>BF_Fleck_HealGlow</fleck><color>(1, 0.25, 0.2)</color><count>6~8</count></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <!-- Elemental, each with its own look. -->
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Rimeclawed</defName>
+    <label>rimeclawed</label>
+    <description>Frost creeps over its body and rimes its claws. Half its melee hits leave frostbite, and it shrugs off the cold.</description>
+    <rumor>leaves frostbite in every wound it makes</rumor>
+    <namePrefix>rimeclawed</namePrefix>
+    <rarity>Uncommon</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags>
+      <li>BF_Element</li>
+      <li>BF_ColdTolerance</li>
+    </exclusionTags>
+    <tags><li>Cold</li></tags>
+    <discoverWhen>
+      <li>Attacks</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <!-- Pale frost blended over the coat, so it shows on white fur too. -->
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Flow">
+        <color>(0.8, 0.93, 1, 0.45)</color>
+        <coreColor>(1, 1, 1, 1)</coreColor>
+        <threshold>0.52</threshold>
+        <coreThreshold>0.82</coreThreshold>
+        <additive>false</additive>
+        <loopTicks>540</loopTicks>
+        <scrolls>1</scrolls>
+        <frames>24</frames>
+        <cellsAcross>8</cellsAcross>
+        <cellsUp>6</cellsUp>
+      </li>
+    </surfaces>
+    <stage>
+      <statOffsets>
+        <ComfyTemperatureMin>-15</ComfyTemperatureMin>
+      </statOffsets>
+    </stage>
+    <procs>
+      <li>
+        <on>Hit</on>
+        <attack>Melee</attack>
+        <hostileOnly>false</hostileOnly>
+        <chance>0.5</chance>
+        <toOther>true</toOther>
+        <damageDef>Frostbite</damageDef>
+        <damage>2</damage>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Other</at><fleck>BF_Fleck_FrostMist</fleck><count>2~3</count><scale>0.5~0.8</scale><spread>0.3</spread></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_SmokeWreathed</defName>
+    <label>smoke-wreathed</label>
+    <description>Dark smoke curls off its body and hangs about it. When it is shot it can burst into a cloud of smoke that blinds anyone shooting through it. Every 25 to 35 seconds at most.</description>
+    <rumor>vanishes into its own smoke when anyone takes aim at it</rumor>
+    <namePrefix>smoke-wreathed</namePrefix>
+    <rarity>Rare</rarity>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <effecters><li>BF_Effecter_SmokeWreath</li></effecters>
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Flow">
+        <color>(0.1, 0.09, 0.09, 0.45)</color>
+        <coreColor>(0.25, 0.22, 0.2, 1)</coreColor>
+        <threshold>0.45</threshold>
+        <coreThreshold>0.85</coreThreshold>
+        <additive>false</additive>
+        <loopTicks>480</loopTicks>
+        <frames>32</frames>
+      </li>
+    </surfaces>
+    <stage>
+      <statOffsets>
+        <MeleeDodgeChance>4</MeleeDodgeChance>
+      </statOffsets>
+    </stage>
+    <procs>
+      <li>
+        <on>TakeDamage</on>
+        <attack>Ranged</attack>
+        <chance>0.5</chance>
+        <cooldownSeconds>25~35</cooldownSeconds>
+        <rarityScales>Cooldown</rarityScales>
+        <smokeRadius>2.9</smokeRadius>
+        <visuals>
+          <li Class="BastleFramework.BastleVisual_Flecks"><at>Self</at><fleck>BF_Fleck_DarkSmoke</fleck><count>6~8</count><scale>1.2~1.8</scale><speed>0.3~0.8</speed><spread>0.8</spread></li>
+        </visuals>
+      </li>
+    </procs>
+  </BastleFramework.BastleTraitDef>
+
+</Defs>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Auras (BastleTrait_Aura): a hediff for whoever is in range and in sight, refreshed every
+       second, gone a few seconds after they leave. -->
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Warding</defName>
+    <label>warding</label>
+    <description>In a fight, something about it turns blows aside from its pack. It and friendly people and animals within 6 tiles that it can see take 15% less damage.</description>
+    <rumor>shields those who fight beside it</rumor>
+    <namePrefix>warding</namePrefix>
+    <rarity>Epic</rarity>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>5.9</radius>
+        <hediff>BF_Warded</hediff>
+        <affectsSelf>true</affectsSelf>
+        <affectsAllies>true</affectsAllies>
+        <onlyInCombat>true</onlyInCombat>
+        <ringColor>(0.6, 0.8, 1, 1)</ringColor>
+      </li>
+    </modExtensions>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_MendingPresence</defName>
+    <label>mending presence</label>
+    <description>Wounds close faster near it. It and friendly people and animals within 5 tiles that it can see heal 75% faster, downed or not.</description>
+    <rumor>makes the wounds of those around it close by themselves</rumor>
+    <namePrefix>mending</namePrefix>
+    <rarity>Rare</rarity>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>4.9</radius>
+        <hediff>BF_Mended</hediff>
+        <affectsSelf>true</affectsSelf>
+        <affectsAllies>true</affectsAllies>
+        <whileDowned>true</whileDowned>
+        <ringColor>(0.5, 1, 0.6, 1)</ringColor>
+        <glowStrength>0.08</glowStrength>
+      </li>
+    </modExtensions>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Snaring</defName>
+    <label>snaring</label>
+    <description>Something about it drags at the legs of its enemies. Living enemies within 5 tiles that it can see move 25% slower.</description>
+    <rumor>slows anyone who tries to run from it</rumor>
+    <namePrefix>snaring</namePrefix>
+    <rarity>Rare</rarity>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>4.9</radius>
+        <hediff>BF_Snared</hediff>
+        <affectsEnemies>true</affectsEnemies>
+        <ringColor>(0.75, 0.65, 0.45, 1)</ringColor>
+      </li>
+    </modExtensions>
+  </BastleFramework.BastleTraitDef>
+
+</Defs>

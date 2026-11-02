@@ -25,6 +25,7 @@
     <exclusionTags>
       <li>BF_Element</li>
       <li>BF_FireAffinity</li>
+      <li>BF_ColdTolerance</li>
     </exclusionTags>
     <tags><li>Fire</li></tags>
     <!-- A steady orange glow over the whole body, with flames crawling up it on top. -->
@@ -140,6 +141,12 @@
         <rumor>runs down anything that flees, and leaps on its prey from far off</rumor>
         <abilities><li>BF_Leap</li></abilities>
         <aiThinkTree>BF_LeapAtTarget</aiThinkTree>
+        <!-- Faded copies left behind as it runs. -->
+        <afterimages>
+          <intervalTicks>5</intervalTicks>
+          <lifeTicks>22</lifeTicks>
+          <color>(0.85, 0.9, 1, 0.4)</color>
+        </afterimages>
       </li>
     </rarityOverrides>
   </BastleFramework.BastleTraitDef>
@@ -166,6 +173,15 @@
       <naturalHealingFactor>1.4</naturalHealingFactor>
       <regeneration>16</regeneration>
     </stage>
+    <!-- A soft green pulse as its wounds close, every few seconds at most. -->
+    <eventVisuals>
+      <li Class="BastleFramework.BastleVisual_Flecks">
+        <on>Heal</on>
+        <fleck>BF_Fleck_HealGlow</fleck>
+        <scale>0.9~1.2</scale>
+        <minIntervalTicks>180</minIntervalTicks>
+      </li>
+    </eventVisuals>
   </BastleFramework.BastleTraitDef>
 
   <BastleFramework.BastleTraitDef>
@@ -175,7 +191,10 @@
     <rumor>walks through fire without a mark</rumor>
     <namePrefix>emberborn</namePrefix>
     <rarity>Uncommon</rarity>
-    <exclusionTags><li>BF_FireAffinity</li></exclusionTags>
+    <exclusionTags>
+      <li>BF_FireAffinity</li>
+      <li>BF_HeatTolerance</li>
+    </exclusionTags>
     <tags><li>Fire</li></tags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
@@ -220,6 +239,12 @@
         <MeleeDodgeChance>8</MeleeDodgeChance>
       </statOffsets>
     </stage>
+    <!-- The blow passes through an image of it sliding aside. -->
+    <eventVisuals>
+      <li Class="BastleFramework.BastleVisual_Afterimage">
+        <on>Dodge</on>
+      </li>
+    </eventVisuals>
   </BastleFramework.BastleTraitDef>
 
   <BastleFramework.BastleTraitDef>
@@ -317,6 +342,37 @@
         <Blunt>0.76</Blunt>
       </damageFactors>
     </stage>
+  </BastleFramework.BastleTraitDef>
+
+  <!-- Cheap stat traits for the Common pool. -->
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Clotting</defName>
+    <label>clotting</label>
+    <description>Its blood thickens fast. Wounds bleed less than they should.</description>
+    <rumor>barely bleeds, however deep you cut it</rumor>
+    <namePrefix>clotting</namePrefix>
+    <scalesWithRarity>true</scalesWithRarity>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <exclusionTags><li>BF_Blood</li></exclusionTags>
+    <discoverWhen><li>TakesDamage</li></discoverWhen>
+    <stage>
+      <totalBleedFactor>0.7</totalBleedFactor>
+    </stage>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Hardy</defName>
+    <label>hardy</label>
+    <description>It is tougher than it looks and takes more killing than others of its kind.</description>
+    <rumor>takes more killing than any other of its kind</rumor>
+    <namePrefix>hardy</namePrefix>
+    <scalesWithRarity>true</scalesWithRarity>
+    <healthScaleFactor>1.12</healthScaleFactor>
+    <discoverWhen>
+      <li>TakesDamage</li>
+      <li>Dies</li>
+    </discoverWhen>
   </BastleFramework.BastleTraitDef>
 
 </Defs>

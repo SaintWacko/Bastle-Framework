@@ -29,6 +29,17 @@
   <BF_Settings_EffectsHint>Embers, smoke and other effecters. Tints and glows always show.</BF_Settings_EffectsHint>
   <BF_Settings_Surfaces>Moving body effects</BF_Settings_Surfaces>
   <BF_Settings_SurfacesHint>Flames that crawl over a burning creature, the sheen and glints on mirror scales, and the like. Each look is built once per creature texture the first time it shows, which can cause a short stutter. Off: only the steady tints and glows show.</BF_Settings_SurfacesHint>
+  <BF_Settings_EventEffects>Event effects</BF_Settings_EventEffects>
+  <BF_Settings_EventEffectsHint>One-off effects when a bastle lands a hit, is struck, dodges, heals, turns a shot aside or a trait's proc goes off: flashes, lightning, ribbons of light and afterimages, and the afterimages fast bastles leave as they run. Off: none of these show; the procs still work.</BF_Settings_EventEffectsHint>
+  <BF_Settings_ProcsSection>Procs</BF_Settings_ProcsSection>
+  <BF_Settings_Procs>Traits with procs go off</BF_Settings_Procs>
+  <BF_Settings_ProcsHint>Procs are trait effects that go off when something happens: a stun on a hit, a frost blast when struck, a heal when downed. Off: those traits do nothing beyond their other effects.</BF_Settings_ProcsHint>
+  <BF_Settings_ProcChance>Proc chance</BF_Settings_ProcChance>
+  <BF_Settings_ProcChanceHint>Multiplies the chance of every proc going off, up to 100%.</BF_Settings_ProcChanceHint>
+  <BF_Settings_ProcCooldown>Proc cooldowns</BF_Settings_ProcCooldown>
+  <BF_Settings_ProcCooldownHint>Multiplies how long a proc waits before it can go off again.</BF_Settings_ProcCooldownHint>
+  <BF_Settings_ProcStrength>Proc strength</BF_Settings_ProcStrength>
+  <BF_Settings_ProcStrengthHint>Multiplies the stuns, damage, heals, hunger filled and effect durations of every proc, and the chance of its fear or madness.</BF_Settings_ProcStrengthHint>
   <BF_Settings_TraitsSection>Traits</BF_Settings_TraitsSection>
   <BF_Settings_Inherit>Inheritance chance</BF_Settings_Inherit>
   <BF_Settings_InheritHint>Multiplies each trait's own chance to pass to offspring.</BF_Settings_InheritHint>

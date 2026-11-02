@@ -135,8 +135,9 @@ namespace BastleFramework
         /// <summary>Dealt on top, to mechanoids only (EMP).</summary>
         public DamageDef mechanoidDamageDef;
         public float mechanoidDamage;
-        /// <summary>Started on each pawn reached, with mentalStateChance. Animals get
-        /// animalMentalState instead when it is set. Mechanoids and entities never do.</summary>
+        /// <summary>Started on each pawn reached, with mentalStateChance (scaled like the
+        /// amounts). Animals get animalMentalState instead when it is set. Mechanoids and
+        /// entities never do.</summary>
         public MentalStateDef mentalState;
         public MentalStateDef animalMentalState;
         public float mentalStateChance = 1f;
@@ -496,7 +497,7 @@ namespace BastleFramework
                 landed = true;
             }
             if (p.igniteChance > 0f && !a.Destroyed && Rand.Chance(p.igniteChance)) { a.TryAttachFire(Rand.Range(0.2f, 0.4f), source); landed = true; }
-            if (p.mentalState != null && !a.Dead) landed |= TryMentalState(a, source, p);
+            if (p.mentalState != null && !a.Dead) landed |= TryMentalState(a, source, p, power);
             if (p.skipDistance.max > 0f && !a.Dead && a.Spawned) landed |= TrySkip(a, p);
             if (p.pushDistance > 0f && !a.Dead && a.Spawned) landed |= TryPush(a, center, p);
             if (landed && !p.text.NullOrEmpty() && a.Spawned && map == Find.CurrentMap && a.Position.ShouldSpawnMotesAt(map) && !a.Position.Fogged(map))
@@ -523,12 +524,12 @@ namespace BastleFramework
             return true;
         }
 
-        private static bool TryMentalState(Pawn a, Pawn source, BastleProc p)
+        private static bool TryMentalState(Pawn a, Pawn source, BastleProc p, float power)
         {
             var r = a.RaceProps;
             if (r.IsMechanoid || r.IsAnomalyEntity || a.Downed || a.InMentalState || a.mindState?.mentalStateHandler == null) return false;
             var state = r.Animal && p.animalMentalState != null ? p.animalMentalState : p.mentalState;
-            float chance = p.mentalStateChance * (p.psychic ? a.GetStatValue(StatDefOf.PsychicSensitivity) : 1f);
+            float chance = p.mentalStateChance * power * (p.psychic ? a.GetStatValue(StatDefOf.PsychicSensitivity) : 1f);
             if (!Rand.Chance(chance)) return false;
             return a.mindState.mentalStateHandler.TryStartMentalState(state, forceWake: true, otherPawn: source);
         }

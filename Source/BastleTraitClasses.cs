@@ -263,6 +263,9 @@ namespace BastleFramework
         /// <summary>Only bastles carrying at least one of these traits.</summary>
         public List<BastleTraitDef> targetTraits;
 
+        /// <summary>Only creatures that are asleep (a noise that spoils their rest).</summary>
+        public bool targetsAsleepOnly;
+
         // ---- When
 
         public bool whileDowned;
@@ -453,6 +456,7 @@ namespace BastleFramework
             if (!raceOk) return false;
             if (p == source) return P.affectsSelf;
             if (P.targetSameRace && p.def != source.def) return false;
+            if (P.targetsAsleepOnly && p.Awake()) return false;
             if (P.targetTraits != null)
             {
                 var b = BastleUtility.PeekBastle(p);

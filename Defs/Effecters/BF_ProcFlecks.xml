@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Flecks for procs and event effects, all on vanilla textures (copied from Entad Framework). -->
+
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_FrostMist</defName>
+    <graphicData>
+      <texPath>Things/Mote/Smoke</texPath>
+      <color>(0.82, 0.93, 1, 0.45)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.3</fadeInTime>
+    <solidTime>0.2</solidTime>
+    <fadeOutTime>1.2</fadeOutTime>
+    <growthRate>0.25</growthRate>
+  </FleckDef>
+
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_DreadWisp</defName>
+    <graphicData>
+      <texPath>Things/Mote/Smoke</texPath>
+      <color>(0.12, 0.07, 0.16, 0.65)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.15</fadeInTime>
+    <solidTime>0.3</solidTime>
+    <fadeOutTime>0.9</fadeOutTime>
+    <growthRate>0.5</growthRate>
+  </FleckDef>
+
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_Static</defName>
+    <graphicData>
+      <texPath>Things/Mote/FireGlow</texPath>
+      <shaderType>MoteGlow</shaderType>
+      <color>(0.55, 0.75, 1)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.02</fadeInTime>
+    <solidTime>0.08</solidTime>
+    <fadeOutTime>0.25</fadeOutTime>
+  </FleckDef>
+
+  <!-- Soft coloured glows for heals and for life drawn back along a ribbon. -->
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_HealGlow</defName>
+    <graphicData>
+      <texPath>Things/Mote/FireGlow</texPath>
+      <shaderType>MoteGlow</shaderType>
+      <color>(0.45, 1, 0.55)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.1</fadeInTime>
+    <solidTime>0.15</solidTime>
+    <fadeOutTime>0.6</fadeOutTime>
+    <growthRate>0.6</growthRate>
+  </FleckDef>
+
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_ImpactFlash</defName>
+    <graphicData>
+      <texPath>Things/Mote/FireGlow</texPath>
+      <shaderType>MoteGlow</shaderType>
+      <color>(1, 0.95, 0.8)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.02</fadeInTime>
+    <solidTime>0.05</solidTime>
+    <fadeOutTime>0.3</fadeOutTime>
+    <growthRate>1.5</growthRate>
+  </FleckDef>
+
+  <FleckDef ParentName="FleckBase_Thrown">
+    <defName>BF_Fleck_DarkSmoke</defName>
+    <graphicData>
+      <texPath>Things/Mote/Smoke</texPath>
+      <color>(0.16, 0.15, 0.15, 0.55)</color>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <fadeInTime>0.3</fadeInTime>
+    <solidTime>0.4</solidTime>
+    <fadeOutTime>1.6</fadeOutTime>
+    <growthRate>0.35</growthRate>
+  </FleckDef>
+
+  <!-- Cold air sinks: a little mist slides off the body and pools round the feet. -->
+  <EffecterDef>
+    <defName>BF_Effecter_FrostMist</defName>
+    <children>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>BF_Fleck_FrostMist</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.05</chancePerTick>
+        <scale>0.45~0.7</scale>
+        <angle>150~210</angle>
+        <speed>0.15~0.3</speed>
+        <rotationRate>-15~15</rotationRate>
+        <positionRadius>0.3</positionRadius>
+      </li>
+    </children>
+  </EffecterDef>
+
+  <!-- Dark smoke curling up off the body. -->
+  <EffecterDef>
+    <defName>BF_Effecter_SmokeWreath</defName>
+    <children>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
+        <fleckDef>BF_Fleck_DarkSmoke</fleckDef>
+        <spawnLocType>OnSource</spawnLocType>
+        <chancePerTick>0.06</chancePerTick>
+        <scale>0.6~1.0</scale>
+        <angle>-25~25</angle>
+        <speed>0.2~0.45</speed>
+        <rotationRate>-12~12</rotationRate>
+        <positionRadius>0.35</positionRadius>
+      </li>
+    </children>
+  </EffecterDef>
+
+</Defs>

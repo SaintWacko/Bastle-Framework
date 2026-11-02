@@ -154,6 +154,7 @@
     <pointCost>-1</pointCost>
     <requiresFlesh>true</requiresFlesh>
     <disallowConstructs>true</disallowConstructs>
+    <exclusionTags><li>BF_Blood</li></exclusionTags>
     <discoverWhen><li>TakesDamage</li></discoverWhen>
     <stage>
       <totalBleedFactor>2</totalBleedFactor>
@@ -244,6 +245,129 @@
         <li><thing>Steel</thing><nutrition>0.05</nutrition></li>
       </extraFoods>
     </diet>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_HeatIntolerant</defName>
+    <label>heat-intolerant</label>
+    <description>It suffers in the heat. Its comfortable temperature range tops out 15 degrees lower than its kind's.</description>
+    <namePrefix>heat-sick</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-1</pointCost>
+    <allowMechanoids>false</allowMechanoids>
+    <exclusionTags><li>BF_HeatTolerance</li></exclusionTags>
+    <tags><li>Utility</li></tags>
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <stage>
+      <statOffsets>
+        <ComfyTemperatureMax>-15</ComfyTemperatureMax>
+      </statOffsets>
+    </stage>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_ChillProne</defName>
+    <label>chill-prone</label>
+    <description>It feels the cold badly. Its comfortable temperature range starts 15 degrees higher than its kind's.</description>
+    <namePrefix>shivering</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-1</pointCost>
+    <allowMechanoids>false</allowMechanoids>
+    <exclusionTags><li>BF_ColdTolerance</li></exclusionTags>
+    <tags><li>Utility</li></tags>
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <stage>
+      <statOffsets>
+        <ComfyTemperatureMin>15</ComfyTemperatureMin>
+      </statOffsets>
+    </stage>
+  </BastleFramework.BastleTraitDef>
+
+  <!-- An aura that only reaches sleepers. No ground glow: a drawback shouldn't shine. -->
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Noisy</defName>
+    <label>noisy</label>
+    <description>It grunts, scratches and paces through the night. Anyone asleep within 6 tiles of it rests 30% less well, unless a wall is in the way.</description>
+    <namePrefix>noisy</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-1</pointCost>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <tags><li>Utility</li></tags>
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>5.9</radius>
+        <intervalTicks>120</intervalTicks>
+        <hediff>BF_Disturbed</hediff>
+        <affectsAllies>true</affectsAllies>
+        <affectsNeutrals>true</affectsNeutrals>
+        <affectsEnemies>true</affectsEnemies>
+        <targetsAsleepOnly>true</targetsAsleepOnly>
+        <showGlow>false</showGlow>
+        <ringColor>(0.7, 0.7, 0.7, 1)</ringColor>
+      </li>
+    </modExtensions>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Shedding</defName>
+    <label>shedding</label>
+    <description>It sheds constantly, leaving a clump of fur wherever it stands every few hours.</description>
+    <namePrefix>shedding</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-0.5</pointCost>
+    <traitClass>BastleFramework.BastleTrait_Shedding</traitClass>
+    <requiresFlesh>true</requiresFlesh>
+    <disallowConstructs>true</disallowConstructs>
+    <allowHumanlikes>false</allowHumanlikes>
+    <tags><li>Utility</li></tags>
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
+  </BastleFramework.BastleTraitDef>
+
+  <!-- Heats a room like a small heater (a third of one), up to 35 degrees. A boon in winter. -->
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Sweltering</defName>
+    <label>sweltering</label>
+    <description>Heat pours off its body. Indoors it warms the room like a small heater, up to 35 degrees: welcome in winter, stifling in summer.</description>
+    <namePrefix>sweltering</namePrefix>
+    <nameOrder>-10</nameOrder>
+    <pointCost>-0.5</pointCost>
+    <traitClass>BastleFramework.BastleTrait_Sweltering</traitClass>
+    <allowMechanoids>false</allowMechanoids>
+    <tags>
+      <li>Utility</li>
+      <li>Heat</li>
+    </tags>
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <!-- A faint warm shimmer rising off it. -->
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Flow">
+        <color>(1, 0.7, 0.45, 0.14)</color>
+        <coreColor>(1, 0.85, 0.65, 1)</coreColor>
+        <threshold>0.55</threshold>
+        <coreThreshold>0.9</coreThreshold>
+        <loopTicks>240</loopTicks>
+        <scrolls>2</scrolls>
+        <frames>32</frames>
+        <cellsAcross>10</cellsAcross>
+        <cellsUp>5</cellsUp>
+      </li>
+    </surfaces>
   </BastleFramework.BastleTraitDef>
 
 </Defs>
