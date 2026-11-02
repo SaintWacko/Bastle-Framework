@@ -407,6 +407,10 @@ namespace BastleFramework
         public override void ResolveReferences()
         {
             base.ResolveReferences();
+            MarkProcVisuals(procs);
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    MarkProcVisuals(o?.procs);
             // Diet traits are revealed by what the creature eats unless the def says otherwise.
             bool hasDiet = diet != null;
             if (rarityOverrides != null)
@@ -415,6 +419,15 @@ namespace BastleFramework
             if (hasDiet && !visible && discoverWhen == null)
                 discoverWhen = new List<BastleDiscoveryTrigger>
                     { BastleDiscoveryTrigger.EatsAddedFood, BastleDiscoveryTrigger.StarvesNearRefusedFood };
+        }
+
+        // A proc's own visuals play when it goes off, whatever their XML says.
+        private static void MarkProcVisuals(List<BastleProc> list)
+        {
+            if (list == null) return;
+            foreach (var p in list)
+                if (p?.visuals != null)
+                    foreach (var v in p.visuals) v.on = BastleVisualEvent.Proc;
         }
 
         public bool DiscoveredBy(BastleDiscoveryTrigger trigger)
