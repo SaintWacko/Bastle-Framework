@@ -257,6 +257,7 @@ namespace BastleFramework
             if (cellsAcross < 1 || cellsUp < 1 || evolveCells < 1) yield return "surface flow cellsAcross, cellsUp and evolveCells must be at least 1";
             if (scrolls < 0) yield return "surface flow scrolls must not be negative";
             if (threshold < 0f || threshold >= 1f) yield return "surface flow threshold must be from 0 to below 1";
+            if (coreThreshold > 1f) yield return "surface flow coreThreshold must be at most 1 (1 = no core)";
         }
 
         public override void Draw(BastleSurfaceDraw d)
@@ -284,7 +285,8 @@ namespace BastleFramework
         private Material[] FramesFor(BastleShape shape)
         {
             if (frameCache.TryGetValue(shape, out var mats)) return mats;
-            mats = null;
+            // Cached before building, so a build that throws fails once rather than every frame.
+            frameCache[shape] = null;
             if (shape.mask != null && frames >= 2)
             {
                 const int n = BastleShape.Size;
@@ -389,7 +391,7 @@ namespace BastleFramework
         private Material[] FramesFor(BastleShape shape)
         {
             if (frameCache.TryGetValue(shape, out var mats)) return mats;
-            mats = null;
+            frameCache[shape] = null;
             if (shape.mask != null && frames >= 2)
             {
                 const int n = BastleShape.Size;
