@@ -295,7 +295,8 @@ namespace BastleFramework
         public float pulseScale = -1f;
 
         /// <summary>With Ideology: Combat Command's soft ground glow, sized to the radius,
-        /// shown while the aura is active and known. It is a plain circle that ignores
+        /// shown while the aura is active, before it is known too while its looks show as a
+        /// hint (BastleTrait.ShowsVisual). It is a plain circle that ignores
         /// walls, and it replaces the selection ring while it is up. The ring (which does
         /// stop at walls) shows instead without Ideology, with effects off, or while the
         /// aura is idle.</summary>
@@ -528,7 +529,8 @@ namespace BastleFramework
                 }
                 glow.Maintain();
             }
-            if (ld == null) DestroyLinks();
+            // Lines name exactly who the aura reaches, which is more than a hint: known auras only.
+            if (ld == null || !discovered) DestroyLinks();
             else LinksTick(pawn, map, ld, P);
             return true;
         }

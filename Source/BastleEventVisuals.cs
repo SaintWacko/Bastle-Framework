@@ -504,7 +504,7 @@ namespace BastleFramework
         /// proc reveals it when the player sees it.</summary>
         internal static void PlayProc(BastleTrait trait, BastleProc p, Pawn pawn, Thing other, IntVec3 otherCell, IList<Pawn> affected)
         {
-            if (!On || pawn.Map != Find.CurrentMap) return;
+            if (!On || !pawn.Spawned || pawn.Map != Find.CurrentMap) return;
             for (int i = 0; i < p.visuals.Count; i++)
             {
                 ctx.Reset(pawn.Map, pawn);
@@ -824,7 +824,8 @@ namespace BastleFramework
                 c.a *= 1f - age / (float)g.life;
                 block.SetColor(ShaderPropertyIDs.Color, c);
                 pos.y = y;
-                Graphics.DrawMesh(MeshPool.plane10, Matrix4x4.TRS(pos, Quaternion.identity, new Vector3(cells, 1f, cells)), mat, 0, null, 0, block);
+                float quad = cells * (BastleUtility.PeekBastle(g.pawn)?.DrawScale ?? 1f);
+                Graphics.DrawMesh(MeshPool.plane10, Matrix4x4.TRS(pos, Quaternion.identity, new Vector3(quad, 1f, quad)), mat, 0, null, 0, block);
             }
         }
 
@@ -842,14 +843,14 @@ namespace BastleFramework
         }
 
         // The square the portrait covers, in cells: two for a person (vanilla's portrait camera
-        // at zoom 1), more for a big animal so it isn't cut off. Scaled by the bastle's own draw
-        // size, so a colossal one leaves a colossal image.
+        // at zoom 1), more for a big animal so it isn't cut off. The portrait draws the creature
+        // at its kind's size (the draw size patch skips portraits), so the bastle's own draw
+        // size goes on the quad instead, in DrawGhosts.
         private static float Cells(Pawn pawn)
         {
-            float scale = BastleUtility.PeekBastle(pawn)?.DrawScale ?? 1f;
             if (pawn.RaceProps.Humanlike) return 2f;
             Vector2 size = pawn.ageTracker?.CurKindLifeStage?.bodyGraphicData?.drawSize ?? Vector2.one;
-            return Mathf.Max(2f, Mathf.Max(size.x, size.y) * 1.1f * scale);
+            return Mathf.Max(2f, Mathf.Max(size.x, size.y) * 1.1f);
         }
     }
 
