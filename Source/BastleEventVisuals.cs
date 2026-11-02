@@ -835,7 +835,9 @@ namespace BastleFramework
                 c.a *= 1f - age / (float)g.life;
                 block.SetColor(ShaderPropertyIDs.Color, c);
                 pos.y = y;
-                float quad = cells * (BastleUtility.PeekBastle(g.pawn)?.DrawScale ?? 1f);
+                // Humanlikes are left at their kind's size by the draw size patch, so their
+                // afterimages are too.
+                float quad = g.pawn.RaceProps.Humanlike ? cells : cells * (BastleUtility.PeekBastle(g.pawn)?.DrawScale ?? 1f);
                 Graphics.DrawMesh(MeshPool.plane10, Matrix4x4.TRS(pos, Quaternion.identity, new Vector3(quad, 1f, quad)), mat, 0, null, 0, block);
             }
         }

@@ -381,9 +381,10 @@ namespace BastleFramework
 
         private ThingDef GlowDef => Params.showGlow ? Params.glowMote ?? BastleDefOf.BF_Mote_AuraGlow : null;
 
-        // The exception to looks as hints: a glow is the aura's reach drawn on the ground,
-        // so it waits until the player has seen the aura affect something (discoverOnEffect).
-        // Only a def's or an entry's explicit true shows it earlier; the setting doesn't.
+        // The exception to looks as hints, for every look of an aura trait: the glow is the
+        // aura's reach drawn on the ground, so nothing shows until the player has seen the
+        // aura affect something (discoverOnEffect). Only a def's or an entry's explicit true
+        // shows a look earlier; the setting doesn't.
         public override bool ShowsVisual(bool? entryBeforeIdentified = null)
             => discovered || (entryBeforeIdentified ?? def.VisualsBeforeIdentified) == true;
 

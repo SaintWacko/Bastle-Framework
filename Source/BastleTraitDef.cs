@@ -220,6 +220,15 @@ namespace BastleFramework
         /// from unset, so it can't keep looks secret; visualsBeforeIdentified false does.</summary>
         public bool showVisualsWhenHidden;
 
+        private bool AnyProcDiscovers
+        {
+            get
+            {
+                if (procs != null && procs.Any(p => p != null && p.discovers)) return true;
+                return rarityOverrides != null && rarityOverrides.Any(o => o?.procs != null && o.procs.Any(p => p != null && p.discovers));
+            }
+        }
+
         public bool? VisualsBeforeIdentified => showVisualsWhenHidden ? true : visualsBeforeIdentified;
 
         /// <summary>Flickering fire sprites drawn on the creature's body.</summary>
@@ -490,11 +499,15 @@ namespace BastleFramework
                     foreach (var e in procs[i].ConfigErrors(owner + "proc " + i)) yield return e;
                     if (procs[i].visuals != null)
                         foreach (var v in procs[i].visuals)
+                        {
+                            if (v == null) { yield return owner + "proc " + i + " visuals has an empty entry"; continue; }
                             foreach (var e in v.ConfigErrors(owner + "proc " + i + " visual")) yield return e;
+                        }
                 }
             if (visuals != null)
                 foreach (var v in visuals)
                 {
+                    if (v == null) { yield return owner + "eventVisuals has an empty entry"; continue; }
                     if (v.on == BastleVisualEvent.Proc) yield return owner + "eventVisuals can't play on Proc; put them in the proc's own visuals";
                     foreach (var e in v.ConfigErrors(owner + "event visual")) yield return e;
                 }
@@ -562,7 +575,7 @@ namespace BastleFramework
                 yield return $"SheddingParams filth {filth.defName} is not a filth (its thingClass is {filth.thingClass?.Name})";
             if (traitClass != null && typeof(BastleTrait_Aura).IsAssignableFrom(traitClass) && GetModExtension<AuraParams>() == null)
                 yield return "traitClass is BastleTrait_Aura but there is no AuraParams in modExtensions";
-            if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(BastleTrait))
+            if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(BastleTrait) && !AnyProcDiscovers)
                 yield return "not visible and has no discoverWhen: only code can ever reveal it (add <li>Manual</li> to discoverWhen to silence this)";
         }
     }
