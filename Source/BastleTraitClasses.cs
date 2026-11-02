@@ -295,8 +295,8 @@ namespace BastleFramework
         public float pulseScale = -1f;
 
         /// <summary>With Ideology: Combat Command's soft ground glow, sized to the radius,
-        /// shown while the aura is active, before it is known too while its looks show as a
-        /// hint (BastleTrait.ShowsVisual). It is a plain circle that ignores
+        /// shown while the aura is active and known (auras don't show looks as hints, see
+        /// BastleTrait_Aura.ShowsVisual). It is a plain circle that ignores
         /// walls, and it replaces the selection ring while it is up. The ring (which does
         /// stop at walls) shows instead without Ideology, with effects off, or while the
         /// aura is idle.</summary>
@@ -380,6 +380,12 @@ namespace BastleFramework
         private Map glowMap;
 
         private ThingDef GlowDef => Params.showGlow ? Params.glowMote ?? BastleDefOf.BF_Mote_AuraGlow : null;
+
+        // The exception to looks as hints: a glow is the aura's reach drawn on the ground,
+        // so it waits until the player has seen the aura affect something (discoverOnEffect).
+        // Only a def's or an entry's explicit true shows it earlier; the setting doesn't.
+        public override bool ShowsVisual(bool? entryBeforeIdentified = null)
+            => discovered || (entryBeforeIdentified ?? def.VisualsBeforeIdentified) == true;
 
         /// <summary>Null when this aura draws no lines of its own: showLinks off, no
         /// Ideology, or the hediff has HediffComp_Link and draws its own.</summary>
@@ -529,7 +535,6 @@ namespace BastleFramework
                 }
                 glow.Maintain();
             }
-            // Lines name exactly who the aura reaches, which is more than a hint: known auras only.
             if (ld == null || !discovered) DestroyLinks();
             else LinksTick(pawn, map, ld, P);
             return true;

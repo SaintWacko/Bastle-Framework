@@ -461,6 +461,17 @@ namespace BastleFramework
         internal static bool AnyHealVisuals => anyHeal ?? (anyHeal = AnyFor(BastleVisualEvent.Heal)).Value;
         internal static bool AnyDodgeVisuals => anyDodge ?? (anyDodge = AnyFor(BastleVisualEvent.Dodge)).Value;
 
+        private static bool? anyDodgeDiscovery;
+        internal static bool AnyDodgeDiscovery => anyDodgeDiscovery ?? (anyDodgeDiscovery = AnyDiscoveredBy(BastleDiscoveryTrigger.Dodges)).Value;
+
+        private static bool AnyDiscoveredBy(BastleDiscoveryTrigger trigger)
+        {
+            var defs = DefDatabase<BastleTraitDef>.AllDefsListForReading;
+            for (int i = 0; i < defs.Count; i++)
+                if (defs[i].DiscoveredBy(trigger)) return true;
+            return false;
+        }
+
         private static bool AnyFor(BastleVisualEvent ev)
         {
             bool Has(List<BastleEventVisual> list)
@@ -882,11 +893,18 @@ namespace BastleFramework
     {
         public static void Postfix(Verb_MeleeAttack __instance, Thing target)
         {
-            if (!(target is Pawn pawn) || !BastleEventVisuals.On || !BastleEventVisuals.AnyDodgeVisuals) return;
+            if (!(target is Pawn pawn)) return;
+            bool visuals = BastleEventVisuals.On && BastleEventVisuals.AnyDodgeVisuals;
+            if (!visuals && !BastleEventVisuals.AnyDodgeDiscovery) return;
             try
             {
                 var bastle = BastleUtility.PeekBastle(pawn);
-                if (bastle != null) BastleEventVisuals.Play(bastle, BastleVisualEvent.Dodge, __instance.CasterPawn);
+                if (bastle == null) return;
+                // Discovered first, so the dodge that identifies it also plays its effects
+                // with looks of unknown traits turned off.
+                var traits = bastle.TraitsForReading;
+                for (int i = 0; i < traits.Count; i++) traits[i].TryDiscoverBy(BastleDiscoveryTrigger.Dodges);
+                if (visuals) BastleEventVisuals.Play(bastle, BastleVisualEvent.Dodge, __instance.CasterPawn);
             }
             catch (System.Exception e) { Log.ErrorOnce($"[Bastle Framework] dodge visuals failed: {e}", 0x5EEB); }
         }

@@ -35,6 +35,8 @@ namespace BastleFramework
         /// <summary>The creature joins the player's faction: tamed, recruited, bought or
         /// rescued. For traits that only show once you live with it (meat yield, hunger).</summary>
         JoinsColony,
+        /// <summary>The creature dodges a melee blow (vanilla's melee dodge).</summary>
+        Dodges,
     }
 
     /// <summary>A hediff a trait adds to its creature, optionally on a body part.</summary>

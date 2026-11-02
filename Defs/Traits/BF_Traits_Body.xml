@@ -237,8 +237,7 @@
     <namePrefix>phantom</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen>
-      <li>Attacks</li>
-      <li>TakesDamage</li>
+      <li>Dodges</li>
     </discoverWhen>
     <stage>
       <statOffsets>
