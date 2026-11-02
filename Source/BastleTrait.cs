@@ -138,7 +138,7 @@ namespace BastleFramework
 
         /// <summary>Whether one of its looks shows now: always once discovered, before that as
         /// a hint by the entry's own beforeIdentified, else the def's, else the setting.</summary>
-        public bool ShowsVisual(bool? entryBeforeIdentified = null)
+        public virtual bool ShowsVisual(bool? entryBeforeIdentified = null)
             => discovered || (entryBeforeIdentified ?? def.VisualsBeforeIdentified ?? BastleFrameworkMod.Settings.visualsUnidentified);
 
         /// <summary>Whether this trait's overlays, effecters and afterimages should show right now.</summary>

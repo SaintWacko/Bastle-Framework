@@ -311,7 +311,7 @@ Diets merge across traits and the creature's material. A refused food is never p
 - `flames` draws flickering fire sprites over the body: `count`, `size`, `color`, `texFolder` (vanilla fire by default).
 - `glow` is real light on the map, as a lamp's, that follows the creature. The colour is a ColorInt like a lamp's `glowColor`. A creature with several glowing traits casts the largest light.
 
-Overlays, effecters and flames give a trait away, so they only show once the trait is known, unless `showVisualsWhenHidden` is true. A glow always shows; make glowing traits `visible`.
+A trait's looks (overlays, flames, surfaces, effecters, afterimages, event visuals, an aura's glow) show before the trait is known, as a hint, while the setting "Looks hint at unknown traits" is on (the default). Showing them reveals nothing: the trait stays "???" until it is discovered the usual way. `visualsBeforeIdentified` on the def overrides the setting for all its looks (`false` keeps them secret until discovery, `true` shows them whatever the setting), and `beforeIdentified` on a single surface or event visual overrides both for that entry. The older `showVisualsWhenHidden` still works as `visualsBeforeIdentified` true, but its `false` can't opt out: use `visualsBeforeIdentified` false for that. Proc visuals always show, since a proc that goes off in view identifies its trait. A light always shows. Make a trait `visible` only when seeing it is knowing it (a creature that glows, one twice its kind's size); for one whose look only hints at it (flames: flaming or infernal?), leave it hidden and let the look be the hint.
 
 ## Products
 

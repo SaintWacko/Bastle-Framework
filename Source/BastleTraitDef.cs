@@ -214,7 +214,8 @@ namespace BastleFramework
         /// beforeIdentified overrides this. Showing reveals nothing.</summary>
         public bool? visualsBeforeIdentified;
 
-        /// <summary>Older name: true is visualsBeforeIdentified true.</summary>
+        /// <summary>Older name: true is visualsBeforeIdentified true. Its false can't be told
+        /// from unset, so it can't keep looks secret; visualsBeforeIdentified false does.</summary>
         public bool showVisualsWhenHidden;
 
         public bool? VisualsBeforeIdentified => showVisualsWhenHidden ? true : visualsBeforeIdentified;
