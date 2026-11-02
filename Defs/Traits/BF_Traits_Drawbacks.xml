@@ -298,6 +298,7 @@
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
     <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <allowMechanoids>false</allowMechanoids>
     <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>JoinsColony</li>

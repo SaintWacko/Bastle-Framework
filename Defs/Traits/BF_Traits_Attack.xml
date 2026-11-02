@@ -299,10 +299,12 @@
     <namePrefix>sure-striking</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
+    <!-- MeleeHitChance is in skill levels before its curve (an animal's base is 4), so an
+         offset is what moves it: +4 is about 62% to 80% for an animal. -->
     <stage>
-      <statFactors>
-        <MeleeHitChance>1.1</MeleeHitChance>
-      </statFactors>
+      <statOffsets>
+        <MeleeHitChance>4</MeleeHitChance>
+      </statOffsets>
     </stage>
   </BastleFramework.BastleTraitDef>
 

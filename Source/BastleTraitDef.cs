@@ -427,7 +427,8 @@ namespace BastleFramework
             if (list == null) return;
             foreach (var p in list)
                 if (p?.visuals != null)
-                    foreach (var v in p.visuals) v.on = BastleVisualEvent.Proc;
+                    foreach (var v in p.visuals)
+                        if (v != null) v.on = BastleVisualEvent.Proc;
         }
 
         public bool DiscoveredBy(BastleDiscoveryTrigger trigger)
@@ -548,6 +549,8 @@ namespace BastleFramework
                     if (o.surfaces != null)
                         foreach (var surface in o.surfaces)
                             foreach (var e in surface.ConfigErrors()) yield return $"rarityOverride at {o.minRarity}: {e}";
+            if (GetModExtension<SheddingParams>()?.filth is ThingDef filth && !typeof(Filth).IsAssignableFrom(filth.thingClass))
+                yield return $"SheddingParams filth {filth.defName} is not a filth (its thingClass is {filth.thingClass?.Name})";
             if (traitClass != null && typeof(BastleTrait_Aura).IsAssignableFrom(traitClass) && GetModExtension<AuraParams>() == null)
                 yield return "traitClass is BastleTrait_Aura but there is no AuraParams in modExtensions";
             if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(BastleTrait))

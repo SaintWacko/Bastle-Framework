@@ -26,6 +26,7 @@
       <li>BF_Element</li>
       <li>BF_FireAffinity</li>
       <li>BF_ColdTolerance</li>
+      <li>BF_HeatTolerance</li>
     </exclusionTags>
     <tags><li>Fire</li></tags>
     <!-- A steady orange glow over the whole body, with flames crawling up it on top. -->

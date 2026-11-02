@@ -68,7 +68,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Burdening</defName>
     <label>burdening</label>
-    <description>Those it strikes sometimes feel the weight of every step afterwards: a tenth of its hits slow the victim to a crawl for about fifteen seconds.</description>
+    <description>Those it strikes sometimes feel the weight of every step afterwards: a tenth of its hits leave the victim 40% slower for about fifteen seconds.</description>
     <rumor>leaves those it strikes dragging their feet</rumor>
     <namePrefix>burdening</namePrefix>
     <rarity>Uncommon</rarity>
@@ -199,6 +199,7 @@
         <targets>Enemies</targets>
         <pushDistance>3</pushDistance>
         <fleck>PsycastAreaEffect</fleck>
+        <fleckScale>3.9</fleckScale>
         <sound>Explosion_Stun</sound>
       </li>
     </procs>
@@ -255,7 +256,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_LastStand</defName>
     <label>last stand</label>
-    <description>It refuses to go down. When downed, its worst wounds close by 40 hit points and it stops feeling pain for half a minute, often enough to get back up. Once a day at most.</description>
+    <description>It refuses to go down. When downed, its worst wounds close by 40 hit points and it barely feels pain for half a minute, often enough to get back up. Once a day at most.</description>
     <rumor>gets back up after it has been cut down</rumor>
     <nameSuffix>the unbowed</nameSuffix>
     <rarity>Epic</rarity>

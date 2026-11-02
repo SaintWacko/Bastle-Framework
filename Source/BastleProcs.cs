@@ -521,8 +521,10 @@ namespace BastleFramework
             {
                 if (p.hediffSeconds > 0f)
                 {
+                    // SetDuration sets the total too, so the remaining-time bar and a later
+                    // refresh both work from this length rather than the XML fallback.
                     int ticks = Mathf.RoundToInt(p.hediffSeconds * power * GenTicks.TicksPerRealSecond);
-                    d.ticksToDisappear = fresh ? ticks : Mathf.Max(d.ticksToDisappear, ticks);
+                    d.SetDuration(fresh ? ticks : Mathf.Max(d.ticksToDisappear, ticks));
                 }
                 else if (!fresh) d.ResetElapsedTicks();
             }

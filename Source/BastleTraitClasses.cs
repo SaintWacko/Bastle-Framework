@@ -922,7 +922,8 @@ namespace BastleFramework
             var pawn = Pawn;
             if (pawn == null || !pawn.Spawned || pawn.Dead || !pawn.IsHashIntervalTick(Interval, delta)) return;
             var room = pawn.GetRoom();
-            if (room == null || room.UsesOutdoorTemperature || room.Temperature >= P.maxTemperature) return;
+            // A door cell is a room of its own, and the heat would all go into that one cell.
+            if (room == null || room.UsesOutdoorTemperature || room.IsDoorway || room.Temperature >= P.maxTemperature) return;
             // CompHeatPusher's rare tick pushes heatPerSecond x 4.17 every 250 ticks.
             GenTemperature.PushHeat(pawn, P.heatPerSecond * Interval / 60f);
         }

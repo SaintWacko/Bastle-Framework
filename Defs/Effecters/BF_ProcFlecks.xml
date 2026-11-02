@@ -91,6 +91,7 @@
       <li>
         <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
         <fleckDef>BF_Fleck_FrostMist</fleckDef>
+        <fleckUsesAngleForVelocity>true</fleckUsesAngleForVelocity>
         <spawnLocType>OnSource</spawnLocType>
         <chancePerTick>0.05</chancePerTick>
         <scale>0.45~0.7</scale>
@@ -109,6 +110,7 @@
       <li>
         <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
         <fleckDef>BF_Fleck_DarkSmoke</fleckDef>
+        <fleckUsesAngleForVelocity>true</fleckUsesAngleForVelocity>
         <spawnLocType>OnSource</spawnLocType>
         <chancePerTick>0.06</chancePerTick>
         <scale>0.6~1.0</scale>
