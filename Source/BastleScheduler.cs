@@ -56,6 +56,9 @@ namespace BastleFramework
             BastleScheduler.Clear();
             BastleUtility.ClearRegistry();
             BastleTruce.Clear();
+            BastleProcs.Clear();
+            BastleEventVisuals.Clear();
+            BastleEventDraw.Clear();
         }
 
         public static BastleGameComponent Instance => Current.Game?.GetComponent<BastleGameComponent>();

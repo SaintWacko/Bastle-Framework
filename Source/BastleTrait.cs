@@ -102,6 +102,24 @@ namespace BastleFramework
         public float HediffStrength => def.StrengthFor(Override?.hediffs != null, Rarity);
         public BastleProducts Products => Override?.products ?? def.products;
         public BastleDeflect Deflect => Override?.deflect ?? def.deflect;
+        public List<BastleProc> Procs => Override?.procs ?? def.procs;
+        public List<BastleEventVisual> EventVisuals => Override?.eventVisuals ?? def.eventVisuals;
+        public BastleAfterimages Afterimages => Override?.afterimages ?? def.afterimages;
+        /// <summary>Rarity strength for its procs' amounts, and their chance or cooldown where they scale.</summary>
+        public float ProcStrength => def.StrengthFor(Override?.procs != null, Rarity);
+
+        // When each proc (by its index in Procs) can next go off. Saved, so a day-long
+        // cooldown (last stand) survives a reload.
+        private List<int> procReady;
+
+        public int ProcReadyTick(int index) => procReady != null && index < procReady.Count ? procReady[index] : 0;
+
+        public void SetProcReadyTick(int index, int tick)
+        {
+            if (procReady == null) procReady = new List<int>();
+            while (procReady.Count <= index) procReady.Add(0);
+            procReady[index] = tick;
+        }
 
         public List<BastleTraitHediff> Hediffs => Override?.hediffs ?? def.hediffs;
         public List<AbilityDef> Abilities => Override?.abilities ?? def.abilities;
@@ -115,7 +133,7 @@ namespace BastleFramework
         public string NamePrefix => Override?.namePrefix ?? def.namePrefix;
         public string NameSuffix => Override?.nameSuffix ?? def.nameSuffix;
 
-        public bool HasVisuals => HasRenderVisuals || !Effecters.NullOrEmpty() || Glow != null;
+        public bool HasVisuals => HasRenderVisuals || !Effecters.NullOrEmpty() || Glow != null || Afterimages != null;
         public bool HasRenderVisuals => !Overlays.NullOrEmpty() || !Flames.NullOrEmpty() || !Surfaces.NullOrEmpty();
 
         /// <summary>Whether this trait's overlays and effecters should show right now.</summary>
@@ -173,6 +191,11 @@ namespace BastleFramework
         /// it would have set up here.</summary>
         public virtual void CopyStateFrom(BastleTrait source) { }
 
+        internal void CopyProcState(BastleTrait source)
+        {
+            procReady = source.procReady == null ? null : new List<int>(source.procReady);
+        }
+
         /// <summary>Before the trait is removed or the bastle hediff is removed.</summary>
         public virtual void PreRemoved() { }
 
@@ -210,6 +233,7 @@ namespace BastleFramework
             Scribe_Values.Look(ref discovered, "discovered");
             Scribe_Values.Look(ref fromMaterial, "fromMaterial");
             Scribe_Values.Look(ref rarityValue, "rarity", -1);
+            Scribe_Collections.Look(ref procReady, "procReady", LookMode.Value);
         }
     }
 }

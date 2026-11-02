@@ -16,6 +16,13 @@ namespace BastleFramework
         public float lightRadiusFactor = 1f;
         public bool effectsEnabled = true;
         public bool surfacesEnabled = true;
+        public bool eventEffectsEnabled = true;
+
+        // Procs (BastleProcs.cs)
+        public bool procsEnabled = true;
+        public float procChanceFactor = 1f;
+        public float procCooldownFactor = 1f;
+        public float procStrengthFactor = 1f;
 
         // Traits
         public float inheritChanceFactor = 1f;
@@ -121,6 +128,11 @@ namespace BastleFramework
             lightRadiusFactor = 1f;
             effectsEnabled = true;
             surfacesEnabled = true;
+            eventEffectsEnabled = true;
+            procsEnabled = true;
+            procChanceFactor = 1f;
+            procCooldownFactor = 1f;
+            procStrengthFactor = 1f;
             inheritChanceFactor = 1f;
             discoveryMessages = true;
             abilityAI = true;
@@ -210,6 +222,14 @@ namespace BastleFramework
             Scribe_Values.Look(ref lightRadiusFactor, "lightRadiusFactor", 1f);
             Scribe_Values.Look(ref effectsEnabled, "effectsEnabled", true);
             Scribe_Values.Look(ref surfacesEnabled, "surfacesEnabled", true);
+            Scribe_Values.Look(ref eventEffectsEnabled, "eventEffectsEnabled", true);
+            Scribe_Values.Look(ref procsEnabled, "procsEnabled", true);
+            Scribe_Values.Look(ref procChanceFactor, "procChanceFactor", 1f);
+            procChanceFactor = Mathf.Clamp(procChanceFactor, 0f, 3f);
+            Scribe_Values.Look(ref procCooldownFactor, "procCooldownFactor", 1f);
+            procCooldownFactor = Mathf.Clamp(procCooldownFactor, 0.25f, 4f);
+            Scribe_Values.Look(ref procStrengthFactor, "procStrengthFactor", 1f);
+            procStrengthFactor = Mathf.Clamp(procStrengthFactor, 0.25f, 3f);
             Scribe_Values.Look(ref inheritChanceFactor, "inheritChanceFactor", 1f);
             Scribe_Values.Look(ref discoveryMessages, "discoveryMessages", true);
             Scribe_Values.Look(ref abilityAI, "abilityAI", true);
@@ -371,17 +391,18 @@ namespace BastleFramework
             Slider(l, "BF_Settings_LightRadius", ref lightRadiusFactor, 0.25f, 2f, lightRadiusFactor.ToStringPercent(), null, 0.05f);
             Check(l, "BF_Settings_Effects", ref effectsEnabled, "BF_Settings_EffectsHint");
             Check(l, "BF_Settings_Surfaces", ref surfacesEnabled, "BF_Settings_SurfacesHint");
+            Check(l, "BF_Settings_EventEffects", ref eventEffectsEnabled, "BF_Settings_EventEffectsHint");
         }
 
-        // Behaviour on the left, health and value on the right: in one column the hints
-        // push the last sliders past the bottom of the settings window.
+        // Behaviour, procs, then health and value: in fewer columns the hints push the last
+        // sliders past the bottom of the settings window.
         private void DoTraits(Rect r)
         {
             const float gap = 18f;
-            float half = (r.width - gap) / 2f;
+            float third = (r.width - 2f * gap) / 3f;
 
             var l = new Listing_Standard();
-            l.Begin(new Rect(r.x, r.y, half, r.height));
+            l.Begin(new Rect(r.x, r.y, third, r.height));
             Slider(l, "BF_Settings_Inherit", ref inheritChanceFactor, 0f, 2f, inheritChanceFactor.ToStringPercent(), "BF_Settings_InheritHint", 0.05f);
             Check(l, "BF_Settings_DiscoveryMessages", ref discoveryMessages, null);
             Check(l, "BF_Settings_AbilityAI", ref abilityAI, "BF_Settings_AbilityAIHint");
@@ -393,7 +414,17 @@ namespace BastleFramework
             l.End();
 
             l = new Listing_Standard();
-            l.Begin(new Rect(r.x + half + gap, r.y, half, r.height));
+            l.Begin(new Rect(r.x + third + gap, r.y, third, r.height));
+            Text.Font = GameFont.Small;
+            l.Label("<b>" + "BF_Settings_ProcsSection".Translate() + "</b>");
+            Check(l, "BF_Settings_Procs", ref procsEnabled, "BF_Settings_ProcsHint");
+            Slider(l, "BF_Settings_ProcChance", ref procChanceFactor, 0f, 3f, procChanceFactor.ToStringPercent(), "BF_Settings_ProcChanceHint", 0.05f);
+            Slider(l, "BF_Settings_ProcCooldown", ref procCooldownFactor, 0.25f, 4f, procCooldownFactor.ToStringPercent(), "BF_Settings_ProcCooldownHint", 0.05f);
+            Slider(l, "BF_Settings_ProcStrength", ref procStrengthFactor, 0.25f, 3f, procStrengthFactor.ToStringPercent(), "BF_Settings_ProcStrengthHint", 0.05f);
+            l.End();
+
+            l = new Listing_Standard();
+            l.Begin(new Rect(r.x + 2f * (third + gap), r.y, third, r.height));
             Slider(l, "BF_Settings_HealthPerPoint", ref healthPerPoint, 0f, 0.5f, "+" + healthPerPoint.ToStringPercent(), "BF_Settings_HealthPerPointHint", 0.01f);
             Slider(l, "BF_Settings_ValuePercent", ref valuePercentPerPoint, 0f, 1f, "+" + valuePercentPerPoint.ToStringPercent(), "BF_Settings_ValuePercentHint", 0.01f);
             Slider(l, "BF_Settings_ValueFlat", ref valueFlatPerPoint, 0f, 500f, "+" + valueFlatPerPoint.ToStringMoney(), "BF_Settings_ValueFlatHint", 5f);

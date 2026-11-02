@@ -420,14 +420,44 @@ namespace BastleFramework
             }
         }
 
-        /// <summary>Has something the map component has to run: effecters or a light.</summary>
-        public bool HasMapVisuals => HasActiveEffecters || ActiveGlow != null;
+        [Unsaved] private BastleAfterimages activeAfterimages;
+        [Unsaved] private bool afterimagesResolved;
+
+        /// <summary>The afterimages it leaves while running: the first known trait's.</summary>
+        public BastleAfterimages ActiveAfterimages
+        {
+            get
+            {
+                if (!BastleFrameworkMod.Settings.eventEffectsEnabled) return null;
+                if (!afterimagesResolved)
+                {
+                    afterimagesResolved = true;
+                    activeAfterimages = null;
+                    foreach (var t in traits)
+                        if (t.VisualsActive && t.Afterimages != null) { activeAfterimages = t.Afterimages; break; }
+                }
+                return activeAfterimages;
+            }
+        }
+
+        /// <summary>Every tick from MapComponent_BastleVisuals while on the map in view.</summary>
+        internal void AfterimagesTick()
+        {
+            var a = ActiveAfterimages;
+            if (a == null || pawn.pather == null || !pawn.pather.Moving || !pawn.IsHashIntervalTick(Mathf.Max(1, a.intervalTicks))) return;
+            if (pawn.IsHiddenFromPlayer()) return;
+            BastleEventDraw.AddAfterimage(pawn, pawn.DrawPos, Vector3.zero, a.lifeTicks, a.color);
+        }
+
+        /// <summary>Has something the map component has to run: effecters, a light or afterimages.</summary>
+        public bool HasMapVisuals => HasActiveEffecters || ActiveGlow != null || ActiveAfterimages != null;
 
         /// <summary>Call when which visuals should show may have changed.</summary>
         public void VisualsChanged(BastleTrait cause = null)
         {
             activeEffecterDefs = null;
             glowResolved = false;
+            afterimagesResolved = false;
             glower?.Remove();
             glower = null;
             CleanupEffecters();
@@ -497,6 +527,7 @@ namespace BastleFramework
         {
             activeEffecterDefs = null;
             glowResolved = false;
+            afterimagesResolved = false;
             glower?.Remove();
             glower = null;
             CleanupEffecters(keepTracked: true);
@@ -968,6 +999,9 @@ namespace BastleFramework
                 t.TryDiscoverBy(BastleDiscoveryTrigger.TakesDamage);
                 if (t.Retaliation != null) BastleCombatUtility.TryRetaliate(t, dinfo);
             }
+            BastleProcs.OnTakeDamage(this, dinfo, totalDamageDealt);
+            if (totalDamageDealt > 0f && dinfo.Instigator != null && !pawn.Dead && dinfo.Def.ExternalViolenceFor(pawn))
+                BastleEventVisuals.Play(this, BastleVisualEvent.Struck, dinfo.Instigator, dinfo);
         }
 
         public override void Notify_PawnDamagedThing(Thing thing, DamageInfo dinfo, DamageWorker.DamageResult result)
@@ -979,6 +1013,15 @@ namespace BastleFramework
                 t.Notify_PawnDamagedThing(thing, dinfo, result);
                 if (t.Lifesteal != null) pendingHeal += BastleCombatUtility.LifestealFrom(t, thing, dinfo, result);
             }
+            BastleProcs.OnHit(this, thing, dinfo, result);
+            if (thing is Pawn && result != null && result.totalDamageDealt > 0f && !BastleCombatUtility.InExtraDamage)
+                BastleEventVisuals.Play(this, BastleVisualEvent.Hit, thing, dinfo);
+        }
+
+        public override void Notify_Downed()
+        {
+            base.Notify_Downed();
+            BastleProcs.OnEvent(this, BastleProcEvent.Downed);
         }
 
         /// <summary>True when an undiscovered trait grants this ability.</summary>
@@ -1011,6 +1054,7 @@ namespace BastleFramework
         {
             base.Notify_IngestedThing(thing, amount);
             if (thing != null) Notify_Ate(thing.def);
+            BastleProcs.OnEvent(this, BastleProcEvent.Eat, thing);
         }
 
         /// <summary>Reveals hidden traits whose diet is what let the creature eat this.
@@ -1093,6 +1137,7 @@ namespace BastleFramework
                     fresh.SetRarityExact(old.Rarity);
                     // Overrides check their source's type, so unrelated classes copy nothing.
                     fresh.CopyStateFrom(old);
+                    fresh.CopyProcState(old);
                     traits[i] = fresh;
                 }
                 foreach (var t in traits)

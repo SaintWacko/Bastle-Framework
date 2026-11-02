@@ -104,6 +104,7 @@ namespace BastleFramework
                 {
                     FleckMaker.ThrowMicroSparks(pawn.DrawPos, pawn.Map);
                     if (dinfo.Def.isRanged) Redirect(pawn, dinfo, Rand.Chance(d.reflectChance));
+                    BastleEventVisuals.Play(bastle, BastleVisualEvent.Deflect, dinfo.Instigator, dinfo);
                 }
                 if (!t.discovered && BastleUtility.PlayerCanObserve(pawn)) t.Discover();
                 return true;

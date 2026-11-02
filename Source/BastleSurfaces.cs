@@ -477,6 +477,65 @@ namespace BastleFramework
         }
     }
 
+    /// <summary>
+    /// Lightning crackling between spots on the body: each slot may show one short arc per
+    /// interval, between two of the body's opaque points, for a few ticks. Lengths and width
+    /// are fractions of the body mesh's height, so a rat's sparks fit a rat. Picked from game
+    /// ticks and the creature's id, so nothing is stored and a pause freezes them.
+    /// </summary>
+    public class BastleSurface_Arcs : BastleSurface
+    {
+        [NoTranslate] public string texFolder = "Things/Mote/BF_Arc";
+        public Color color = new Color(0.7f, 0.85f, 1f, 0.9f);
+        public int count = 2;
+        public int intervalTicks = 30;
+        public float chance = 0.6f;
+        public int arcTicks = 5;
+        public float width = 0.14f;
+        public float minLength = 0.15f;
+        public float maxLength = 0.5f;
+
+        [Unsaved] private List<Material> materials;
+
+        public BastleSurface_Arcs() { layer = 2.6f; }
+
+        public override IEnumerable<string> ConfigErrors()
+        {
+            if (texFolder.NullOrEmpty()) yield return "surface arcs need a texFolder";
+            if (arcTicks < 1) yield return "surface arcs arcTicks must be at least 1";
+            if (minLength <= 0f || maxLength < minLength) yield return "surface arcs need 0 < minLength <= maxLength";
+        }
+
+        public override void Draw(BastleSurfaceDraw d)
+        {
+            if (d.shape.points.NullOrEmpty()) return;
+            var mats = materials ?? (materials = BastleEventDraw.LoadFrames(texFolder, color));
+            if (mats.Count == 0) return;
+            int interval = Mathf.Max(arcTicks + 1, intervalTicks);
+            float size = d.size.y * d.scale;
+            float min = minLength * size, max = maxLength * size;
+            for (int i = 0; i < count; i++)
+            {
+                int slot = Gen.HashCombineInt(d.seed, i * 7919 + 31);
+                int t = d.ticks + (slot & 0xFFFF);
+                if (t % interval >= arcTicks) continue;
+                int seed = BastleShape.Mix(slot ^ (t / interval) * 0x2C1B3C6D);
+                if ((seed & 0xFFFF) / 65536f >= chance) continue;
+                Vector3 a = d.Point(seed);
+                Vector3 b = a;
+                for (int k = 1; k <= 6; k++)
+                {
+                    b = d.Point(BastleShape.Mix(Gen.HashCombineInt(seed, k)));
+                    float len = (b - a).MagnitudeHorizontal();
+                    if (len >= min && len <= max) break;
+                    // Too long: pull the far end back along the line rather than give up on the arc.
+                    if (len > max) { b = a + (b - a) * (max / len); break; }
+                }
+                BastleEventDraw.DrawArc(mats[((seed >> 4) & 0x7FFFFFFF) % mats.Count], a, b, width * size, Mathf.Max(a.y, b.y) + 0.0002f);
+            }
+        }
+    }
+
     public class PawnRenderNodeProperties_BastleSurface : PawnRenderNodeProperties_BastleBodyCopy
     {
         public BastleSurface surface;

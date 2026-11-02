@@ -114,6 +114,10 @@ namespace BastleFramework
         /// back at whoever fired it.</summary>
         public BastleDeflect deflect;
 
+        /// <summary>"When X happens, do Y": a stun on a hit, a frost blast when struck, a heal
+        /// when downed. See BastleProc.</summary>
+        public List<BastleProc> procs;
+
         /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
         public List<string> exclusionTags;
 
@@ -225,7 +229,15 @@ namespace BastleFramework
         /// secret. Traits that glow are best made visible.</summary>
         public BastleGlow glow;
 
-        public bool HasVisuals => HasRenderVisuals || !effecters.NullOrEmpty() || glow != null;
+        /// <summary>One-off effects when something happens to it: a hit it lands, a blow it
+        /// takes, a dodge, a heal, a deflected shot. Shown under the same rule as the other
+        /// visuals (known, or showVisualsWhenHidden), with the Event effects setting.</summary>
+        public List<BastleEventVisual> eventVisuals;
+
+        /// <summary>Faded copies of it left behind while it runs.</summary>
+        public BastleAfterimages afterimages;
+
+        public bool HasVisuals => HasRenderVisuals || !effecters.NullOrEmpty() || glow != null || afterimages != null;
         public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty() || !surfaces.NullOrEmpty();
 
         // ---- rarity --------------------------------------------------------------
@@ -239,7 +251,8 @@ namespace BastleFramework
         public bool OnlyGrantsAbilities =>
             !abilities.NullOrEmpty() && stage == null && hediffs.NullOrEmpty() && traitClass == typeof(BastleTrait)
             && rarityOverrides.NullOrEmpty() && retaliation == null && lifesteal == null && products == null
-            && deflect == null && diet == null && healthScaleFactor == 1f && drawSizeFactor == 1f && !HasVisuals;
+            && deflect == null && procs.NullOrEmpty() && eventVisuals.NullOrEmpty() && diet == null && healthScaleFactor == 1f
+            && drawSizeFactor == 1f && !HasVisuals;
 
         public bool IsDrawback => BasePoints < 0f;
 
@@ -445,6 +458,25 @@ namespace BastleFramework
             return true;
         }
 
+        private static IEnumerable<string> ProcErrors(List<BastleProc> procs, List<BastleEventVisual> visuals, string owner)
+        {
+            if (procs != null)
+                for (int i = 0; i < procs.Count; i++)
+                {
+                    if (procs[i] == null) { yield return owner + "procs has an empty entry"; continue; }
+                    foreach (var e in procs[i].ConfigErrors(owner + "proc " + i)) yield return e;
+                    if (procs[i].visuals != null)
+                        foreach (var v in procs[i].visuals)
+                            foreach (var e in v.ConfigErrors(owner + "proc " + i + " visual")) yield return e;
+                }
+            if (visuals != null)
+                foreach (var v in visuals)
+                {
+                    if (v.on == BastleVisualEvent.Proc) yield return owner + "eventVisuals can't play on Proc; put them in the proc's own visuals";
+                    foreach (var e in v.ConfigErrors(owner + "event visual")) yield return e;
+                }
+        }
+
         // Quests write the subject before it and the full stop after it.
         private static string RumorError(string phrase)
         {
@@ -491,6 +523,10 @@ namespace BastleFramework
                         yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
             if (retaliation != null && retaliation.damageDef == null) yield return "retaliation has no damageDef";
+            foreach (var e in ProcErrors(procs, eventVisuals, "")) yield return e;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    foreach (var e in ProcErrors(o.procs, o.eventVisuals, $"rarityOverride at {o.minRarity}: ")) yield return e;
             if (surfaces != null)
                 foreach (var surface in surfaces)
                     foreach (var e in surface.ConfigErrors()) yield return e;

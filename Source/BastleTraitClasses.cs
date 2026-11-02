@@ -858,4 +858,69 @@ namespace BastleFramework
             }
         }
     }
+
+    // ---- Shedding ----------------------------------------------------------------
+
+    public class SheddingParams : DefModExtension
+    {
+        public ThingDef filth;
+        /// <summary>Ticks between clumps (2500 is an hour).</summary>
+        public IntRange intervalTicks = new IntRange(5000, 10000);
+    }
+
+    /// <summary>Leaves a clump of filth where it stands every few hours.</summary>
+    public class BastleTrait_Shedding : BastleTrait
+    {
+        private int nextShedTick;
+
+        private SheddingParams P => def.GetModExtension<SheddingParams>() ?? Defaults;
+        private static readonly SheddingParams Defaults = new SheddingParams();
+
+        public override void TickInterval(int delta)
+        {
+            var pawn = Pawn;
+            if (pawn == null || !pawn.Spawned || pawn.Dead) return;
+            int now = Find.TickManager.TicksGame;
+            if (now < nextShedTick) return;
+            // The first pass only sets the clock, so a creature doesn't shed the moment it spawns.
+            if (nextShedTick != 0)
+                FilthMaker.TryMakeFilth(pawn.Position, pawn.Map, P.filth ?? ThingDefOf.Filth_Hair);
+            nextShedTick = now + P.intervalTicks.RandomInRange;
+        }
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_Values.Look(ref nextShedTick, "nextShedTick");
+        }
+    }
+
+    // ---- Sweltering --------------------------------------------------------------
+
+    public class SwelteringParams : DefModExtension
+    {
+        /// <summary>As CompHeatPusher's heatPerSecond: a heater is 21.</summary>
+        public float heatPerSecond = 6f;
+        /// <summary>It stops warming a room that is already this hot.</summary>
+        public float maxTemperature = 35f;
+    }
+
+    /// <summary>Gives off heat like a small heater, indoors only, up to a ceiling.</summary>
+    public class BastleTrait_Sweltering : BastleTrait
+    {
+        private const int Interval = 250;
+
+        private SwelteringParams P => def.GetModExtension<SwelteringParams>() ?? Defaults;
+        private static readonly SwelteringParams Defaults = new SwelteringParams();
+
+        public override void TickInterval(int delta)
+        {
+            var pawn = Pawn;
+            if (pawn == null || !pawn.Spawned || pawn.Dead || !pawn.IsHashIntervalTick(Interval, delta)) return;
+            var room = pawn.GetRoom();
+            if (room == null || room.UsesOutdoorTemperature || room.Temperature >= P.maxTemperature) return;
+            // CompHeatPusher's rare tick pushes heatPerSecond x 4.17 every 250 ticks.
+            GenTemperature.PushHeat(pawn, P.heatPerSecond * Interval / 60f);
+        }
+    }
 }

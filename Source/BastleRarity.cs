@@ -64,6 +64,9 @@ namespace BastleFramework
         public BastleLifesteal lifesteal;
         public BastleProducts products;
         public BastleDeflect deflect;
+        public List<BastleProc> procs;
+        public List<BastleEventVisual> eventVisuals;
+        public BastleAfterimages afterimages;
         public float? marketValuePercent;
         public float? marketValueOffset;
     }

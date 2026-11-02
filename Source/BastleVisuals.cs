@@ -345,6 +345,8 @@ namespace BastleFramework
         public override void MapComponentUpdate()
         {
             if (map != Find.CurrentMap || !RimWorld.Planet.WorldRendererUtility.DrawingMap) return;
+            try { BastleEventDraw.Draw(map); }
+            catch (System.Exception e) { Log.ErrorOnce($"[Bastle Framework] drawing event effects failed: {e}", 0x5EE9); BastleEventDraw.Clear(); }
             var sel = Find.Selector.SelectedObjectsListForReading;
             for (int i = 0; i < sel.Count; i++)
             {
@@ -388,6 +390,7 @@ namespace BastleFramework
                 // Nobody can see it: skip spawning particles nobody would see.
                 if (map != Find.CurrentMap || p.Position.Fogged(map)) continue;
                 t.EffectersTick();
+                t.AfterimagesTick();
             }
         }
     }
