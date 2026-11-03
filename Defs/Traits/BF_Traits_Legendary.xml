@@ -8,6 +8,7 @@
     <defName>BF_Undying</defName>
     <label>undying</label>
     <description>Death doesn't hold it. A few hours after it dies, it rises again, healed, unless its corpse has been destroyed or butchered first. It can only do this once every fifteen days.</description>
+    <rumor>rises again after it is killed</rumor>
     <namePrefix>undying</namePrefix>
     <rarity>Epic</rarity>
     <traitClass>BastleFramework.BastleTrait_Undying</traitClass>
@@ -20,6 +21,7 @@
     <defName>BF_HydraBlooded</defName>
     <label>hydra-blooded</label>
     <description>Cut it down and more grow back. When it dies, two young copies of it spring up beside the corpse, with every other trait it had.</description>
+    <rumor>splits in two when it is cut down</rumor>
     <namePrefix>hydra-blooded</namePrefix>
     <rarity>Legendary</rarity>
     <traitClass>BastleFramework.BastleTrait_Hydra</traitClass>
@@ -35,25 +37,43 @@
     <defName>BF_MirrorScaled</defName>
     <label>mirror-scaled</label>
     <description>Polished, mirror-bright scales cover its body. A third of the shots that hit it glance off. Most fly off in a random direction and can strike anyone nearby. The rest fly straight back at the shooter.</description>
+    <rumor>wears mirror-bright scales that turn bullets aside</rumor>
     <namePrefix>mirror-scaled</namePrefix>
     <rarity>Legendary</rarity>
-    <visible>true</visible>
-    <overlays>
-      <li>
-        <color>(0.85, 0.92, 1.0, 0.3)</color>
-        <pulseSpeed>1.6</pulseSpeed>
-        <pulseMin>0.4</pulseMin>
+    <!-- Hidden: its looks hint at it (setting Looks hint at unknown traits) and leave which trait, and how strong, to discovery. A deflection the player sees discovers it too. -->
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
+    <!-- A bright band sweeps across it every few seconds, and glints wink on its scales. -->
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Sheen" />
+      <li Class="BastleFramework.BastleSurface_Glints">
+        <count>2</count>
       </li>
-    </overlays>
+    </surfaces>
     <deflect>
       <chance>0.35</chance>
     </deflect>
+    <!-- A flash and a metal clank on every shot it turns aside (deflect is rangedOnly by default). -->
+    <eventVisuals>
+      <li Class="BastleFramework.BastleVisual_Flecks">
+        <on>Deflect</on>
+        <fleck>ExplosionFlash</fleck>
+        <scale>1.4~1.8</scale>
+      </li>
+      <li Class="BastleFramework.BastleVisual_Effecter">
+        <on>Deflect</on>
+        <effecter>Deflect_Metal</effecter>
+      </li>
+    </eventVisuals>
   </BastleFramework.BastleTraitDef>
 
   <BastleFramework.BastleTraitDef>
     <defName>BF_Phasing</defName>
     <label>phasing</label>
     <description>It slips through space when hurt. Each hit has a chance to make it blink up to 8 tiles away, at most once every 10 seconds.</description>
+    <rumor>vanishes when struck and appears somewhere else</rumor>
     <namePrefix>phasing</namePrefix>
     <rarity>Legendary</rarity>
     <traitClass>BastleFramework.BastleTrait_Phasing</traitClass>
@@ -64,6 +84,7 @@
     <defName>BF_PackCaller</defName>
     <label>pack-caller</label>
     <description>When something attacks it, it calls out, and others of its kind within 35 tiles come to fight for it.</description>
+    <rumor>calls its kind to fight beside it</rumor>
     <nameSuffix>the pack-caller</nameSuffix>
     <rarity>Epic</rarity>
     <traitClass>BastleFramework.BastleTrait_PackCaller</traitClass>
@@ -76,16 +97,47 @@
     <defName>BF_DreadAura</defName>
     <label>dread aura</label>
     <description>An aura of dread surrounds it. Living enemies within 8 tiles are less aware and move more slowly. Mechanoids and entities don't feel it.</description>
+    <rumor>fills the air around it with a dread that dulls the senses</rumor>
     <namePrefix>dreadful</namePrefix>
     <rarity>Legendary</rarity>
-    <traitClass>BastleFramework.BastleTrait_DreadAura</traitClass>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
     <discoverWhen><li>Dies</li></discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>7.9</radius>
+        <hediff>BF_DreadStruck</hediff>
+        <affectsEnemies>true</affectsEnemies>
+        <ringColor>(0.7, 0.35, 0.9, 1)</ringColor>
+      </li>
+    </modExtensions>
+  </BastleFramework.BastleTraitDef>
+
+  <!-- The aura showcase for allies: only while fighting, so it reads as a battle cry. -->
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Rallying</defName>
+    <label>rallying</label>
+    <description>In a fight, its presence steadies its allies. Friendly people and animals within 7 tiles that it can see feel less pain and hit harder in melee.</description>
+    <rumor>makes those who fight beside it fight harder</rumor>
+    <namePrefix>rallying</namePrefix>
+    <rarity>Epic</rarity>
+    <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
+    <discoverWhen><li>Dies</li></discoverWhen>
+    <modExtensions>
+      <li Class="BastleFramework.AuraParams">
+        <radius>6.9</radius>
+        <hediff>BF_Rallied</hediff>
+        <affectsAllies>true</affectsAllies>
+        <onlyInCombat>true</onlyInCombat>
+        <ringColor>(1.0, 0.8, 0.35, 1)</ringColor>
+      </li>
+    </modExtensions>
   </BastleFramework.BastleTraitDef>
 
   <BastleFramework.BastleTraitDef>
     <defName>BF_Elder</defName>
     <label>elder</label>
     <description>An ancient of its kind. It is bigger, tougher and stronger than any other, and its wounds close quickly.</description>
+    <rumor>is older and bigger than any other of its kind</rumor>
     <nameSuffix>the elder</nameSuffix>
     <rarity>Legendary</rarity>
     <allowMechanoids>false</allowMechanoids>

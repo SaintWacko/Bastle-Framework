@@ -11,6 +11,7 @@ namespace BastleFramework
         public BastleFrameworkMod(ModContentPack content) : base(content)
         {
             Settings = GetSettings<BastleSettings>();
+            treesBuiltWithHints = Settings.visualsUnidentified;
             // Harmony is applied in BastlePatcher, after defs load: see there.
         }
 
@@ -23,10 +24,18 @@ namespace BastleFramework
         public override void WriteSettings()
         {
             base.WriteSettings();
+            BastleHuntQuest.ApplyFrequency();
+            BastleOutbreakQuest.ApplyFrequency();
+            // Which looks of unknown traits are in the render tree depends on this one, and
+            // rebuilding every bastle's tree is only worth it when it changed.
+            bool looksChanged = Settings.visualsUnidentified != treesBuiltWithHints;
+            treesBuiltWithHints = Settings.visualsUnidentified;
             if (Current.Game == null) return;
             foreach (var p in RimWorld.PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
-                BastleUtility.GetBastle(p)?.SettingsChanged();
+                BastleUtility.GetBastle(p)?.SettingsChanged(looksChanged);
         }
+
+        private static bool treesBuiltWithHints = true;
     }
 
     /// <summary>

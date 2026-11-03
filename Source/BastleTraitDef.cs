@@ -35,6 +35,8 @@ namespace BastleFramework
         /// <summary>The creature joins the player's faction: tamed, recruited, bought or
         /// rescued. For traits that only show once you live with it (meat yield, hunger).</summary>
         JoinsColony,
+        /// <summary>The creature dodges a melee blow (vanilla's melee dodge).</summary>
+        Dodges,
     }
 
     /// <summary>A hediff a trait adds to its creature, optionally on a body part.</summary>
@@ -114,6 +116,10 @@ namespace BastleFramework
         /// back at whoever fired it.</summary>
         public BastleDeflect deflect;
 
+        /// <summary>"When X happens, do Y": a stun on a hit, a frost blast when struck, a heal
+        /// when downed. See BastleProc.</summary>
+        public List<BastleProc> procs;
+
         /// <summary>Two traits sharing any exclusion tag cannot be on one creature.</summary>
         public List<string> exclusionTags;
 
@@ -152,6 +158,12 @@ namespace BastleFramework
 
         /// <summary>Words placed after the creature's kind once known ("of the deep").</summary>
         [MustTranslate] public string nameSuffix;
+
+        /// <summary>What a survivor would say about a creature with this trait, as a verb phrase
+        /// in the third person with no full stop ("towers over the rest of its kind"). Quests
+        /// put it after a subject: "Those who escaped it say it ...", "... one of the alphas ...".
+        /// Without one, the quest names the trait's label instead.</summary>
+        [MustTranslate] public string rumor;
 
         /// <summary>Order among prefixes/suffixes. Lower is further from the kind label.</summary>
         public int nameOrder;
@@ -199,12 +211,32 @@ namespace BastleFramework
         /// <summary>Particle effecters kept running on the creature (embers, smoke).</summary>
         public List<EffecterDef> effecters;
 
-        /// <summary>Show overlays and effecters before the trait is discovered. They
-        /// give the trait away, so this is off by default.</summary>
+        /// <summary>Whether its looks show before it is discovered, as a hint (null: the
+        /// setting "Looks hint at unknown traits"). A surface's or an event visual's own
+        /// beforeIdentified overrides this. Showing reveals nothing.</summary>
+        public bool? visualsBeforeIdentified;
+
+        /// <summary>Older name: true is visualsBeforeIdentified true. Its false can't be told
+        /// from unset, so it can't keep looks secret; visualsBeforeIdentified false does.</summary>
         public bool showVisualsWhenHidden;
+
+        private bool AnyProcDiscovers
+        {
+            get
+            {
+                if (procs != null && procs.Any(p => p != null && p.discovers)) return true;
+                return rarityOverrides != null && rarityOverrides.Any(o => o?.procs != null && o.procs.Any(p => p != null && p.discovers));
+            }
+        }
+
+        public bool? VisualsBeforeIdentified => showVisualsWhenHidden ? true : visualsBeforeIdentified;
 
         /// <summary>Flickering fire sprites drawn on the creature's body.</summary>
         public List<BastleFlames> flames;
+
+        /// <summary>Moving effects masked to the creature's own shape: flames crawling up
+        /// it, a sheen sweeping across it, glints. Made at runtime from its texture.</summary>
+        public List<BastleSurface> surfaces;
 
         /// <summary>Scale effecters (spread and particle size) with the square root of
         /// body size, so a bear's embers cover a bear and a rat's cover a rat.</summary>
@@ -215,8 +247,16 @@ namespace BastleFramework
         /// secret. Traits that glow are best made visible.</summary>
         public BastleGlow glow;
 
-        public bool HasVisuals => !overlays.NullOrEmpty() || !effecters.NullOrEmpty() || !flames.NullOrEmpty() || glow != null;
-        public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty();
+        /// <summary>One-off effects when something happens to it: a hit it lands, a blow it
+        /// takes, a dodge, a heal, a deflected shot. Shown under the same rule as the other
+        /// visuals (BastleTrait.ShowsVisual), with the Event effects setting.</summary>
+        public List<BastleEventVisual> eventVisuals;
+
+        /// <summary>Faded copies of it left behind while it runs.</summary>
+        public BastleAfterimages afterimages;
+
+        public bool HasVisuals => HasRenderVisuals || !effecters.NullOrEmpty() || glow != null || afterimages != null;
+        public bool HasRenderVisuals => !overlays.NullOrEmpty() || !flames.NullOrEmpty() || !surfaces.NullOrEmpty();
 
         // ---- rarity --------------------------------------------------------------
 
@@ -229,7 +269,8 @@ namespace BastleFramework
         public bool OnlyGrantsAbilities =>
             !abilities.NullOrEmpty() && stage == null && hediffs.NullOrEmpty() && traitClass == typeof(BastleTrait)
             && rarityOverrides.NullOrEmpty() && retaliation == null && lifesteal == null && products == null
-            && deflect == null && diet == null && healthScaleFactor == 1f && drawSizeFactor == 1f && !HasVisuals;
+            && deflect == null && procs.NullOrEmpty() && eventVisuals.NullOrEmpty() && diet == null && healthScaleFactor == 1f
+            && drawSizeFactor == 1f && !HasVisuals;
 
         public bool IsDrawback => BasePoints < 0f;
 
@@ -374,7 +415,7 @@ namespace BastleFramework
             {
                 if (ticksCached == null)
                 {
-                    var m = traitClass.GetMethod(nameof(BastleTrait.TickInterval), new[] { typeof(int) });
+                    var m = traitClass?.GetMethod(nameof(BastleTrait.TickInterval), new[] { typeof(int) });
                     ticksCached = m != null && m.DeclaringType != typeof(BastleTrait);
                 }
                 return ticksCached.Value;
@@ -384,6 +425,10 @@ namespace BastleFramework
         public override void ResolveReferences()
         {
             base.ResolveReferences();
+            MarkProcVisuals(procs);
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    MarkProcVisuals(o?.procs);
             // Diet traits are revealed by what the creature eats unless the def says otherwise.
             bool hasDiet = diet != null;
             if (rarityOverrides != null)
@@ -392,6 +437,16 @@ namespace BastleFramework
             if (hasDiet && !visible && discoverWhen == null)
                 discoverWhen = new List<BastleDiscoveryTrigger>
                     { BastleDiscoveryTrigger.EatsAddedFood, BastleDiscoveryTrigger.StarvesNearRefusedFood };
+        }
+
+        // A proc's own visuals play when it goes off, whatever their XML says.
+        private static void MarkProcVisuals(List<BastleProc> list)
+        {
+            if (list == null) return;
+            foreach (var p in list)
+                if (p?.visuals != null)
+                    foreach (var v in p.visuals)
+                        if (v != null) v.on = BastleVisualEvent.Proc;
         }
 
         public bool DiscoveredBy(BastleDiscoveryTrigger trigger)
@@ -435,17 +490,51 @@ namespace BastleFramework
             return true;
         }
 
+        private static IEnumerable<string> ProcErrors(List<BastleProc> procs, List<BastleEventVisual> visuals, string owner)
+        {
+            if (procs != null)
+                for (int i = 0; i < procs.Count; i++)
+                {
+                    if (procs[i] == null) { yield return owner + "procs has an empty entry"; continue; }
+                    foreach (var e in procs[i].ConfigErrors(owner + "proc " + i)) yield return e;
+                    if (procs[i].visuals != null)
+                        foreach (var v in procs[i].visuals)
+                        {
+                            if (v == null) { yield return owner + "proc " + i + " visuals has an empty entry"; continue; }
+                            foreach (var e in v.ConfigErrors(owner + "proc " + i + " visual")) yield return e;
+                        }
+                }
+            if (visuals != null)
+                foreach (var v in visuals)
+                {
+                    if (v == null) { yield return owner + "eventVisuals has an empty entry"; continue; }
+                    if (v.on == BastleVisualEvent.Proc) yield return owner + "eventVisuals can't play on Proc; put them in the proc's own visuals";
+                    foreach (var e in v.ConfigErrors(owner + "event visual")) yield return e;
+                }
+        }
+
+        // Quests write the subject before it and the full stop after it.
+        private static string RumorError(string phrase)
+        {
+            if (phrase.NullOrEmpty()) return null;
+            if (char.IsUpper(phrase[0]) || phrase.TrimEnd().EndsWith("."))
+                return $"rumor \"{phrase}\" should be a verb phrase that starts in lower case and has no full stop (\"towers over the rest of its kind\")";
+            return null;
+        }
+
         public override IEnumerable<string> ConfigErrors()
         {
             foreach (var e in base.ConfigErrors()) yield return e;
             if (traitClass == null || !typeof(BastleTrait).IsAssignableFrom(traitClass))
                 yield return $"traitClass {traitClass} is not a BastleTrait";
             if (commonality < 0f) yield return "commonality is negative";
+            if (RumorError(rumor) is string re) yield return re;
             if (rarityOverrides != null)
             {
                 if (!scalesWithRarity) yield return "has rarityOverrides but doesn't scale with rarity, so it only ever rolls at its own rarity and the overrides are never used";
                 foreach (var o in rarityOverrides)
                 {
+                    if (RumorError(o.rumor) is string ore) yield return $"rarityOverride at {o.minRarity}: {ore}";
                     if (o.minRarity <= rarity) yield return $"rarityOverride at {o.minRarity} is not above the trait's own rarity ({rarity}); set the base fields instead";
                     if (o.hediffs != null && !visible)
                         foreach (var h in o.hediffs)
@@ -470,7 +559,23 @@ namespace BastleFramework
                         yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
             if (retaliation != null && retaliation.damageDef == null) yield return "retaliation has no damageDef";
-            if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(BastleTrait))
+            foreach (var e in ProcErrors(procs, eventVisuals, "")) yield return e;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    foreach (var e in ProcErrors(o.procs, o.eventVisuals, $"rarityOverride at {o.minRarity}: ")) yield return e;
+            if (surfaces != null)
+                foreach (var surface in surfaces)
+                    foreach (var e in surface.ConfigErrors()) yield return e;
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    if (o.surfaces != null)
+                        foreach (var surface in o.surfaces)
+                            foreach (var e in surface.ConfigErrors()) yield return $"rarityOverride at {o.minRarity}: {e}";
+            if (GetModExtension<SheddingParams>()?.filth is ThingDef filth && !typeof(Filth).IsAssignableFrom(filth.thingClass))
+                yield return $"SheddingParams filth {filth.defName} is not a filth (its thingClass is {filth.thingClass?.Name})";
+            if (traitClass != null && typeof(BastleTrait_Aura).IsAssignableFrom(traitClass) && GetModExtension<AuraParams>() == null)
+                yield return "traitClass is BastleTrait_Aura but there is no AuraParams in modExtensions";
+            if (!visible && discoverWhen.NullOrEmpty() && traitClass == typeof(BastleTrait) && !AnyProcDiscovers)
                 yield return "not visible and has no discoverWhen: only code can ever reveal it (add <li>Manual</li> to discoverWhen to silence this)";
         }
     }

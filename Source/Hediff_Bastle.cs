@@ -27,6 +27,14 @@ namespace BastleFramework
         /// BastleUtility.SetMaterial.</summary>
         private ThingDef material;
 
+        private int discoveryGroup;
+
+        /// <summary>Bastles with the same non-zero id share discovery (see
+        /// BastleUtility.LinkDiscovery). 0: none.</summary>
+        public int DiscoveryGroup => discoveryGroup;
+
+        internal void SetDiscoveryGroup(int group) => discoveryGroup = group;
+
         [Unsaved] private HediffStage materialStage;
 
         [Unsaved] private HediffStage cachedStage;
@@ -78,6 +86,7 @@ namespace BastleFramework
         {
             get
             {
+                if (DietOverridden) return null;
                 if (stageDirty || cachedStage == null)
                 {
                     cachedStage = BuildStage();
@@ -211,6 +220,19 @@ namespace BastleFramework
             if (dirty) renderer.SetAllGraphicsDirty();
         }
 
+        /// <summary>A mutant whose diet replaces its race's (Anomaly ghouls) eats only that:
+        /// trait diets and the material's nutrition stop applying, as vanilla's own
+        /// FoodIsSuitable ignores the race for it.</summary>
+        internal bool DietOverridden => pawn != null && pawn.IsMutant && pawn.mutant.Def.overrideFoodType;
+
+        /// <summary>A humanlike in the player's faction can show or tell the colony what it
+        /// can do, so traits that grant abilities are known as soon as it lives there.
+        /// Without this they'd stay hidden for good: nothing casts a colonist's abilities
+        /// on its own, and a hidden trait's ability has no gizmo.</summary>
+        internal bool TellsAbilities(BastleTrait trait)
+            => pawn != null && pawn.RaceProps.Humanlike && pawn.Faction != null && pawn.Faction.IsPlayer
+                && !trait.Abilities.NullOrEmpty();
+
         // ---- trait list mutation (use BastleUtility from outside) ----------------
 
         /// <param name="exactRarity">Keep the rarity as given instead of clamping it to
@@ -224,10 +246,17 @@ namespace BastleFramework
             trait.fromMaterial = fromMaterial;
             if (exactRarity && rarity != null) trait.SetRarityExact(rarity.Value);
             else trait.Rarity = rarity ?? def.rarity;
+            if (!trait.discovered && TellsAbilities(trait)) trait.discovered = true;
+            // A trait the pack has already identified is known on arrival, as on a copy.
+            if (!trait.discovered && discoveryGroup != 0 && BastleDiscoveryGroups.KnownInGroup(discoveryGroup, def, this))
+                trait.discovered = true;
             traits.Add(trait);
             ApplyEffects(trait);
             trait.PostAdded();
             TraitsChanged(trait);
+            // One added known (a content mod's choice, a colonist telling its abilities)
+            // is known to the pack too. Visible traits are known everywhere anyway.
+            if (trait.discovered && !def.visible && discoveryGroup != 0) BastleDiscoveryGroups.Share(this, def);
             return trait;
         }
 
@@ -273,6 +302,45 @@ namespace BastleFramework
             }
         }
 
+        /// <summary>Whether a trait other than <paramref name="except"/> grants the ability,
+        /// directly or through a hediff it added that has HediffComp_GiveAbility (which
+        /// shares the same tracker entry).</summary>
+        internal bool TraitGrantsAbility(AbilityDef def, BastleTrait except = null)
+        {
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var t = traits[i];
+                if (t == except) continue;
+                if (t.Abilities?.Contains(def) == true) return true;
+                var hediffs = t.Hediffs;
+                if (hediffs == null) continue;
+                for (int j = 0; j < hediffs.Count; j++)
+                {
+                    var comps = hediffs[j].hediff?.comps;
+                    // Only while the hediff is there: one lost to surgery or a missing part gives nothing.
+                    if (comps == null || !pawn.health.hediffSet.HasHediff(hediffs[j].hediff)) continue;
+                    for (int k = 0; k < comps.Count; k++)
+                        if (comps[k] is HediffCompProperties_GiveAbility give
+                            && (give.abilityDef == def || give.abilityDefs?.Contains(def) == true)) return true;
+                }
+            }
+            return false;
+        }
+
+        internal bool TraitGivesHediff(HediffDef def)
+        {
+            for (int i = 0; i < traits.Count; i++)
+            {
+                var hediffs = traits[i].Hediffs;
+                if (hediffs == null) continue;
+                for (int j = 0; j < hediffs.Count; j++)
+                    if (hediffs[j].hediff == def) return true;
+            }
+            return false;
+        }
+
+        // Callers take the trait out of the list first, so the RemoveAbility patch
+        // doesn't count it as still granting what it's losing.
         private void RemoveEffects(BastleTrait trait)
         {
             var hediffs = trait.Hediffs;
@@ -292,7 +360,9 @@ namespace BastleFramework
             {
                 foreach (var ab in abilities)
                 {
-                    if (traits.Any(t => t != trait && t.Abilities != null && t.Abilities.Contains(ab))) continue;
+                    if (TraitGrantsAbility(ab, trait)) continue;
+                    // A gene or psylink that gives the same ability still does.
+                    if (BastleAbilityTraining.HasOtherSource(this, pawn, ab, sharedEntryOnly: true)) continue;
                     pawn.abilities.RemoveAbility(ab);
                 }
             }
@@ -350,14 +420,44 @@ namespace BastleFramework
             }
         }
 
-        /// <summary>Has something the map component has to run: effecters or a light.</summary>
-        public bool HasMapVisuals => HasActiveEffecters || ActiveGlow != null;
+        [Unsaved] private BastleAfterimages activeAfterimages;
+        [Unsaved] private bool afterimagesResolved;
+
+        /// <summary>The afterimages it leaves while running: the first trait's that shows its looks.</summary>
+        public BastleAfterimages ActiveAfterimages
+        {
+            get
+            {
+                if (!BastleFrameworkMod.Settings.eventEffectsEnabled) return null;
+                if (!afterimagesResolved)
+                {
+                    afterimagesResolved = true;
+                    activeAfterimages = null;
+                    foreach (var t in traits)
+                        if (t.VisualsActive && t.Afterimages != null) { activeAfterimages = t.Afterimages; break; }
+                }
+                return activeAfterimages;
+            }
+        }
+
+        /// <summary>Every tick from MapComponent_BastleVisuals while on the map in view.</summary>
+        internal void AfterimagesTick()
+        {
+            var a = ActiveAfterimages;
+            if (a == null || pawn.pather == null || !pawn.pather.Moving || !pawn.IsHashIntervalTick(Mathf.Max(1, a.intervalTicks))) return;
+            if (pawn.IsHiddenFromPlayer() || !pawn.Position.ShouldSpawnMotesAt(pawn.Map, false)) return;
+            BastleEventDraw.AddAfterimage(pawn, pawn.DrawPos, Vector3.zero, a.lifeTicks, a.color);
+        }
+
+        /// <summary>Has something the map component has to run: effecters, a light or afterimages.</summary>
+        public bool HasMapVisuals => HasActiveEffecters || ActiveGlow != null || ActiveAfterimages != null;
 
         /// <summary>Call when which visuals should show may have changed.</summary>
         public void VisualsChanged(BastleTrait cause = null)
         {
             activeEffecterDefs = null;
             glowResolved = false;
+            afterimagesResolved = false;
             glower?.Remove();
             glower = null;
             CleanupEffecters();
@@ -423,10 +523,12 @@ namespace BastleFramework
         /// <summary>The mod settings changed: rebuild everything derived from them. The
         /// map component drops this bastle if it no longer has effecters or a light, and
         /// TickInterval picks it up again if it gained one.</summary>
-        internal void SettingsChanged()
+        internal void SettingsChanged(bool looksChanged = false)
         {
+            if (looksChanged) pawn?.Drawer?.renderer?.SetAllGraphicsDirty();
             activeEffecterDefs = null;
             glowResolved = false;
+            afterimagesResolved = false;
             glower?.Remove();
             glower = null;
             CleanupEffecters(keepTracked: true);
@@ -589,20 +691,6 @@ namespace BastleFramework
                     if (x.hediff == th.hediff && x.part == th.part) return true;
             }
             return false;
-        }
-
-        /// <summary>True when every trait that grants this ability is undiscovered.</summary>
-        internal bool AbilityOnlyFromHiddenTraits(AbilityDef abilityDef)
-        {
-            bool any = false;
-            for (int i = 0; i < traits.Count; i++)
-            {
-                var t = traits[i];
-                if (t.Abilities == null || !t.Abilities.Contains(abilityDef)) continue;
-                if (t.discovered) return false;
-                any = true;
-            }
-            return any;
         }
 
         public override HediffStage CurStage
@@ -912,6 +1000,9 @@ namespace BastleFramework
                 t.TryDiscoverBy(BastleDiscoveryTrigger.TakesDamage);
                 if (t.Retaliation != null) BastleCombatUtility.TryRetaliate(t, dinfo);
             }
+            BastleProcs.OnTakeDamage(this, dinfo, totalDamageDealt);
+            if (totalDamageDealt > 0f && dinfo.Instigator != null && !pawn.Dead && dinfo.Def.ExternalViolenceFor(pawn))
+                BastleEventVisuals.Play(this, BastleVisualEvent.Struck, dinfo.Instigator, dinfo);
         }
 
         public override void Notify_PawnDamagedThing(Thing thing, DamageInfo dinfo, DamageWorker.DamageResult result)
@@ -923,6 +1014,15 @@ namespace BastleFramework
                 t.Notify_PawnDamagedThing(thing, dinfo, result);
                 if (t.Lifesteal != null) pendingHeal += BastleCombatUtility.LifestealFrom(t, thing, dinfo, result);
             }
+            BastleProcs.OnHit(this, thing, dinfo, result);
+            if (thing is Pawn && result != null && result.totalDamageDealt > 0f && !BastleCombatUtility.InExtraDamage)
+                BastleEventVisuals.Play(this, BastleVisualEvent.Hit, thing, dinfo);
+        }
+
+        public override void Notify_Downed()
+        {
+            base.Notify_Downed();
+            BastleProcs.OnEvent(this, BastleProcEvent.Downed);
         }
 
         /// <summary>True when an undiscovered trait grants this ability.</summary>
@@ -955,12 +1055,14 @@ namespace BastleFramework
         {
             base.Notify_IngestedThing(thing, amount);
             if (thing != null) Notify_Ate(thing.def);
+            BastleProcs.OnEvent(this, BastleProcEvent.Eat, thing);
         }
 
         /// <summary>Reveals hidden traits whose diet is what let the creature eat this.
         /// Also called by the non-food eating job, which doesn't go through Thing.Ingested.</summary>
         internal void Notify_Ate(ThingDef food)
         {
+            if (DietOverridden) return;
             var removed = Diet?.remove ?? FoodTypeFlags.None;
             for (int i = 0; i < traits.Count; i++)
             {
@@ -989,6 +1091,13 @@ namespace BastleFramework
             }
         }
 
+        public override void Notify_PawnKilled()
+        {
+            base.Notify_PawnKilled();
+            for (int i = traits.Count - 1; i >= 0; i--)
+                traits[i].Notify_PawnKilled();
+        }
+
         public override void Notify_PawnDied(DamageInfo? dinfo, Hediff culprit = null)
         {
             base.Notify_PawnDied(dinfo, culprit);
@@ -1005,6 +1114,7 @@ namespace BastleFramework
             base.ExposeData();
             Scribe_Collections.Look(ref traits, "traits", LookMode.Deep);
             Scribe_Defs.Look(ref material, "material");
+            Scribe_Values.Look(ref discoveryGroup, "discoveryGroup", 0);
             // Default 0, not 1: saves from before this field have injuries already sized
             // for the current factor, and 0 makes SyncInjuries record it without scaling.
             Scribe_Values.Look(ref appliedHealth, "appliedHealth", 0f, forceSave: true);
@@ -1028,6 +1138,7 @@ namespace BastleFramework
                     fresh.SetRarityExact(old.Rarity);
                     // Overrides check their source's type, so unrelated classes copy nothing.
                     fresh.CopyStateFrom(old);
+                    fresh.CopyProcState(old);
                     traits[i] = fresh;
                 }
                 foreach (var t in traits)

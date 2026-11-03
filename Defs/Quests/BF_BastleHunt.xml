@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <SitePartDef>
+    <defName>BF_BastleLair</defName>
+    <label>bastle lair</label>
+    <description>A bastle and the manhunting pack that follows it.</description>
+    <workerClass>BastleFramework.SitePartWorker_BastleLair</workerClass>
+    <siteTexture>World/WorldObjects/Sites/GenericSite</siteTexture>
+    <expandingIconTexture>World/WorldObjects/Expanding/Sites/Manhunters</expandingIconTexture>
+    <arrivedLetter>A bastle has made its lair here. It and the pack that follows it are driven mad by scaria, and will attack anyone they see.</arrivedLetter>
+    <arrivedLetterDef>NegativeEvent</arrivedLetterDef>
+    <wantsThreatPoints>true</wantsThreatPoints>
+    <tags>
+      <li>BF_BastleLair</li>
+    </tags>
+    <arrivedLetterHediffHyperlinks>
+      <li>Scaria</li>
+    </arrivedLetterHediffHyperlinks>
+  </SitePartDef>
+
+  <GenStepDef>
+    <defName>BF_BastleLair</defName>
+    <linkWithSite>BF_BastleLair</linkWithSite>
+    <order>1600</order>
+    <genStep Class="BastleFramework.GenStep_BastleLair" />
+  </GenStepDef>
+
+  <QuestScriptDef>
+    <defName>BF_BastleHunt</defName>
+    <rootSelectionWeight>0.6</rootSelectionWeight>
+    <rootMinPoints>350</rootMinPoints>
+    <minRefireDays>10</minRefireDays>
+    <canGiveRoyalFavor>true</canGiveRoyalFavor>
+    <expireDaysRange>4~8</expireDaysRange>
+    <questNameRules>
+      <rulesStrings>
+        <li>questName->The [kindLabel] [lair]</li>
+        <li>questName->Hunting the [kindLabel]</li>
+        <li>questName->The [beastAdj] [kindLabel]</li>
+        <li>questName->[asker_nameDef]'s [hunt]</li>
+        <li>lair->Lair</li>
+        <li>lair->Den</li>
+        <li>lair->Hollow</li>
+        <li>lair->Haunt</li>
+        <li>hunt->Hunt</li>
+        <li>hunt->Beast</li>
+        <li>hunt->Bounty</li>
+        <li>beastAdj->Strange</li>
+        <li>beastAdj->Wrong</li>
+        <li>beastAdj->Unnatural</li>
+        <li>beastAdj->Marked</li>
+      </rulesStrings>
+    </questNameRules>
+    <questDescriptionRules>
+      <rulesStrings>
+        <li>questDescription(hasAlpha==True)->[asker_nameFull], [asker_faction_leaderTitle] of [asker_faction_name], has sent us a message. A bastle [kindLabel] has made its lair nearby, and [asker_faction_name] has lost people to it.\n\n[asker_nameDef] is asking us to [killWhat]. At the site, [sitePart0_description].[rumorParagraph]</li>
+        <li>questDescription(hasAlpha==False)->[asker_nameFull], [asker_faction_leaderTitle] of [asker_faction_name], has sent us a message. A pack of manhunting [kindLabelPlural] has made its lair nearby, and [asker_faction_name] has lost people to it.\n\n[asker_nameDef] is asking us to kill them all. At the site, [sitePart0_description].</li>
+        <li>killWhat(count==1)->kill it</li>
+        <li>killWhat(count>1)->kill it, and every animal that runs with it</li>
+        <li>rumorParagraph(rumor==phrase)->\n\nThose who escaped it say it [rumorText]. Nobody knows what else it carries.</li>
+        <li>rumorParagraph(rumor==label)->\n\nThose who escaped it have a name for something it carries: [rumorTrait]. Nobody knows what else it has.</li>
+        <li>rumorParagraph(rumor==none)->\n\nNobody who saw it up close has lived to say what it can do.</li>
+      </rulesStrings>
+    </questDescriptionRules>
+    <root Class="QuestNode_Sequence">
+      <nodes>
+        <li Class="QuestNode_SubScript">
+          <def>Util_RandomizePointsChallengeRating</def>
+          <parms>
+            <pointsFactorTwoStar>1.5</pointsFactorTwoStar>
+            <pointsFactorThreeStar>2</pointsFactorThreeStar>
+          </parms>
+        </li>
+
+        <li Class="QuestNode_SubScript">
+          <def>Util_AdjustPointsForDistantFight</def>
+        </li>
+
+        <li Class="QuestNode_GetMap" />
+
+        <li Class="QuestNode_GetPawn">
+          <storeAs>asker</storeAs>
+          <mustBeFactionLeader>true</mustBeFactionLeader>
+          <allowPermanentEnemyFaction>false</allowPermanentEnemyFaction>
+          <hostileWeight>0.15</hostileWeight>
+        </li>
+
+        <li Class="QuestNode_GetSiteTile">
+          <storeAs>siteTile</storeAs>
+          <preferCloserTiles>true</preferCloserTiles>
+        </li>
+
+        <li Class="BastleFramework.QuestNode_GetBastleLairParams">
+          <tile>$siteTile</tile>
+          <storeAs>sitePartsParams</storeAs>
+        </li>
+
+        <li Class="QuestNode_GetSiteThreatPoints">
+          <storeAs>sitePoints</storeAs>
+          <sitePartsParams>$sitePartsParams</sitePartsParams>
+        </li>
+        <li Class="QuestNode_SubScript">
+          <def>Util_GetDefaultRewardValueFromPoints</def>
+          <parms>
+            <points>$sitePoints</points>
+          </parms>
+        </li>
+
+        <!-- As the bandit camp inflates its reward for a fight away from home, but less: the
+             bastle's own corpse is worth something. -->
+        <li Class="QuestNode_Multiply">
+          <value1>$rewardValue</value1>
+          <value2>1.5</value2>
+          <storeAs>rewardValue</storeAs>
+        </li>
+
+        <li Class="QuestNode_GenerateSite">
+          <sitePartsParams>$sitePartsParams</sitePartsParams>
+          <tile>$siteTile</tile>
+          <storeAs>site</storeAs>
+          <singleSitePartRules>
+            <rulesStrings>
+              <li>root(priority=1,hasAlpha==True,count==1)->(*Threat)a manhunting bastle [kindLabel](/Threat) roams alone</li>
+              <li>root(priority=1,hasAlpha==True,count>1)->(*Threat)a manhunting bastle [kindLabel](/Threat) leads (*Threat)[packLabel](/Threat), all driven mad by scaria</li>
+              <li>root(priority=1,hasAlpha==False)->(*Threat)[count] manhunting [kindLabelPlural](/Threat) are wandering nearby</li>
+              <li>root->there's a [label]</li>
+            </rulesStrings>
+          </singleSitePartRules>
+        </li>
+
+        <li Class="QuestNode_SpawnWorldObjects">
+          <worldObjects>$site</worldObjects>
+        </li>
+
+        <li Class="QuestNode_WorldObjectTimeout">
+          <worldObject>$site</worldObject>
+          <isQuestTimeout>true</isQuestTimeout>
+          <delayTicks>$(randInt(12,28)*60000)</delayTicks>
+          <inSignalDisable>site.MapGenerated</inSignalDisable>
+          <destroyOnCleanup>true</destroyOnCleanup>
+          <node Class="QuestNode_Sequence">
+            <nodes>
+              <li Class="QuestNode_Letter">
+                <label TKey="LetterLabelQuestExpired">Quest expired: [resolvedQuestName]</label>
+                <text TKey="LetterTextQuestExpired">The bastle has left its lair and the trail has gone cold. The quest [resolvedQuestName] has expired.</text>
+              </li>
+              <li Class="QuestNode_End">
+                <outcome>Fail</outcome>
+              </li>
+            </nodes>
+          </node>
+        </li>
+
+        <!-- Entering and leaving destroys the map. -->
+        <li Class="QuestNode_Signal">
+          <inSignal>site.Destroyed</inSignal>
+          <node Class="QuestNode_Sequence">
+            <nodes>
+              <li Class="QuestNode_Letter">
+                <label TKey="LetterLabelQuestFailed">Quest failed: [resolvedQuestName]</label>
+                <text TKey="LetterTextQuestFailed">With the hunters gone, the bastle has moved on. The quest [resolvedQuestName] has ended.</text>
+              </li>
+              <li Class="QuestNode_End">
+                <outcome>Fail</outcome>
+              </li>
+            </nodes>
+          </node>
+        </li>
+
+        <li Class="QuestNode_Signal">
+          <inSignal>site.AllEnemiesDefeated</inSignal>
+          <node Class="QuestNode_Sequence">
+            <nodes>
+              <li Class="QuestNode_GiveRewards">
+                <parms>
+                  <allowGoodwill>true</allowGoodwill>
+                  <allowRoyalFavor>true</allowRoyalFavor>
+                  <chosenPawnSignal>ChosenPawnForReward</chosenPawnSignal>
+                </parms>
+                <customLetterLabel TKey="LetterLabelPaymentArrived">Payment arrived</customLetterLabel>
+                <customLetterText TKey="LetterTextPaymentArrived">The bastle and its pack are dead.\n\nThe payment from [asker_faction_name] has arrived.</customLetterText>
+                <nodeIfChosenPawnSignalUsed Class="QuestNode_Letter">
+                  <letterDef>ChoosePawn</letterDef>
+                  <label TKey="LetterLabelFavorReceiver">[asker_faction_royalFavorLabel]</label>
+                  <text TKey="LetterTextFavorReceiver">These colonists took part in the hunt for the quest [resolvedQuestName]. [asker_definite] wants to know who should receive the [royalFavorReward_amount] [asker_faction_royalFavorLabel] for this service.</text>
+                  <useColonistsOnMap>$site</useColonistsOnMap>
+                  <chosenPawnSignal>ChosenPawnForReward</chosenPawnSignal>
+                </nodeIfChosenPawnSignalUsed>
+              </li>
+            </nodes>
+          </node>
+        </li>
+        <li Class="QuestNode_End">
+          <inSignal>site.AllEnemiesDefeated</inSignal>
+          <outcome>Success</outcome>
+        </li>
+      </nodes>
+    </root>
+  </QuestScriptDef>
+
+</Defs>

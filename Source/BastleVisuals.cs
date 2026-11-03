@@ -76,11 +76,15 @@ namespace BastleFramework
     }
 
     /// <summary>The node constructor reads its mesh before any field initialiser runs,
-    /// so the overlay travels on the props instead of the node.</summary>
-    public class PawnRenderNodeProperties_BastleOverlay : PawnRenderNodeProperties
+    /// so what the node draws travels on the props instead of the node.</summary>
+    public class PawnRenderNodeProperties_BastleBodyCopy : PawnRenderNodeProperties
+    {
+        public bool head;
+    }
+
+    public class PawnRenderNodeProperties_BastleOverlay : PawnRenderNodeProperties_BastleBodyCopy
     {
         public BastleOverlay overlay;
-        public bool head;
     }
 
     /// <summary>
@@ -100,33 +104,49 @@ namespace BastleFramework
             // The statue flag lives on the renderer, which isn't saved: set it each time
             // the tree is built, before any node picks its graphic.
             if (bastle.IsConstruct) bastle.ApplyStatue(dirty: false);
+            bool head = pawn.RaceProps.Humanlike && pawn.health.hediffSet.HasHead;
             foreach (var trait in bastle.TraitsForReading)
             {
-                if (!trait.VisualsActive) continue;
-                if (trait.Flames != null)
+                if (!trait.HasRenderVisuals) continue;
+                bool shows = trait.VisualsActive;
+                if (shows && trait.Flames != null)
                     foreach (var flames in trait.Flames)
                         yield return (new PawnRenderNode_BastleFlames(pawn, flames.Props, tree), null);
-                if (trait.Overlays == null) continue;
-                foreach (var overlay in trait.Overlays)
-                {
-                    yield return (new PawnRenderNode_BastleOverlay(pawn, overlay.PropsFor(false), tree), null);
-                    if (pawn.RaceProps.Humanlike && overlay.includeHead && pawn.health.hediffSet.HasHead)
-                        yield return (new PawnRenderNode_BastleOverlay(pawn, overlay.PropsFor(true), tree), null);
-                }
+                if (shows && trait.Overlays != null)
+                    foreach (var overlay in trait.Overlays)
+                    {
+                        yield return (new PawnRenderNode_BastleOverlay(pawn, overlay.PropsFor(false), tree), null);
+                        if (head && overlay.includeHead)
+                            yield return (new PawnRenderNode_BastleOverlay(pawn, overlay.PropsFor(true), tree), null);
+                    }
+                if (trait.Surfaces != null)
+                    foreach (var surface in trait.Surfaces)
+                    {
+                        if (!trait.ShowsVisual(surface.beforeIdentified)) continue;
+                        yield return (new PawnRenderNode_BastleSurface(pawn, surface.PropsFor(false), tree), null);
+                        if (head && surface.includeHead)
+                            yield return (new PawnRenderNode_BastleSurface(pawn, surface.PropsFor(true), tree), null);
+                    }
             }
         }
     }
 
-    public class PawnRenderNode_BastleOverlay : PawnRenderNode
+    /// <summary>
+    /// A node that draws something made from the creature's own body (or head) texture:
+    /// the recoloured overlays, and the surfaces (BastleSurfaces.cs) masked to its shape.
+    /// It follows whatever the body shows, flying frames and swimming sprites included.
+    /// </summary>
+    public abstract class PawnRenderNode_BastleBodyCopy : PawnRenderNode
     {
-        public PawnRenderNode_BastleOverlay(Pawn pawn, PawnRenderNodeProperties props, PawnRenderTree tree)
+        protected PawnRenderNode_BastleBodyCopy(Pawn pawn, PawnRenderNodeProperties props, PawnRenderTree tree)
             : base(pawn, props, tree) { }
 
-        private PawnRenderNodeProperties_BastleOverlay TProps => (PawnRenderNodeProperties_BastleOverlay)props;
-        public BastleOverlay Overlay => TProps.overlay;
-        public bool TProps_IsHead => TProps.head;
+        public bool IsHead => ((PawnRenderNodeProperties_BastleBodyCopy)props).head;
 
-        /// <summary>The texture the overlay copies: the same one the body or head node
+        /// <summary>The graphic this node holds for one of the body's graphics, or null for none.</summary>
+        protected abstract Graphic Adapt(Graphic source);
+
+        /// <summary>The texture the node copies: the same one the body or head node
         /// draws. Read from the pawn rather than the body node, whose graphic may not
         /// be initialised yet when this node is.</summary>
         private static Graphic SourceGraphic(Pawn pawn, bool head)
@@ -148,13 +168,12 @@ namespace BastleFramework
 
         public override Graphic GraphicFor(Pawn pawn)
         {
-            var source = SourceGraphic(pawn, TProps.head);
-            if (source == null || Overlay == null) return null;
-            return source.GetColoredVersion(Overlay.Shader, Overlay.color, Overlay.color);
+            var source = SourceGraphic(pawn, IsHead);
+            return source == null ? null : Adapt(source);
         }
 
         /// <summary>
-        /// Recoloured copies of the body's state graphics (flying frames, swimming,
+        /// This node's versions of the body's state graphics (flying frames, swimming,
         /// stationary), keyed by the same states. Built on the main thread when the tree
         /// initialises, after the body node (the parent initialises its children last),
         /// so the parallel pre-draw only reads them.
@@ -162,24 +181,23 @@ namespace BastleFramework
         protected override IEnumerable<(GraphicStateDef state, Graphic graphic)> StateGraphicsFor(Pawn pawn)
         {
             var body = parent;
-            if (body == null || TProps.head || Overlay == null || pawn.RaceProps.Humanlike) yield break;
+            if (body == null || IsHead || pawn.RaceProps.Humanlike) yield break;
             var anim = pawn.Drawer.renderer.CurAnimation;
             if (anim != null)
                 foreach (var (state, graphic) in anim.GetGraphicStates(body))
                 {
-                    var g = Recolor(body.ContainsGraphicState(state) ? body.GraphicForState(state) : graphic);
+                    var source = body.ContainsGraphicState(state) ? body.GraphicForState(state) : graphic;
+                    var g = source == null ? null : Adapt(source);
                     if (g != null) yield return (state, g);
                 }
             foreach (var state in new[] { GraphicStateDefOf.Swimming, GraphicStateDefOf.Stationary })
             {
                 if (state == null || !body.ContainsGraphicState(state)) continue;
-                var g = Recolor(body.GraphicForState(state));
+                var source = body.GraphicForState(state);
+                var g = source == null ? null : Adapt(source);
                 if (g != null) yield return (state, g);
             }
         }
-
-        private Graphic Recolor(Graphic source) =>
-            source?.GetColoredVersion(Overlay.Shader, Overlay.color, Overlay.color);
 
         /// <summary>Height of the mesh in cells, used to keep a scaled overlay's bottom
         /// on the creature's feet. Set from MeshSetFor, which the base constructor calls.</summary>
@@ -189,9 +207,9 @@ namespace BastleFramework
         {
             if (pawn.RaceProps.Humanlike)
             {
-                var set = TProps.head ? HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn(pawn)
-                                      : HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn(pawn);
-                meshHeight = TProps.head ? 1.5f : HumanlikeMeshPoolUtility.HumanlikeBodyWidthForPawn(pawn);
+                var set = IsHead ? HumanlikeMeshPoolUtility.GetHumanlikeHeadSetForPawn(pawn)
+                                 : HumanlikeMeshPoolUtility.GetHumanlikeBodySetForPawn(pawn);
+                meshHeight = IsHead ? 1.5f : HumanlikeMeshPoolUtility.HumanlikeBodyWidthForPawn(pawn);
                 return set;
             }
             var g = SourceGraphic(pawn, false);
@@ -201,7 +219,18 @@ namespace BastleFramework
         }
     }
 
-    public class PawnRenderNodeWorker_BastleOverlay : PawnRenderNodeWorker
+    public class PawnRenderNode_BastleOverlay : PawnRenderNode_BastleBodyCopy
+    {
+        public PawnRenderNode_BastleOverlay(Pawn pawn, PawnRenderNodeProperties props, PawnRenderTree tree)
+            : base(pawn, props, tree) { }
+
+        public BastleOverlay Overlay => ((PawnRenderNodeProperties_BastleOverlay)props).overlay;
+
+        protected override Graphic Adapt(Graphic source) =>
+            Overlay == null ? null : source.GetColoredVersion(Overlay.Shader, Overlay.color, Overlay.color);
+    }
+
+    public class PawnRenderNodeWorker_BastleBodyCopy : PawnRenderNodeWorker
     {
         public override bool CanDrawNow(PawnRenderNode node, PawnDrawParms parms) =>
             base.CanDrawNow(node, parms) && BastleVisualsUtility.IsLiveBastle(parms);
@@ -209,16 +238,16 @@ namespace BastleFramework
         /// <summary>
         /// An animal's body node swaps its texture for graphic states: the frames of the
         /// flying animation (Odyssey birds), and the swimming and stationary sprites. The
-        /// overlay copies whatever the body is showing, recoloured, so the glow follows the
-        /// wings instead of drawing the standing sprite over a bird in flight. Position and
-        /// size need no work: the overlay is the body's child and inherits its transform.
+        /// copy follows whatever the body is showing, so a glow follows the wings instead
+        /// of drawing the standing sprite over a bird in flight. Position and size need no
+        /// work: the copy is the body's child and inherits its transform.
         /// </summary>
         // Deliberately GetGraphic and not GetGraphicState: base ScaleFor also reads
-        // GetGraphicState and multiplies by the state's drawSize, which the overlay already
+        // GetGraphicState and multiplies by the state's drawSize, which the copy already
         // inherits from the body, so a flying overlay would be scaled twice.
         protected override Graphic GetGraphic(PawnRenderNode node, PawnDrawParms parms)
         {
-            if (node is PawnRenderNode_BastleOverlay o && !o.TProps_IsHead && o.Overlay != null
+            if (node is PawnRenderNode_BastleBodyCopy o && !o.IsHead
                 && !parms.pawn.RaceProps.Humanlike && o.parent != null)
             {
                 var state = BodyGraphicState(o.parent, parms);
@@ -242,12 +271,15 @@ namespace BastleFramework
                 return state;
             return null;
         }
+    }
 
+    public class PawnRenderNodeWorker_BastleOverlay : PawnRenderNodeWorker_BastleBodyCopy
+    {
         public override Vector3 OffsetFor(PawnRenderNode node, PawnDrawParms parms, out Vector3 pivot)
         {
             var offset = base.OffsetFor(node, parms, out pivot);
             if (node is PawnRenderNode_BastleOverlay t && t.Overlay != null && t.Overlay.alignBottom
-                && t.Overlay.scale > 1f && !t.TProps_IsHead)
+                && t.Overlay.scale > 1f && !t.IsHead)
                 offset.z += (t.Overlay.scale - 1f) * t.meshHeight * t.Overlay.feetDepth;
             return offset;
         }
@@ -302,8 +334,47 @@ namespace BastleFramework
             if (!tracked.Contains(bastle)) tracked.Add(bastle);
         }
 
+        /// <summary>Auras with a ground glow on this map; the glow mote is maintained here
+        /// every tick.</summary>
+        private readonly List<BastleTrait_Aura> glows = new List<BastleTrait_Aura>();
+
+        public void TrackGlow(BastleTrait_Aura aura)
+        {
+            if (!glows.Contains(aura)) glows.Add(aura);
+        }
+
+        /// <summary>Aura rings for selected bastles. Main thread, per frame.</summary>
+        public override void MapComponentUpdate()
+        {
+            if (map != Find.CurrentMap || !RimWorld.Planet.WorldRendererUtility.DrawingMap) return;
+            try { BastleEventDraw.Draw(map); }
+            catch (System.Exception e) { Log.ErrorOnce($"[Bastle Framework] drawing event effects failed: {e}", 0x5EE9); BastleEventDraw.Clear(); }
+            var sel = Find.Selector.SelectedObjectsListForReading;
+            for (int i = 0; i < sel.Count; i++)
+            {
+                if (!(sel[i] is Pawn p) || !p.Spawned || p.Map != map) continue;
+                var traits = BastleUtility.PeekBastle(p)?.Traits;
+                if (traits == null) continue;
+                for (int j = 0; j < traits.Count; j++)
+                    (traits[j] as BastleTrait_Aura)?.DrawRing();
+            }
+        }
+
         public override void MapComponentTick()
         {
+            for (int i = glows.Count - 1; i >= 0; i--)
+            {
+                // One bad aura (e.g. a glowMote that isn't a Mote) mustn't stop the lights
+                // and effecters below from ticking.
+                bool keep;
+                try { keep = glows[i].GlowTick(map); }
+                catch (System.Exception e)
+                {
+                    Log.ErrorOnce($"[Bastle Framework] aura glow for {glows[i].def?.defName} failed and was turned off: {e}", glows[i].def?.shortHash ?? 0);
+                    keep = false;
+                }
+                if (!keep) glows.RemoveAt(i);
+            }
             for (int i = tracked.Count - 1; i >= 0; i--)
             {
                 var t = tracked[i];
@@ -321,6 +392,7 @@ namespace BastleFramework
                 // Nobody can see it: skip spawning particles nobody would see.
                 if (map != Find.CurrentMap || p.Position.Fogged(map)) continue;
                 t.EffectersTick();
+                t.AfterimagesTick();
             }
         }
     }

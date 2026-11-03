@@ -14,10 +14,46 @@
     </stages>
   </HediffDef>
 
+  <!-- Given by the rallying aura and refreshed while in range. -->
+  <HediffDef>
+    <defName>BF_Rallied</defName>
+    <label>rallied</label>
+    <description>Steadied by a nearby rallying creature. It fades soon after the creature is out of range or the fight ends.</description>
+    <hediffClass>HediffWithComps</hediffClass>
+    <defaultLabelColor>(1.0, 0.8, 0.35)</defaultLabelColor>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>400</disappearsAfterTicks>
+        <showRemainingTime>false</showRemainingTime>
+      </li>
+      <!-- With Ideology, Combat Command's line back to the creature rallying it. -->
+      <li Class="HediffCompProperties_Link" MayRequire="Ludeon.RimWorld.Ideology">
+        <requireLinkOnOtherPawn>false</requireLinkOnOtherPawn>
+        <customMote>Mote_CombatCommandLinkLine</customMote>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <painFactor>0.7</painFactor>
+        <statFactors>
+          <MeleeDamageFactor>1.2</MeleeDamageFactor>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
   <HediffDef ParentName="BF_TraitHediffBase">
     <defName>BF_VenomFangs</defName>
     <label>venomous fangs</label>
     <description>Fangs that inject a building poison.</description>
+    <!-- Bites as hard as the creature's strongest natural attack, so the poison suits its size.
+         The power below only applies to a race with no attacks of its own. -->
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>
@@ -37,6 +73,9 @@
     <defName>BF_VirulentFangs</defName>
     <label>virulent fangs</label>
     <description>Fangs that inject a fast, overwhelming poison.</description>
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1.75</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>
@@ -56,6 +95,9 @@
     <defName>BF_BonebreakerBlow</defName>
     <label>bonebreaker blow</label>
     <description>A crushing blow that can stun.</description>
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1.3</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>
@@ -81,6 +123,9 @@
     <defName>BF_StormStrike</defName>
     <label>storm strike</label>
     <description>A strike that carries an electric shock.</description>
+    <modExtensions>
+      <li Class="BastleFramework.BastleScaledAttack"><factor>1</factor></li>
+    </modExtensions>
     <comps>
       <li Class="HediffCompProperties_VerbGiver">
         <tools>

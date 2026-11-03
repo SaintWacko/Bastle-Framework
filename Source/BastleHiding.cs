@@ -44,11 +44,14 @@ namespace BastleFramework
             _ = p.health.hediffSet.PainTotal;
             _ = p.health.hediffSet.BleedRateTotal;
 
+            // Cleared here too: a Begin that threw part way never reached End.
+            hiddenHediffs.Clear();
             bastle.CollectHiddenHediffs(hiddenHediffs);
-            cardPawn = p;
             p.health.capacities.Notify_CapacityLevelsDirty();
             // Nested stat reads can serve cached values; drop the real ones gameplay cached.
             ClearStatCaches(p);
+            // Last, so a throw above can't leave hiding on with no End to turn it off.
+            cardPawn = p;
             return true;
         }
 
@@ -93,8 +96,10 @@ namespace BastleFramework
         }
     }
 
-    /// <summary>No gizmo for an ability whose only source is an undiscovered trait. The AI
-    /// can still cast it, and that reveals the trait.</summary>
+    /// <summary>No gizmo for an ability whose only source is an undiscovered trait (the AI
+    /// can still cast it, and that reveals the trait), nor for a known one on an animal
+    /// that hasn't learned BF_TraitAbilities. One that a gene, psylink, title or the like
+    /// also gives keeps its gizmo (ControlOf answers NotFromTraits).</summary>
     [HarmonyPatch(typeof(Ability), nameof(Ability.GizmosVisible))]
     internal static class Patch_AbilityGizmosVisible
     {
@@ -102,7 +107,95 @@ namespace BastleFramework
         {
             if (!__result) return;
             var bastle = BastleUtility.GetBastle(__instance.pawn);
-            if (bastle != null && bastle.AbilityOnlyFromHiddenTraits(__instance.def)) __result = false;
+            if (bastle == null) return;
+            var control = BastleAbilityTraining.ControlOf(bastle, __instance.pawn, __instance.def);
+            if (control == BastleAbilityControl.Hidden || control == BastleAbilityControl.Untrained) __result = false;
+        }
+    }
+
+    /// <summary>
+    /// Vanilla shows an ability's button on an undrafted pawn only when its def sets
+    /// displayGizmoWhileUndrafted. Animals can never be drafted, so a trained animal
+    /// bastle never saw its buttons (test run #3). This adds the buttons vanilla skipped
+    /// for abilities a known trait grants, on bastles that have no drafter: the AbilityDef
+    /// itself is shared with every other pawn that has it (a content mod's trait may grant
+    /// a vanilla ability), so the def is left as its author wrote it. Pawns that can be
+    /// drafted keep vanilla's draft-only buttons.
+    /// </summary>
+    [HarmonyPatch(typeof(Pawn_AbilityTracker), nameof(Pawn_AbilityTracker.GetGizmos))]
+    internal static class Patch_AbilityTrackerGizmos_Undrafted
+    {
+        static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn_AbilityTracker __instance)
+        {
+            foreach (var g in __result) yield return g;
+
+            var pawn = __instance.pawn;
+            if (pawn == null || pawn.drafter != null) yield break;
+            // Mirrors GetGizmos' own tests: who gets buttons at all, and the dev-gizmo branch
+            // that already yielded every ability for non-colonist pawns.
+            if (!(pawn.IsColonySubhumanPlayerControlled || pawn.IsColonyAnimal)) yield break;
+            if (DebugSettings.ShowDevGizmos && !pawn.IsColonistPlayerControlled && !pawn.IsColonyMechPlayerControlled) yield break;
+            var bastle = BastleUtility.GetBastle(pawn);
+            if (bastle == null) yield break;
+
+            var abilities = __instance.AllAbilitiesForReading;
+            for (int i = 0; i < abilities.Count; i++)
+            {
+                var a = abilities[i];
+                if (a.def.displayGizmoWhileUndrafted) continue;
+                if (BastleAbilityTraining.ControlOf(bastle, pawn, a.def) != BastleAbilityControl.Player) continue;
+                if (!a.GizmosVisible()) continue;
+                foreach (var c in a.GetGizmos())
+                {
+                    // The command is cached on the ability; vanilla resets this on every
+                    // yield, and one shown in dev mode before taming would keep "DEV:".
+                    if (c is Command_Ability ca) ca.devGizmo = false;
+                    yield return c;
+                }
+            }
+        }
+
+        internal static bool Undraftable(Pawn pawn, Ability ability)
+        {
+            if (pawn == null || pawn.drafter != null || ability.def.displayGizmoWhileUndrafted) return false;
+            var bastle = BastleUtility.GetBastle(pawn);
+            return bastle != null && BastleAbilityTraining.ControlOf(bastle, pawn, ability.def) == BastleAbilityControl.Player;
+        }
+    }
+
+    /// <summary>
+    /// Vanilla also greys out every ability on an undrafted pawn (disableGizmoWhileUndrafted
+    /// defaults on), which would leave the buttons added above unpressable. For those
+    /// abilities only, that one reason is dropped and the checks vanilla runs after it
+    /// are run here instead.
+    /// </summary>
+    [HarmonyPatch(typeof(Ability), nameof(Ability.GizmoDisabled))]
+    internal static class Patch_AbilityGizmoDisabled_Undrafted
+    {
+        static void Postfix(Ability __instance, ref bool __result, ref string reason)
+        {
+            if (!__result || !__instance.def.disableGizmoWhileUndrafted) return;
+            var pawn = __instance.pawn;
+            if (pawn == null || pawn.drafter != null) return;
+            // Translated per call, not cached: the language can change mid-session.
+            if (reason != "AbilityDisabledUndrafted".Translate()) return;
+            if (!Patch_AbilityTrackerGizmos_Undrafted.Undraftable(pawn, __instance)) return;
+
+            if (pawn.DevelopmentalStage.Baby())
+                reason = "IsIncapped".Translate(pawn.LabelShort, pawn);
+            else if (pawn.Downed)
+                reason = "CommandDisabledUnconscious".TranslateWithBackup("CommandCallRoyalAidUnconscious").Formatted(pawn);
+            else if (pawn.Deathresting)
+                reason = "CommandDisabledDeathresting".Translate(pawn);
+            else if (__instance.def.casterMustBeCapableOfViolence && pawn.WorkTagIsDisabled(WorkTags.Violent))
+                reason = "IsIncapableOfViolence".Translate(pawn.LabelShort, pawn);
+            else if (!__instance.CanQueueCast)
+                reason = "AbilityAlreadyQueued".Translate();
+            else
+            {
+                reason = null;
+                __result = false;
+            }
         }
     }
 }

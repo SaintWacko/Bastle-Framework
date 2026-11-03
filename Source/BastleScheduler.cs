@@ -40,17 +40,25 @@ namespace BastleFramework
         internal static void Clear() => queue.Clear();
     }
 
-    /// <summary>Ticks the scheduler and keeps Undying bastles' pending rises.</summary>
+    /// <summary>Ticks the scheduler, keeps Undying bastles' pending rises and hands out
+    /// discovery group ids.</summary>
     public class BastleGameComponent : GameComponent
     {
         private List<Pawn> risingPawns = new List<Pawn>();
         private List<int> riseTicks = new List<int>();
+        private int lastDiscoveryGroup;
+        internal Dictionary<BastleWorldFeature, bool> worldOverrides = new Dictionary<BastleWorldFeature, bool>();
+        internal string worldOverrideSource;
 
         public BastleGameComponent(Game game)
         {
             // A new game or a load: drop anything queued in the previous one.
             BastleScheduler.Clear();
             BastleUtility.ClearRegistry();
+            BastleTruce.Clear();
+            BastleProcs.Clear();
+            BastleEventVisuals.Clear();
+            BastleEventDraw.Clear();
         }
 
         public static BastleGameComponent Instance => Current.Game?.GetComponent<BastleGameComponent>();
@@ -60,6 +68,15 @@ namespace BastleFramework
         {
             risingPawns.Add(pawn);
             riseTicks.Add(atTick);
+        }
+
+        internal int NextDiscoveryGroup() => ++lastDiscoveryGroup;
+
+        public override void FinalizeInit()
+        {
+            // A group id reused by a new pack would silently link it to an old one; the
+            // registry has every loaded bastle by now.
+            lastDiscoveryGroup = Math.Max(lastDiscoveryGroup, BastleDiscoveryGroups.MaxGroupInUse());
         }
 
         public override void GameComponentTick()
@@ -91,10 +108,14 @@ namespace BastleFramework
             }
             Scribe_Collections.Look(ref risingPawns, "risingPawns", LookMode.Reference);
             Scribe_Collections.Look(ref riseTicks, "riseTicks", LookMode.Value);
+            Scribe_Values.Look(ref lastDiscoveryGroup, "lastDiscoveryGroup", 0);
+            Scribe_Collections.Look(ref worldOverrides, "worldOverrides", LookMode.Value, LookMode.Value);
+            Scribe_Values.Look(ref worldOverrideSource, "worldOverrideSource");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 risingPawns = risingPawns ?? new List<Pawn>();
                 riseTicks = riseTicks ?? new List<int>();
+                worldOverrides = worldOverrides ?? new Dictionary<BastleWorldFeature, bool>();
                 // A pawn that was destroyed (butchered, burned) saves as a null reference.
                 for (int i = Math.Min(risingPawns.Count, riseTicks.Count) - 1; i >= 0; i--)
                     if (risingPawns[i] == null) { risingPawns.RemoveAt(i); riseTicks.RemoveAt(i); }

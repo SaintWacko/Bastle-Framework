@@ -46,6 +46,7 @@ namespace BastleFramework
         [MustTranslate] public string description;
         [MustTranslate] public string namePrefix;
         [MustTranslate] public string nameSuffix;
+        [MustTranslate] public string rumor;
 
         public HediffStage stage;
         public List<BastleTraitHediff> hediffs;
@@ -55,6 +56,7 @@ namespace BastleFramework
         public List<BastleOverlay> overlays;
         public List<EffecterDef> effecters;
         public List<BastleFlames> flames;
+        public List<BastleSurface> surfaces;
         public BastleGlow glow;
         public float? healthScaleFactor;
         public float? drawSizeFactor;
@@ -62,6 +64,9 @@ namespace BastleFramework
         public BastleLifesteal lifesteal;
         public BastleProducts products;
         public BastleDeflect deflect;
+        public List<BastleProc> procs;
+        public List<BastleEventVisual> eventVisuals;
+        public BastleAfterimages afterimages;
         public float? marketValuePercent;
         public float? marketValueOffset;
     }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <!-- Shown only for bastles with a known trait that grants an ability (Patch_CanAssignToTrain), so every other
+       animal leaves its column blank. Until it is learned, a tamed bastle's trait abilities have no gizmo. -->
+  <TrainableDef>
+    <defName>BF_TraitAbilities</defName>
+    <label>trait abilities</label>
+    <description>The animal uses the abilities its known bastle traits give it on command. Its ability buttons appear once this is learned. Abilities from traits you haven't discovered yet stay hidden, and the animal still uses those by instinct.</description>
+    <icon>UI/Icons/Trainables/BF_TraitAbilities</icon>
+    <listPriority>300</listPriority>
+    <difficulty>100</difficulty>
+    <requiredTrainability>Intermediate</requiredTrainability>
+    <steps>3</steps>
+    <prerequisites>
+      <li>Tameness</li>
+    </prerequisites>
+  </TrainableDef>
+</Defs>

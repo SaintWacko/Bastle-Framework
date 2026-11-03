@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <!-- A scaria manhunter's young come out with scaria too, so they rot like it and stay manhunters. -->
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/HediffDef[defName="Scaria"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleSplitInherited" />
+    </value>
+  </Operation>
+</Patch>

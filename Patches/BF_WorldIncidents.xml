@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <!-- Animal incidents whose animals may arrive as one bastle pack. FrenziedAnimals is Anomaly's;
+       the union still matches without it. Self-tame is left out: it tames an animal already on
+       the map, which had its own wild chance. ManhunterPack is left out too: BF_BastlePack is the
+       bastle manhunter pack, budgeted within the storyteller's points and with its own settings,
+       and a converted vanilla pack would get round a player who set its frequency to 0. -->
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/IncidentDef[defName="ManhunterAmbush" or defName="HerdMigration" or defName="ThrumboPasses" or defName="FarmAnimalsWanderIn" or defName="Alphabeavers" or defName="FrenziedAnimals"]</xpath>
+    <value>
+      <li Class="BastleFramework.BastleIncidentExtension" />
+    </value>
+  </Operation>
+</Patch>

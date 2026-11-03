@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <SitePartDef>
+    <defName>BF_BastleOutbreakSite</defName>
+    <label>bastle outbreak</label>
+    <description>A fast-breeding bastle strain, growing every day it is left alone.</description>
+    <workerClass>BastleFramework.SitePartWorker_BastleOutbreak</workerClass>
+    <siteTexture>World/WorldObjects/Sites/GenericSite</siteTexture>
+    <expandingIconTexture>World/WorldObjects/Expanding/Sites/Manhunters</expandingIconTexture>
+    <arrivedLetter>The outbreak is here. Every animal of the strain is driven mad by scaria and will attack anyone it sees, your allies included.</arrivedLetter>
+    <arrivedLetterDef>NegativeEvent</arrivedLetterDef>
+    <wantsThreatPoints>true</wantsThreatPoints>
+    <tags>
+      <li>BF_BastleOutbreak</li>
+    </tags>
+    <arrivedLetterHediffHyperlinks>
+      <li>Scaria</li>
+    </arrivedLetterHediffHyperlinks>
+  </SitePartDef>
+
+  <GenStepDef>
+    <defName>BF_BastleOutbreak</defName>
+    <linkWithSite>BF_BastleOutbreakSite</linkWithSite>
+    <order>1600</order>
+    <genStep Class="BastleFramework.GenStep_BastleOutbreak" />
+  </GenStepDef>
+
+  <GameConditionDef>
+    <defName>BF_UncontainedOutbreak</defName>
+    <conditionClass>BastleFramework.GameCondition_BastleOutbreak</conditionClass>
+    <label>uncontained outbreak</label>
+    <description>A bastle strain is loose in the region. Manhunting packs of it may reach your colony until other factions bring it under control.</description>
+    <canBePermanent>false</canBePermanent>
+  </GameConditionDef>
+
+  <HistoryEventDef>
+    <defName>BF_OutbreakFailed</defName>
+    <label>failed to stop an outbreak</label>
+  </HistoryEventDef>
+
+  <HistoryEventDef>
+    <defName>BF_OutbreakTruceBroken</defName>
+    <label>broke the outbreak truce</label>
+  </HistoryEventDef>
+
+  <IncidentDef>
+    <defName>BF_BastleOutbreakSpread</defName>
+    <label>outbreak spreads</label>
+    <category>ThreatBig</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>BastleFramework.IncidentWorker_BastleOutbreakSpread</workerClass>
+    <baseChance>1.5</baseChance>
+    <minRefireDays>8</minRefireDays>
+    <pointsScaleable>true</pointsScaleable>
+    <letterLabel>Outbreak spreads: {KIND}</letterLabel>
+    <letterText>The {KIND} outbreak you failed to stop has reached you. A pack of manhunting {KINDPLURAL} has arrived, driven mad by scaria.\n\nThey all carry the strain's traits, and whatever you learned about it is still known. They will attack any human they see, and leave in a day or two.</letterText>
+    <letterDef>ThreatBig</letterDef>
+    <letterHyperlinkHediffDefs>
+      <li>Scaria</li>
+    </letterHyperlinkHediffDefs>
+  </IncidentDef>
+
+  <QuestScriptDef>
+    <defName>BF_BastleOutbreak</defName>
+    <rootSelectionWeight>0.4</rootSelectionWeight>
+    <rootMinPoints>600</rootMinPoints>
+    <minRefireDays>15</minRefireDays>
+    <canGiveRoyalFavor>true</canGiveRoyalFavor>
+    <expireDaysRange>4~8</expireDaysRange>
+    <questNameRules>
+      <rulesStrings>
+        <li>questName->The [kindLabel] [outbreak]</li>
+        <li>questName->[outbreak] of [kindLabelPlural]</li>
+        <li>questName->The [strainAdj] [kindLabelPlural]</li>
+        <li>outbreak->Outbreak</li>
+        <li>outbreak->Plague</li>
+        <li>outbreak->Swarm</li>
+        <li>outbreak->Brood</li>
+        <li>strainAdj->Breeding</li>
+        <li>strainAdj->Spreading</li>
+        <li>strainAdj->Teeming</li>
+        <li>strainAdj->Endless</li>
+      </rulesStrings>
+    </questNameRules>
+    <questDescriptionRules>
+      <rulesStrings>
+        <li>questDescription(hasStrain==True)->[asker_nameFull], [asker_faction_leaderTitle] of [asker_faction_name], has sent us a message. A strain of bastle [kindLabelPlural] is breeding nearby, faster than anything natural, and if nobody stops it, it will take over the region.\n\n[asker_nameDef] is asking us to wipe it out. At the site, [sitePart0_description]. The outbreak grows every day it is left alone.\n\n[alliesParagraph][rumorParagraph]</li>
+        <li>questDescription(hasStrain==False)->[asker_nameFull], [asker_faction_leaderTitle] of [asker_faction_name], has sent us a message. Manhunting [kindLabelPlural] are breeding nearby, and if nobody stops them, they will take over the region.\n\n[asker_nameDef] is asking us to kill them all. At the site, [sitePart0_description].\n\n[alliesParagraph]</li>
+        <li>alliesParagraph(hasSecondFaction==True,secondHostile==False)->Fighters from [asker_faction_name] and [secondFaction_name] will arrive with us and fight beside us. Each faction will think better of us the more of its people survive.</li>
+        <li>alliesParagraph(hasSecondFaction==True,secondHostile==True)->Fighters from [asker_faction_name] will arrive with us and fight beside us. So will fighters from [secondFaction_name], who are hostile to us: the outbreak frightens them enough to agree to a truce at the site, and only there. Attacking their fighters on purpose, or taking one prisoner, breaks it. Each faction will think better of us the more of its people survive, [secondFaction_name] included.</li>
+        <li>alliesParagraph(hasSecondFaction==False)->Fighters from [asker_faction_name] will arrive with us and fight beside us. They will think better of us the more of their people survive.</li>
+        <li>rumorParagraph(rumor==phrase)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence] Those who escaped say [alphaRef] [rumorText].</li>
+        <li>rumorParagraph(rumor==label)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence] Those who escaped have a name for something [alphaRef] carries: [rumorTrait].</li>
+        <li>alphaRef(alphaCount==1)->the alpha</li>
+        <li>alphaRef(alphaCount>1)->one of the alphas</li>
+        <li>rumorParagraph(rumor==none)->\n\nEvery animal of the strain carries the same traits, and nobody knows yet what they are. [alphaSentence]</li>
+        <li>alphaSentence(alphaCount==1)->One alpha leads them, and carries more.</li>
+        <li>alphaSentence(alphaCount>1)->[alphaCount] alphas lead them, and each carries more.</li>
+        <li>alphaSentence(alphaCount==0)-></li>
+      </rulesStrings>
+    </questDescriptionRules>
+    <root Class="QuestNode_Sequence">
+      <nodes>
+        <li Class="QuestNode_SubScript">
+          <def>Util_RandomizePointsChallengeRating</def>
+          <parms>
+            <pointsFactorTwoStar>1.5</pointsFactorTwoStar>
+            <pointsFactorThreeStar>2</pointsFactorThreeStar>
+          </parms>
+        </li>
+
+        <li Class="QuestNode_SubScript">
+          <def>Util_AdjustPointsForDistantFight</def>
+        </li>
+
+        <li Class="QuestNode_GetMap" />
+
+        <li Class="BastleFramework.QuestNode_SetBastleOutbreakSiteRange" />
+
+        <li Class="QuestNode_GetSiteTile">
+          <storeAs>siteTile</storeAs>
+          <preferCloserTiles>true</preferCloserTiles>
+        </li>
+
+        <!-- After the site tile: the factions nearest the site are favoured. -->
+        <li Class="BastleFramework.QuestNode_GetBastleOutbreakFactions">
+          <tile>$siteTile</tile>
+          <storeAskerAs>asker</storeAskerAs>
+          <storeSecondFactionAs>secondFaction</storeSecondFactionAs>
+        </li>
+
+        <li Class="BastleFramework.QuestNode_GetBastleOutbreakParams">
+          <tile>$siteTile</tile>
+          <storeAs>sitePartsParams</storeAs>
+        </li>
+
+        <li Class="QuestNode_GetSiteThreatPoints">
+          <storeAs>sitePoints</storeAs>
+          <sitePartsParams>$sitePartsParams</sitePartsParams>
+        </li>
+        <!-- From the sized threat, with no bonus on top: the colony doesn't fight it alone. -->
+        <li Class="QuestNode_SubScript">
+          <def>Util_GetDefaultRewardValueFromPoints</def>
+          <parms>
+            <points>$sitePoints</points>
+          </parms>
+        </li>
+
+        <li Class="QuestNode_GenerateSite">
+          <sitePartsParams>$sitePartsParams</sitePartsParams>
+          <tile>$siteTile</tile>
+          <storeAs>site</storeAs>
+          <singleSitePartRules>
+            <rulesStrings>
+              <li>root(priority=1,hasStrain==True)->(*Threat)[count] manhunting bastle [kindLabelPlural](/Threat) have overrun the area, all driven mad by scaria</li>
+              <li>root(priority=1,hasStrain==False)->(*Threat)[count] manhunting [kindLabelPlural](/Threat) have overrun the area</li>
+              <li>root->there's a [label]</li>
+            </rulesStrings>
+          </singleSitePartRules>
+        </li>
+
+        <!-- Before the signal nodes below, so it hears success and failure before the quest ends. -->
+        <li Class="BastleFramework.QuestNode_BastleOutbreak">
+          <site>$site</site>
+          <asker>$asker</asker>
+          <secondFaction>$secondFaction</secondFaction>
+        </li>
+
+        <li Class="QuestNode_SpawnWorldObjects">
+          <worldObjects>$site</worldObjects>
+        </li>
+
+        <li Class="QuestNode_WorldObjectTimeout">
+          <worldObject>$site</worldObject>
+          <isQuestTimeout>true</isQuestTimeout>
+          <delayTicks>$(randInt(12,28)*60000)</delayTicks>
+          <inSignalDisable>site.MapGenerated</inSignalDisable>
+          <destroyOnCleanup>true</destroyOnCleanup>
+          <node Class="QuestNode_Sequence">
+            <nodes>
+              <li Class="QuestNode_SendSignals">
+                <outSignals>
+                  <li>outbreakFailed</li>
+                </outSignals>
+              </li>
+              <li Class="QuestNode_Letter">
+                <label TKey="LetterLabelQuestExpired">Quest expired: [resolvedQuestName]</label>
+                <text TKey="LetterTextQuestExpired">Nobody stopped the outbreak in time. The quest [resolvedQuestName] has expired.</text>
+              </li>
+              <li Class="QuestNode_End">
+                <outcome>Fail</outcome>
+              </li>
+            </nodes>
+          </node>
+        </li>
+
+        <!-- Entering and leaving destroys the map. -->
+        <li Class="QuestNode_Signal">
+          <inSignal>site.Destroyed</inSignal>
+          <node Class="QuestNode_Sequence">
+            <nodes>
+              <li Class="QuestNode_SendSignals">
+                <outSignals>
+                  <li>outbreakFailed</li>
+                </outSignals>
+              </li>
+              <li Class="QuestNode_Letter">
+                <label TKey="LetterLabelQuestFailed">Quest failed: [resolvedQuestName]</label>
+                <text TKey="LetterTextQuestFailed">The outbreak was left alive. The quest [resolvedQuestName] has ended.</text>
+              </li>
+              <li Class="QuestNode_End">
+                <outcome>Fail</outcome>
+              </li>
+            </nodes>
+          </node>
+        </li>
+
+        <li Class="QuestNode_Signal">
+          <inSignal>site.AllEnemiesDefeated</inSignal>
+          <node Class="QuestNode_Sequence">
+            <nodes>
+              <!-- Goodwill comes from QuestPart_BastleOutbreak, by survivors. -->
+              <li Class="QuestNode_GiveRewards">
+                <parms>
+                  <allowGoodwill>false</allowGoodwill>
+                  <allowRoyalFavor>true</allowRoyalFavor>
+                  <chosenPawnSignal>ChosenPawnForReward</chosenPawnSignal>
+                </parms>
+                <customLetterLabel TKey="LetterLabelPaymentArrived">Payment arrived</customLetterLabel>
+                <customLetterText TKey="LetterTextPaymentArrived">The outbreak is over.\n\nThe payment from [asker_faction_name] has arrived.</customLetterText>
+                <nodeIfChosenPawnSignalUsed Class="QuestNode_Letter">
+                  <letterDef>ChoosePawn</letterDef>
+                  <label TKey="LetterLabelFavorReceiver">[asker_faction_royalFavorLabel]</label>
+                  <text TKey="LetterTextFavorReceiver">These colonists fought the outbreak for the quest [resolvedQuestName]. [asker_definite] wants to know who should receive the [royalFavorReward_amount] [asker_faction_royalFavorLabel] for this service.</text>
+                  <useColonistsOnMap>$site</useColonistsOnMap>
+                  <chosenPawnSignal>ChosenPawnForReward</chosenPawnSignal>
+                </nodeIfChosenPawnSignalUsed>
+              </li>
+            </nodes>
+          </node>
+        </li>
+        <li Class="QuestNode_End">
+          <inSignal>site.AllEnemiesDefeated</inSignal>
+          <outcome>Success</outcome>
+        </li>
+      </nodes>
+    </root>
+  </QuestScriptDef>
+
+</Defs>

@@ -57,6 +57,9 @@ namespace BastleFramework
         /// <summary>The rarity override in effect, or null.</summary>
         public BastleRarityOverride Override => def.OverrideAt(Rarity);
 
+        /// <summary>The override's rumor, else the def's; null when neither has one.</summary>
+        public string Rumor => Override?.rumor.NullOrEmpty() == false ? Override.rumor : def.rumor.NullOrEmpty() ? null : def.rumor;
+
         [Unsaved] private HediffStage scaledStage;
         [Unsaved] private int scaledFor = -1;
 
@@ -95,8 +98,28 @@ namespace BastleFramework
         /// <summary>Rarity strength for the retaliation amount (relative to where it was written).</summary>
         public float RetaliationStrength => def.StrengthFor(Override?.retaliation != null, Rarity);
         public float LifestealStrength => def.StrengthFor(Override?.lifesteal != null, Rarity);
+        /// <summary>Rarity strength for its hediffs, where they scale (BastleScaledAttack).</summary>
+        public float HediffStrength => def.StrengthFor(Override?.hediffs != null, Rarity);
         public BastleProducts Products => Override?.products ?? def.products;
         public BastleDeflect Deflect => Override?.deflect ?? def.deflect;
+        public List<BastleProc> Procs => Override?.procs ?? def.procs;
+        public List<BastleEventVisual> EventVisuals => Override?.eventVisuals ?? def.eventVisuals;
+        public BastleAfterimages Afterimages => Override?.afterimages ?? def.afterimages;
+        /// <summary>Rarity strength for its procs' amounts, and their chance or cooldown where they scale.</summary>
+        public float ProcStrength => def.StrengthFor(Override?.procs != null, Rarity);
+
+        // When each proc (by its index in Procs) can next go off. Saved, so a day-long
+        // cooldown (last stand) survives a reload.
+        private List<int> procReady;
+
+        public int ProcReadyTick(int index) => procReady != null && index < procReady.Count ? procReady[index] : 0;
+
+        public void SetProcReadyTick(int index, int tick)
+        {
+            if (procReady == null) procReady = new List<int>();
+            while (procReady.Count <= index) procReady.Add(0);
+            procReady[index] = tick;
+        }
 
         public List<BastleTraitHediff> Hediffs => Override?.hediffs ?? def.hediffs;
         public List<AbilityDef> Abilities => Override?.abilities ?? def.abilities;
@@ -105,18 +128,25 @@ namespace BastleFramework
         public List<BastleOverlay> Overlays => Override?.overlays ?? def.overlays;
         public List<EffecterDef> Effecters => Override?.effecters ?? def.effecters;
         public List<BastleFlames> Flames => Override?.flames ?? def.flames;
+        public List<BastleSurface> Surfaces => Override?.surfaces ?? def.surfaces;
         public BastleGlow Glow => Override?.glow ?? def.glow;
         public string NamePrefix => Override?.namePrefix ?? def.namePrefix;
         public string NameSuffix => Override?.nameSuffix ?? def.nameSuffix;
 
-        public bool HasVisuals => !Overlays.NullOrEmpty() || !Effecters.NullOrEmpty() || !Flames.NullOrEmpty() || Glow != null;
-        public bool HasRenderVisuals => !Overlays.NullOrEmpty() || !Flames.NullOrEmpty();
+        public bool HasVisuals => HasRenderVisuals || !Effecters.NullOrEmpty() || Glow != null || Afterimages != null;
+        public bool HasRenderVisuals => !Overlays.NullOrEmpty() || !Flames.NullOrEmpty() || !Surfaces.NullOrEmpty();
 
-        /// <summary>Whether this trait's overlays and effecters should show right now.</summary>
-        public virtual bool VisualsActive => HasVisuals && (discovered || def.showVisualsWhenHidden);
+        /// <summary>Whether one of its looks shows now: always once discovered, before that as
+        /// a hint by the entry's own beforeIdentified, else the def's, else the setting.</summary>
+        public virtual bool ShowsVisual(bool? entryBeforeIdentified = null)
+            => discovered || (entryBeforeIdentified ?? def.VisualsBeforeIdentified ?? BastleFrameworkMod.Settings.visualsUnidentified);
+
+        /// <summary>Whether this trait's overlays, effecters and afterimages should show right now.</summary>
+        public virtual bool VisualsActive => HasVisuals && ShowsVisual();
 
         /// <summary>Label without the rarity ("Flaming").</summary>
-        public string BaseLabelCap => (Override?.label ?? def.label).CapitalizeFirst();
+        public string BaseLabel => Override?.label ?? def.label;
+        public string BaseLabelCap => BaseLabel.CapitalizeFirst();
 
         /// <summary>"Flaming (rare)" once discovered, "???" before.</summary>
         public virtual string Label => discovered
@@ -133,10 +163,14 @@ namespace BastleFramework
             string oldLabel = Pawn?.LabelShort;
             discovered = true;
             bastle?.Notify_TraitDiscovered(this);
+            // Packmates learn it quietly; this creature's message counts them instead.
+            int packmates = BastleDiscoveryGroups.Share(bastle, def);
             if (notify && def.discoveryMessage && BastleFrameworkMod.Settings.discoveryMessages && Pawn != null && Pawn.Spawned)
             {
-                Messages.Message("BF_TraitDiscovered".Translate(oldLabel, Label),
-                    Pawn, MessageTypeDefOf.NeutralEvent, historical: false);
+                var text = packmates > 0
+                    ? "BF_TraitDiscoveredPack".Translate(oldLabel, Label, packmates)
+                    : "BF_TraitDiscovered".Translate(oldLabel, Label);
+                Messages.Message(text, Pawn, MessageTypeDefOf.NeutralEvent, historical: false);
             }
             PostDiscovered();
             return true;
@@ -162,12 +196,20 @@ namespace BastleFramework
         /// it would have set up here.</summary>
         public virtual void CopyStateFrom(BastleTrait source) { }
 
+        internal void CopyProcState(BastleTrait source)
+        {
+            procReady = source.procReady == null ? null : new List<int>(source.procReady);
+        }
+
         /// <summary>Before the trait is removed or the bastle hediff is removed.</summary>
         public virtual void PreRemoved() { }
 
         /// <summary>After the trait is revealed. Can run inside vanilla loops over the
         /// pawn's hediffs (damage, verb use, Thing.Ingested), so don't add or remove
-        /// hediffs or traits here: queue it for TickInterval.</summary>
+        /// hediffs or traits here: queue it for TickInterval. Also runs on packmates that
+        /// learn the trait quietly (see BastleUtility.LinkDiscovery), which may be unspawned,
+        /// on another map or dead, so don't assume Pawn.Map; a trait this reveals from there
+        /// is not passed on to the rest of the pack.</summary>
         public virtual void PostDiscovered() { }
 
         public virtual void TickInterval(int delta) { }
@@ -181,6 +223,10 @@ namespace BastleFramework
         /// to zero removes it): queue it for TickInterval.</summary>
         public virtual void Notify_PawnDamagedThing(Thing thing, DamageInfo dinfo, DamageWorker.DamageResult result) { }
 
+        /// <summary>The creature is about to die: its mental state, lord and needs are still
+        /// there, which they no longer are in Notify_PawnDied.</summary>
+        public virtual void Notify_PawnKilled() { }
+
         public virtual void Notify_PawnDied(DamageInfo? dinfo) { }
 
         /// <summary>Extra lines in the bastle hediff tooltip, only shown once discovered.</summary>
@@ -192,6 +238,7 @@ namespace BastleFramework
             Scribe_Values.Look(ref discovered, "discovered");
             Scribe_Values.Look(ref fromMaterial, "fromMaterial");
             Scribe_Values.Look(ref rarityValue, "rarity", -1);
+            Scribe_Collections.Look(ref procReady, "procReady", LookMode.Value);
         }
     }
 }

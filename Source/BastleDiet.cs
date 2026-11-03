@@ -171,7 +171,7 @@ namespace BastleFramework
             var pawn = req.Pawn ?? req.Thing as Pawn;
             var bastle = pawn == null ? null : BastleUtility.PeekBastle(pawn);
             BastleDiet diet = null;
-            if (bastle != null && !(pawn.IsMutant && pawn.mutant.Def.overrideFoodType))
+            if (bastle != null && !bastle.DietOverridden)
             {
                 var known = new List<BastleTrait>();
                 foreach (var t in bastle.Traits)
@@ -198,7 +198,11 @@ namespace BastleFramework
     // ---- patches ------------------------------------------------------------------
 
     /// <summary>The per-creature food check every eating, foraging and feeding path goes
-    /// through (WillEat calls it). The race's own diet stays the base.</summary>
+    /// through (WillEat calls it). The race's own diet stays the base. An added food type
+    /// wins over the race's willNeverEat list except for special trees: vanilla uses those
+    /// lists to keep thrumbos off anima, Gauranlen and similar trees, and a tree-eating
+    /// trait shouldn't let any bastle eat the colony's anima tree, whether or not its own
+    /// race carries a list.</summary>
     [HarmonyPatch(typeof(FoodUtility), nameof(FoodUtility.FoodIsSuitable))]
     internal static class Patch_FoodIsSuitable
     {
@@ -209,10 +213,28 @@ namespace BastleFramework
             bool ok = __result;
             if (!ok && d.Adds(food) && p.needs?.food != null && p.RaceProps.EatsFood
                 && food.ingestible != null && food.ingestible.preferability != FoodPreferability.Undefined
-                && !(p.DevelopmentalStage.Baby() && !food.ingestible.babiesCanIngest))
+                && !(p.DevelopmentalStage.Baby() && !food.ingestible.babiesCanIngest)
+                && !SpecialTrees.Contains(food))
                 ok = true;
             if (ok && d.Refuses(food)) ok = false;
             __result = ok;
+        }
+
+        private static HashSet<ThingDef> specialTrees;
+
+        // Every tree on any race's willNeverEat list. Built on first use, after defs load.
+        private static HashSet<ThingDef> SpecialTrees
+        {
+            get
+            {
+                if (specialTrees != null) return specialTrees;
+                var set = new HashSet<ThingDef>();
+                foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
+                    if (def.race?.willNeverEat != null)
+                        foreach (var food in def.race.willNeverEat)
+                            if (food?.plant != null && food.plant.IsTree) set.Add(food);
+                return specialTrees = set;
+            }
         }
     }
 
@@ -232,23 +254,37 @@ namespace BastleFramework
     [HarmonyPatch(typeof(FoodUtility), nameof(FoodUtility.BestFoodSourceOnMap))]
     internal static class Patch_BestFoodSourceOnMap
     {
-        static void Postfix(Pawn getter, Pawn eater, bool allowPlant, bool allowForbidden, bool forceScanWholeMap,
-            ref ThingDef foodDef, ref Thing __result)
+        static void Postfix(Pawn getter, Pawn eater, bool desperate, FoodPreferability maxPref, bool allowPlant, bool allowForbidden, bool forceScanWholeMap,
+            FoodPreferability minPrefOverride, ref ThingDef foodDef, ref Thing __result)
         {
-            if (__result != null || !allowPlant || getter?.Map == null || eater == null) return;
+            // Plants are eaten where they stand, never carried: vanilla only allows them when
+            // the getter is the eater, and another mod's caller may leave allowPlant at its default.
+            if (__result != null || !allowPlant || getter != eater || getter?.Map == null || !BastleDietUtility.EatsPlantsInPlace(eater)) return;
             var d = BastleUtility.PeekBastle(eater)?.Diet;
             if (d == null || !d.AddsPlants) return;
             if ((eater.RaceProps.foodType & (FoodTypeFlags.Plant | FoodTypeFlags.Tree)) != 0) return;
+            var minPref = MinPref(eater, desperate, minPrefOverride);
 
             Thing plant = GenClosest.ClosestThingReachable(getter.Position, getter.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.FoodSource), PathEndMode.Touch, TraverseParms.For(getter),
-                9999f, t => t is Plant && t.IngestibleNow && eater.WillEat(t, getter)
+                9999f, t => t is Plant && t.IngestibleNow && t.def.ingestible.preferability <= maxPref && t.def.ingestible.preferability >= minPref && eater.WillEat(t, getter)
                     && (allowForbidden || !t.IsForbidden(getter)) && getter.CanReserve(t)
                     && BastleDietUtility.WithinRope(getter, t),
                 null, 0, BastleDietUtility.MaxRegions(getter, forceScanWholeMap));
             if (plant == null) return;
             __result = plant;
             foodDef = FoodUtility.GetFinalIngestibleDef(plant);
+        }
+
+        // Vanilla's lower bound from BestFoodSourceOnMap, so a humanlike bastle whose traits add
+        // plants only eats them raw when vanilla would let it eat raw food.
+        private static FoodPreferability MinPref(Pawn eater, bool desperate, FoodPreferability minPrefOverride)
+        {
+            if (minPrefOverride != FoodPreferability.Undefined) return minPrefOverride;
+            if (eater.NonHumanlikeOrWildMan()) return FoodPreferability.NeverForNutrition;
+            if (desperate) return FoodPreferability.DesperateOnly;
+            if (eater.needs.food.CurCategory >= HungerCategory.UrgentlyHungry) return FoodPreferability.RawBad;
+            return eater.genes != null && eater.genes.DontMindRawFood ? FoodPreferability.RawBad : FoodPreferability.MealAwful;
         }
     }
 
@@ -264,7 +300,9 @@ namespace BastleFramework
 
         static void Postfix(JobGiver_GetFood __instance, Pawn pawn, ref Job __result)
         {
-            if (__result != null || pawn?.Map == null) return;
+            // VEF skips this job for its weird eaters; their diet is applied after VEF's own
+            // food job instead (Patch_VEF_GetWeirdFood).
+            if (__result != null || pawn?.Map == null || BastleVEF.IsWeirdEater(pawn)) return;
             var bastle = BastleUtility.PeekBastle(pawn);
             var d = bastle?.Diet;
             var food = pawn.needs?.food;
@@ -325,9 +363,35 @@ namespace BastleFramework
                     t.TryDiscoverBy(BastleDiscoveryTrigger.StarvesNearRefusedFood);
         }
 
+        /// <summary>JobDriver_Ingest sends tool users down its carry path, which picks a living
+        /// plant up and walks off with it, so only creatures that eat where they stand may be
+        /// pointed at one. Same test the driver makes.</summary>
+        public static bool EatsPlantsInPlace(Pawn pawn)
+            => !pawn.RaceProps.ToolUser || (pawn.IsMutant && pawn.mutant.Def.disableEatingAtTable);
+
         /// <summary>Vanilla's food search keeps a roped animal within 8 cells of its anchor.</summary>
         public static bool WithinRope(Pawn getter, Thing t)
             => getter.roping == null || !getter.roping.IsRoped || t.PositionHeld.InHorDistOf(getter.roping.RopedTo.Cell, 8f);
+
+        /// <summary>The nearest ordinary food that the creature eats only because its diet
+        /// adds it (food types or extraFoods), for a creature whose own food job never asks
+        /// FoodIsSuitable. Null when the diet adds no food or none is in reach.</summary>
+        public static Job EatAddedFoodJob(Pawn pawn, BastleDiet d)
+        {
+            if (d.add == 0 && d.edible.Count == 0) return null;
+            var group = EatsPlantsInPlace(pawn) && (d.AddsPlants || d.edible.Any(t => t.plant != null))
+                ? ThingRequestGroup.FoodSource : ThingRequestGroup.FoodSourceNotPlantOrTree;
+            Thing best = GenClosest.ClosestThingReachable(pawn.Position, pawn.Map, ThingRequest.ForGroup(group),
+                PathEndMode.Touch, TraverseParms.For(pawn), 9999f,
+                t => t.def.ingestible != null && d.Adds(t.def) && t.IngestibleNow && pawn.WillEat(t, pawn)
+                    && !t.IsForbidden(pawn) && !t.IsBurning() && pawn.CanReserve(t) && WithinRope(pawn, t),
+                null, 0, MaxRegions(pawn, false));
+            if (best == null) return null;
+            var finalDef = FoodUtility.GetFinalIngestibleDef(best);
+            var job = JobMaker.MakeJob(JobDefOf.Ingest, best);
+            job.count = FoodUtility.WillIngestStackCountOf(pawn, finalDef, FoodUtility.GetNutrition(pawn, best, finalDef));
+            return job;
+        }
 
         public static Job EatNonFoodJob(Pawn pawn, BastleDiet d)
         {

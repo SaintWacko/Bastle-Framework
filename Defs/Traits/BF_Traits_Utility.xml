@@ -11,6 +11,7 @@
     <defName>BF_Rockgut</defName>
     <label>rockgut</label>
     <description>It grinds stone in its gut and lives on it when there is nothing better.</description>
+    <rumor>eats stone when there is nothing else</rumor>
     <namePrefix>rockgut</namePrefix>
     <allowMechanoids>false</allowMechanoids>
     <tags><li>Utility</li></tags>
@@ -29,6 +30,7 @@
     <defName>BF_Tireless</defName>
     <label>tireless</label>
     <description>It never sleeps, and never seems to tire.</description>
+    <rumor>never sleeps</rumor>
     <namePrefix>tireless</namePrefix>
     <rarity>Rare</rarity>
     <allowMechanoids>false</allowMechanoids>
@@ -47,6 +49,7 @@
     <defName>BF_Frugal</defName>
     <label>frugal</label>
     <description>It needs far less food than others of its kind.</description>
+    <rumor>goes for days without eating</rumor>
     <namePrefix>frugal</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <allowMechanoids>false</allowMechanoids>
@@ -65,6 +68,7 @@
     <defName>BF_Meaty</defName>
     <label>meaty</label>
     <description>Thick muscle and fat. It gives much more meat when butchered.</description>
+    <rumor>is heavy with muscle and fat</rumor>
     <namePrefix>meaty</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -85,6 +89,7 @@
     <defName>BF_FineHided</defName>
     <label>fine-hided</label>
     <description>A broad, flawless hide. It gives much more leather when butchered.</description>
+    <rumor>has a broad, flawless hide</rumor>
     <namePrefix>fine-hided</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -105,6 +110,7 @@
     <defName>BF_Packbeast</defName>
     <label>packbeast</label>
     <description>A broad back and strong legs. It can haul and carry far more than others of its kind.</description>
+    <rumor>carries loads that would break others of its kind</rumor>
     <namePrefix>packbeast</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <tags><li>Utility</li></tags>
@@ -124,20 +130,32 @@
     <defName>BF_GoldenFleeced</defName>
     <label>golden-fleeced</label>
     <description>Its fleece grows as fine gold thread. Shearing it gives gold instead of wool, about half as many units.</description>
+    <rumor>grows a fleece of gold thread</rumor>
     <namePrefix>golden-fleeced</namePrefix>
     <rarity>Rare</rarity>
-    <visible>true</visible>
+    <!-- Hidden: its looks hint at it (setting Looks hint at unknown traits) and leave which trait, and how strong, to discovery. -->
+    <discoverWhen>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
     <requiresFlesh>true</requiresFlesh>
     <disallowConstructs>true</disallowConstructs>
     <allowHumanlikes>false</allowHumanlikes>
     <tags><li>Utility</li></tags>
     <overlays>
       <li>
-        <color>(1.0, 0.82, 0.3, 0.3)</color>
+        <color>(1.0, 0.82, 0.3, 0.2)</color>
         <pulseSpeed>0.3</pulseSpeed>
         <pulseMin>0.6</pulseMin>
       </li>
     </overlays>
+    <!-- Light runs along the gold thread every few seconds. -->
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Sheen">
+        <color>(1, 0.85, 0.45, 0.5)</color>
+        <angle>20</angle>
+      </li>
+    </surfaces>
     <products>
       <woolDef>Gold</woolDef>
       <woolAmountFactor>0.5</woolAmountFactor>
@@ -149,6 +167,7 @@
     <defName>BF_Luminous</defName>
     <label>luminous</label>
     <description>It gives off a soft, steady light, enough to light a room.</description>
+    <rumor>gives off a light that shows where it is at night</rumor>
     <namePrefix>luminous</namePrefix>
     <visible>true</visible>
     <pointCost>0.5</pointCost>
@@ -173,11 +192,15 @@
     <defName>BF_Frostfur</defName>
     <label>frostfur</label>
     <description>A thick, frost-white coat keeps it comfortable in bitter cold.</description>
+    <rumor>has a frost-white coat that shrugs off the bitterest cold</rumor>
     <namePrefix>frostfur</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
     <disallowConstructs>true</disallowConstructs>
-    <exclusionTags><li>BF_Element</li></exclusionTags>
+    <exclusionTags>
+      <li>BF_Element</li>
+      <li>BF_ColdTolerance</li>
+    </exclusionTags>
     <tags>
       <li>Utility</li>
       <li>Cold</li>
@@ -186,6 +209,24 @@
       <li>JoinsColony</li>
       <li>Dies</li>
     </discoverWhen>
+    <!-- Patches of frost creeping over the coat (blended: added light vanishes on pale fur),
+         and mist sliding off it, which still reads on a white coat. -->
+    <effecters><li>BF_Effecter_FrostCoat</li></effecters>
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Flow">
+        <color>(0.78, 0.9, 1, 0.65)</color>
+        <coreColor>(1, 1, 1, 1)</coreColor>
+        <threshold>0.45</threshold>
+        <coreThreshold>0.72</coreThreshold>
+        <additive>false</additive>
+        <loopTicks>720</loopTicks>
+        <scrolls>1</scrolls>
+        <frames>24</frames>
+        <cellsAcross>9</cellsAcross>
+        <cellsUp>7</cellsUp>
+        <evolveCells>2</evolveCells>
+      </li>
+    </surfaces>
     <stage>
       <statOffsets>
         <ComfyTemperatureMin>-25</ComfyTemperatureMin>
@@ -197,8 +238,10 @@
     <defName>BF_Sunhardened</defName>
     <label>sunhardened</label>
     <description>It is comfortable in heat that would kill others of its kind.</description>
+    <rumor>is at ease in heat that would kill others of its kind</rumor>
     <namePrefix>sunhardened</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
+    <exclusionTags><li>BF_HeatTolerance</li></exclusionTags>
     <tags>
       <li>Utility</li>
       <li>Heat</li>

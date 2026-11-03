@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!--
+        RimWorld 1.7 build of the main assembly. Same shared C# as 1.6/Source (the mod's top-level Source/ folder),
+        compiled with RW17 defined. Output goes to 1.7/Assemblies, which LoadFolders.xml loads only on 1.7.
+
+        1.7 runs on .NET 10, so this targets net10.0 and takes the Krafs.Rimworld.Ref 1.7 package (net10.0 only)
+        as an ordinary reference. Entad and Ability AI build 1.7 as net472 against the downloaded package's DLLs,
+        which only works while no override uses a tuple: Bastle overrides GetDynamicNodes and StateGraphicsFor, whose
+        ValueTuple return types live in .NET 10's System.Runtime and can't be matched from net472 (CS0508, CS1705).
+    -->
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <!-- A mod DLL is loaded by the game, not run as an app: no .deps.json beside it -->
+        <GenerateDependencyFile>false</GenerateDependencyFile>
+        <RootNamespace>BastleFramework</RootNamespace>
+        <AssemblyName>BastleFramework</AssemblyName>
+        <LangVersion>latest</LangVersion>
+        <Nullable>disable</Nullable>
+        <Deterministic>true</Deterministic>
+        <OutputPath>..\Assemblies\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <DefineConstants>$(DefineConstants);RW17</DefineConstants>
+        <!-- Keep in step with 1.6/Source -->
+        <Version>1.0.0</Version>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <FileVersion>1.0.0.0</FileVersion>
+        <Product>Bastle Framework</Product>
+        <Authors>SaintWacko</Authors>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <Optimize>true</Optimize>
+        <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <Optimize>false</Optimize>
+        <DebugType>portable</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Top level only: obj/ under Source holds generated files. -->
+        <Compile Include="..\..\Source\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Pinned: the 1.7 reference packages are prereleases, and a new one can change the API -->
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.4979-alpha">
+            <PrivateAssets>all</PrivateAssets>
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
+        <!-- Compile-only, as in 1.6/Source: the Harmony mod supplies the runtime DLL -->
+        <PackageReference Include="Lib.Harmony" Version="2.4.1">
+            <PrivateAssets>all</PrivateAssets>
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>

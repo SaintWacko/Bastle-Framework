@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
-  <!-- Rising embers, a faint glow and the odd wisp of smoke. Built from vanilla flecks and motes. -->
+  <!-- Rising embers, a faint glow and the odd wisp of smoke. Built from vanilla flecks and motes.
+       The flames themselves are the trait's flow surface, which rises off the outline. -->
   <EffecterDef>
     <defName>BF_Effecter_Embers</defName>
     <children>
-      <!-- Animated flame licks rising off the body (Biotech's fire-spew art; skipped without Biotech). -->
-      <li MayRequire="Ludeon.RimWorld.Biotech">
-        <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
-        <fleckDef>FireSpew_A</fleckDef>
-        <spawnLocType>OnSource</spawnLocType>
-        <chancePerTick>0.12</chancePerTick>
-        <scale>0.35~0.55</scale>
-        <angle>-12~12</angle>
-        <speed>0.4~0.8</speed>
-        <positionRadius>0.35</positionRadius>
-        <color>(1.0, 0.85, 0.7, 0.75)</color>
-      </li>
       <li>
         <subEffecterClass>SubEffecter_SprayerChance</subEffecterClass>
         <fleckDef>FireGlow</fleckDef>

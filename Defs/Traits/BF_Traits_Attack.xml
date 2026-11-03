@@ -6,6 +6,7 @@
     <defName>BF_Venomous</defName>
     <label>venomous</label>
     <description>Its bite carries a poison that builds up in the victim's body.</description>
+    <rumor>has a poisoned bite</rumor>
     <namePrefix>venomous</namePrefix>
     <!-- Scales with rarity; from Epic up its fangs are replaced by stronger ones. -->
     <scalesWithRarity>true</scalesWithRarity>
@@ -22,6 +23,7 @@
         <label>virulent</label>
         <namePrefix>virulent</namePrefix>
         <description>Its bite carries a virulent poison that overwhelms the victim within moments.</description>
+        <rumor>has a bite whose poison overwhelms a victim within moments</rumor>
         <hediffs>
           <li><hediff>BF_VirulentFangs</hediff></li>
         </hediffs>
@@ -34,6 +36,7 @@
     <defName>BF_Firebreather</defName>
     <label>firebreather</label>
     <description>It can spit a stream of burning bile at anything that threatens it.</description>
+    <rumor>spits streams of burning bile</rumor>
     <nameSuffix>the firebreather</nameSuffix>
     <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -51,6 +54,7 @@
     <defName>BF_Razorclawed</defName>
     <label>razorclawed</label>
     <description>Its natural weapons are sharper and heavier than they should be.</description>
+    <rumor>strikes harder and cuts deeper than any other of its kind</rumor>
     <namePrefix>razorclawed</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
@@ -64,15 +68,15 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Frenzied</defName>
     <label>frenzied</label>
-    <description>It attacks in a wild flurry: much faster, but less accurate.</description>
+    <description>It attacks in a wild flurry: faster, but less accurate.</description>
+    <rumor>attacks in a wild flurry</rumor>
     <namePrefix>frenzied</namePrefix>
-    <rarity>Uncommon</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
     <stage>
       <statFactors>
-        <MeleeCooldownFactor>0.8</MeleeCooldownFactor>
-        <MeleeHitChance>0.92</MeleeHitChance>
+        <MeleeCooldownFactor>0.84</MeleeCooldownFactor>
+        <MeleeHitChance>0.94</MeleeHitChance>
       </statFactors>
     </stage>
   </BastleFramework.BastleTraitDef>
@@ -81,8 +85,10 @@
     <defName>BF_Bonebreaker</defName>
     <label>bonebreaker</label>
     <description>It strikes with crushing force. A blow can leave the victim stunned.</description>
+    <rumor>hits hard enough to leave its victims stunned</rumor>
     <nameSuffix>the bonebreaker</nameSuffix>
     <rarity>Rare</rarity>
+    <exclusionTags><li>BF_Stun</li></exclusionTags>
     <discoverWhen>
       <li>UsesGrantedVerb</li>
       <li>Dies</li>
@@ -92,23 +98,38 @@
     </hediffs>
   </BastleFramework.BastleTraitDef>
 
-  <!-- Visible: the blue glow gives it away. -->
+  <!-- Visible: the blue glow and the arcs crackling over it give it away. Rolls Rare to
+       Legendary; at Legendary it becomes thunderclap. -->
   <BastleFramework.BastleTraitDef>
     <defName>BF_Stormborn</defName>
     <label>stormborn</label>
     <description>Static crackles across its body. Its strikes carry an electric shock that stuns machines.</description>
+    <rumor>crackles with a shock that stops machines dead</rumor>
     <namePrefix>stormborn</namePrefix>
     <rarity>Rare</rarity>
-    <visible>true</visible>
+    <scalesWithRarity>true</scalesWithRarity>
+    <!-- Hidden: its looks hint at it (setting Looks hint at unknown traits) and leave which trait, and how strong, to discovery. -->
+    <discoverWhen>
+      <li>UsesGrantedVerb</li>
+      <li>JoinsColony</li>
+      <li>Dies</li>
+    </discoverWhen>
     <exclusionTags><li>BF_Element</li></exclusionTags>
     <tags><li>Storm</li></tags>
     <overlays>
       <li>
-        <color>(0.45, 0.7, 1.0, 0.3)</color>
+        <color>(0.45, 0.7, 1.0, 0.22)</color>
         <pulseSpeed>2.2</pulseSpeed>
         <pulseMin>0.3</pulseMin>
       </li>
     </overlays>
+    <surfaces>
+      <li Class="BastleFramework.BastleSurface_Arcs">
+        <count>2</count>
+        <intervalTicks>30</intervalTicks>
+        <chance>0.55</chance>
+      </li>
+    </surfaces>
     <glow>
       <radius>3.5</radius>
       <color>(110,170,255,0)</color>
@@ -116,12 +137,55 @@
     <hediffs>
       <li><hediff>BF_StormStrike</hediff></li>
     </hediffs>
+    <rarityOverrides>
+      <li>
+        <minRarity>Legendary</minRarity>
+        <label>thunderclap</label>
+        <namePrefix>thunderclap</namePrefix>
+        <description>Lightning crawls all over its body. Its strikes carry an electric shock that stuns machines, and every so often a blow lands with a thunderclap that stuns every enemy within 3 tiles of its victim for two seconds and jolts machines among them. Every 8 to 12 seconds at most.</description>
+        <rumor>strikes with a thunderclap that knocks everyone around its victim senseless</rumor>
+        <surfaces>
+          <li Class="BastleFramework.BastleSurface_Arcs">
+            <count>4</count>
+            <intervalTicks>20</intervalTicks>
+            <chance>0.7</chance>
+            <maxLength>0.65</maxLength>
+          </li>
+        </surfaces>
+        <glow>
+          <radius>5</radius>
+          <color>(120,180,255,0)</color>
+        </glow>
+        <procs>
+          <li>
+            <on>Hit</on>
+            <attack>Melee</attack>
+            <chance>0.2</chance>
+            <cooldownSeconds>8~12</cooldownSeconds>
+            <radius>2.9</radius>
+            <center>Other</center>
+            <targets>Enemies</targets>
+            <stunSeconds>2</stunSeconds>
+            <mechanoidDamageDef>EMP</mechanoidDamageDef>
+            <mechanoidDamage>15</mechanoidDamage>
+            <fleck>LightningGlow</fleck>
+            <fleckScale>4</fleckScale>
+            <sound>Explosion_EMP</sound>
+            <visuals>
+              <li Class="BastleFramework.BastleVisual_Arcs"><at>Other</at><count>5~7</count><reach>0.6~1.3</reach><width>0.24</width><arcTicks>8</arcTicks><fleck>BF_Fleck_Static</fleck><fleckScale>0.14~0.22</fleckScale></li>
+              <li Class="BastleFramework.BastleVisual_Arcs"><at>Other</at><to>Affected</to><segments>4</segments><jag>0.4</jag><width>0.26</width><arcTicks>12</arcTicks><fleck>BF_Fleck_Static</fleck></li>
+            </visuals>
+          </li>
+        </procs>
+      </li>
+    </rarityOverrides>
   </BastleFramework.BastleTraitDef>
 
   <BastleFramework.BastleTraitDef>
     <defName>BF_Quilled</defName>
     <label>quilled</label>
     <description>It can flick a volley of barbed quills at enemies up to 15 tiles away.</description>
+    <rumor>flings barbed quills from well out of reach</rumor>
     <namePrefix>quilled</namePrefix>
     <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -140,6 +204,7 @@
     <defName>BF_AcidSpitting</defName>
     <label>acid-spitting</label>
     <description>It can spray sticky acid over an area, burning whatever it lands on.</description>
+    <rumor>sprays acid that eats into whatever it lands on</rumor>
     <namePrefix>acid-spitting</namePrefix>
     <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -158,6 +223,7 @@
     <defName>BF_Dread</defName>
     <label>dread</label>
     <description>Its howl can send nearby enemies fleeing in terror.</description>
+    <rumor>has a howl that sends people running in terror</rumor>
     <nameSuffix>of dread</nameSuffix>
     <rarity>Epic</rarity>
     <discoverWhen>
@@ -173,6 +239,7 @@
     <defName>BF_Leaping</defName>
     <label>leaping</label>
     <description>Its powerful legs let it leap up to 10 tiles to land beside its prey.</description>
+    <rumor>leaps from far off to land beside its prey</rumor>
     <namePrefix>leaping</namePrefix>
     <rarity>Uncommon</rarity>
     <discoverWhen>
@@ -187,16 +254,63 @@
     <defName>BF_Vampiric</defName>
     <label>vampiric</label>
     <description>Its wounds close as it feeds. Part of the damage it deals in melee to living flesh heals it.</description>
+    <rumor>heals as it feeds on those it wounds</rumor>
     <namePrefix>vampiric</namePrefix>
-    <rarity>Rare</rarity>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
     <disallowConstructs>true</disallowConstructs>
     <exclusionTags><li>BF_Healing</li></exclusionTags>
     <discoverWhen><li>Attacks</li></discoverWhen>
     <lifesteal>
-      <fraction>0.25</fraction>
+      <fraction>0.17</fraction>
     </lifesteal>
+    <!-- Red strands drawn out of whatever living thing it bites. -->
+    <eventVisuals>
+      <li Class="BastleFramework.BastleVisual_Ribbons">
+        <on>Hit</on>
+        <attack>Melee</attack>
+        <otherFleshOnly>true</otherFleshOnly>
+        <from>Other</from>
+        <to>Self</to>
+        <color>(0.85, 0.08, 0.1)</color>
+        <strands>2~3</strands>
+        <minIntervalTicks>90</minIntervalTicks>
+      </li>
+    </eventVisuals>
+  </BastleFramework.BastleTraitDef>
+
+  <!-- Cheap stat traits for the Common pool. -->
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_Reckless</defName>
+    <label>reckless</label>
+    <description>It throws its whole weight behind every blow. It hits harder, but takes longer between attacks.</description>
+    <rumor>throws its whole weight behind every blow</rumor>
+    <namePrefix>reckless</namePrefix>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Attacks</li></discoverWhen>
+    <stage>
+      <statFactors>
+        <MeleeDamageFactor>1.18</MeleeDamageFactor>
+        <MeleeCooldownFactor>1.06</MeleeCooldownFactor>
+      </statFactors>
+    </stage>
+  </BastleFramework.BastleTraitDef>
+
+  <BastleFramework.BastleTraitDef>
+    <defName>BF_SureStriking</defName>
+    <label>sure-striking</label>
+    <description>It rarely misses.</description>
+    <rumor>never seems to miss</rumor>
+    <namePrefix>sure-striking</namePrefix>
+    <scalesWithRarity>true</scalesWithRarity>
+    <discoverWhen><li>Attacks</li></discoverWhen>
+    <!-- MeleeHitChance is in skill levels before its curve (an animal's base is 4), so an
+         offset is what moves it: +4 is about 62% to 80% for an animal. -->
+    <stage>
+      <statOffsets>
+        <MeleeHitChance>4</MeleeHitChance>
+      </statOffsets>
+    </stage>
   </BastleFramework.BastleTraitDef>
 
   <!-- Diet: turns any animal into a meat-eating hunter that won't touch plants.
@@ -205,6 +319,7 @@
     <defName>BF_Bloodthirsty</defName>
     <label>bloodthirsty</label>
     <description>It has lost its taste for plants and hunts for meat instead.</description>
+    <rumor>has a taste for flesh</rumor>
     <namePrefix>bloodthirsty</namePrefix>
     <requiresFlesh>true</requiresFlesh>
     <diet>
@@ -219,6 +334,7 @@
     <defName>BF_Volatile</defName>
     <label>volatile</label>
     <description>Something unstable builds inside it. When it dies, it explodes.</description>
+    <rumor>explodes when it dies</rumor>
     <namePrefix>volatile</namePrefix>
     <rarity>Uncommon</rarity>
     <discoverWhen><li>Dies</li></discoverWhen>

@@ -96,7 +96,9 @@ namespace BastleFramework
     /// <summary>JoinsColony discovery: taming, recruiting, most purchases and rescues end
     /// in SetFaction (a pawn generated straight into the colony doesn't). The creature
     /// is the player's own from here, so this skips the observe check: an animal bought
-    /// from an orbital trader joins while still unspawned. Rare, so a plain lookup is fine.</summary>
+    /// from an orbital trader joins while still unspawned. Rare, so a plain lookup is fine.
+    /// A humanlike joining also reveals its ability traits (Hediff_Bastle.TellsAbilities);
+    /// one generated straight into the colony gets them known when the trait is added.</summary>
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.SetFaction))]
     public static class Patch_Pawn_SetFaction
     {
@@ -107,7 +109,8 @@ namespace BastleFramework
             if (bastle == null) return;
             var traits = bastle.TraitsForReading;
             for (int i = traits.Count - 1; i >= 0; i--)
-                if (!traits[i].discovered && traits[i].def.DiscoveredBy(BastleDiscoveryTrigger.JoinsColony))
+                if (!traits[i].discovered && (traits[i].def.DiscoveredBy(BastleDiscoveryTrigger.JoinsColony)
+                    || bastle.TellsAbilities(traits[i])))
                     traits[i].Discover();
         }
     }

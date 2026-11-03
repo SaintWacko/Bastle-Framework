@@ -2,10 +2,12 @@
 <LanguageData>
 
   <BF_UnknownTrait>???</BF_UnknownTrait>
-  <BF_UnknownTraitDesc>An unknown trait. It will reveal itself in time.</BF_UnknownTraitDesc>
+  <BF_UnknownTraitDesc>What could this creature be capable of?</BF_UnknownTraitDesc>
 
   <!-- {0}: the creature's label before the discovery. {1}: the trait's label. -->
   <BF_TraitDiscovered>{0} has revealed a hidden trait: {1}.</BF_TraitDiscovered>
+  <!-- As above, when packmates carrying the same trait learned it too. {2}: how many living packmates were newly identified. -->
+  <BF_TraitDiscoveredPack>{0} has revealed a hidden trait: {1}. It is now known on {2} of its packmates as well.</BF_TraitDiscoveredPack>
 
   <!-- Shown after the hediff label in the health tab. {0}: known count. {1}: unknown count. -->
   <BF_HediffBrackets>{0} known</BF_HediffBrackets>
@@ -25,12 +27,31 @@
   <BF_Settings_LightRadius>Light radius</BF_Settings_LightRadius>
   <BF_Settings_Effects>Particle effects</BF_Settings_Effects>
   <BF_Settings_EffectsHint>Embers, smoke and other effecters. Tints and glows always show.</BF_Settings_EffectsHint>
+  <BF_Settings_Surfaces>Moving body effects</BF_Settings_Surfaces>
+  <BF_Settings_SurfacesHint>Flames that crawl over a burning creature, the sheen and glints on mirror scales, and the like. Each look is built once per creature texture the first time it shows, which can cause a short stutter. Off: only the steady tints and glows show.</BF_Settings_SurfacesHint>
+  <BF_Settings_EventEffects>Event effects</BF_Settings_EventEffects>
+  <BF_Settings_EventEffectsHint>One-off effects when a bastle lands a hit, is struck, dodges, heals, turns a shot aside or a trait's proc goes off: flashes, lightning, ribbons of light and afterimages, and the afterimages fast bastles leave as they run. Off: none of these show; the procs still work.</BF_Settings_EventEffectsHint>
+  <BF_Settings_VisualsUnidentified>Looks hint at unknown traits</BF_Settings_VisualsUnidentified>
+  <BF_Settings_VisualsUnidentifiedHint>A bastle shows the looks of traits nobody has identified yet: flames on its coat, a sheen on its scales, frost drifting off it. They hint that something is there without saying what it is or how strong; the trait stays unknown until it is discovered the usual way. Auras are the exception: an aura's glow only shows once you have seen it affect something. Off: a trait's looks only show once it is identified. Effects of procs always show, since a proc going off identifies its trait.</BF_Settings_VisualsUnidentifiedHint>
+  <BF_Settings_ProcsSection>Procs</BF_Settings_ProcsSection>
+  <BF_Settings_Procs>Traits with procs go off</BF_Settings_Procs>
+  <BF_Settings_ProcsHint>Procs are trait effects that go off when something happens: a stun on a hit, a frost blast when struck, a heal when downed. Off: those traits do nothing beyond their other effects.</BF_Settings_ProcsHint>
+  <BF_Settings_ProcChance>Proc chance</BF_Settings_ProcChance>
+  <BF_Settings_ProcChanceHint>Multiplies the chance of every proc going off, up to 100%.</BF_Settings_ProcChanceHint>
+  <BF_Settings_ProcCooldown>Proc cooldowns</BF_Settings_ProcCooldown>
+  <BF_Settings_ProcCooldownHint>Multiplies how long a proc waits before it can go off again.</BF_Settings_ProcCooldownHint>
+  <BF_Settings_ProcStrength>Proc strength</BF_Settings_ProcStrength>
+  <BF_Settings_ProcStrengthHint>Multiplies the stuns, damage, heals, hunger filled and effect durations of every proc, and the chance of its fear or madness.</BF_Settings_ProcStrengthHint>
   <BF_Settings_TraitsSection>Traits</BF_Settings_TraitsSection>
   <BF_Settings_Inherit>Inheritance chance</BF_Settings_Inherit>
   <BF_Settings_InheritHint>Multiplies each trait's own chance to pass to offspring.</BF_Settings_InheritHint>
   <BF_Settings_DiscoveryMessages>Message when a trait is discovered</BF_Settings_DiscoveryMessages>
   <BF_Settings_AbilityAI>Bastles use trait abilities on their own</BF_Settings_AbilityAI>
   <BF_Settings_AbilityAIHint>Hostile, manhunting and tamed bastles cast their trait abilities in a fight, and wild ones when fighting back. Player colonists only cast when you order them to.</BF_Settings_AbilityAIHint>
+  <BF_Settings_UntrainedKnownAbilities>Untrained tamed bastles use known trait abilities</BF_Settings_UntrainedKnownAbilities>
+  <BF_Settings_UntrainedKnownAbilitiesHint>Tamed animals that haven't learned trait abilities still use the abilities of their known traits on their own. Turn this off to keep them from casting those until they are trained. Abilities from undiscovered traits are always used, since using them is how those traits are found.</BF_Settings_UntrainedKnownAbilitiesHint>
+  <BF_Settings_TrainedAbilitiesOnOwn>Trained bastles also use trait abilities on their own</BF_Settings_TrainedAbilitiesOnOwn>
+  <BF_Settings_TrainedAbilitiesOnOwnHint>Tamed animals that have learned trait abilities keep casting them on their own as well as when you order them to. Turn this off to have them cast only on your order. With Ability AI, its autocast setting decides for the abilities it handles.</BF_Settings_TrainedAbilitiesOnOwnHint>
   <BF_Settings_MaterialsSection>Materials</BF_Settings_MaterialsSection>
   <BF_Settings_Armor>Armor from material</BF_Settings_Armor>
   <BF_Settings_ArmorHint>Share of the stuff's armor value. Steel at this setting: +{0} sharp armor.</BF_Settings_ArmorHint>
@@ -81,6 +102,9 @@
   <BF_DietCardNote>Changed by this creature's material and known bastle traits.</BF_DietCardNote>
   <BF_HealthLine>Health: {0}</BF_HealthLine>
   <BF_TraitHealthLine>Health multiplier: {0}</BF_TraitHealthLine>
+  <BF_Settings_ScaledAttackCap>Trait attack base cap</BF_Settings_ScaledAttackCap>
+  <BF_Settings_ScaledAttackNoCap>no cap</BF_Settings_ScaledAttackNoCap>
+  <BF_Settings_ScaledAttackCapHint>Attacks from traits such as Venomous hit as hard as the creature's own strongest attack. That base is capped at this, so a thrumbo's venom doesn't hit for its horn's 28. The trait's rarity multiplies the capped base, so a rarer trait always hits harder. 12 matches a cobra's bite.</BF_Settings_ScaledAttackCapHint>
   <BF_Settings_HealthPerPoint>Health per trait point</BF_Settings_HealthPerPoint>
   <BF_Settings_HealthPerPointHint>Each trait point makes every body part this much tougher. Utility trait points don't count. Traits can add more of their own.</BF_Settings_HealthPerPointHint>
   <BF_Card_Material>Material</BF_Card_Material>
@@ -96,6 +120,79 @@
   <BF_Settings_EatMaterialOffHint>Material creatures don't eat their material.</BF_Settings_EatMaterialOffHint>
   <BF_Settings_Reset>Reset to defaults</BF_Settings_Reset>
 
+  <BF_Settings_WorldSection>World</BF_Settings_WorldSection>
+  <BF_Settings_WorldEnabled>Bastles appear in the world</BF_Settings_WorldEnabled>
+  <BF_Settings_WorldEnabledHint>Turns every source on this tab on or off at once. Which sources are on is the default for a new game; a mod can switch them per colony when the game is created. The numbers here apply to every game.</BF_Settings_WorldEnabledHint>
+  <BF_Settings_WorldStrength>Strength</BF_Settings_WorldStrength>
+  <BF_Settings_WorldStrengthHint>Trait points a bastle gets from the threat points behind it. Straight lines between these, flat past either end.</BF_Settings_WorldStrengthHint>
+  <!-- {0}: threat points, e.g. 1,500. -->
+  <BF_Settings_WorldCurveRow>Trait points at {0} threat points</BF_Settings_WorldCurveRow>
+  <BF_Settings_WorldVariance>Variance</BF_Settings_WorldVariance>
+  <BF_Settings_WildStrength>Wild bastle strength</BF_Settings_WildStrength>
+  <BF_Settings_WildStrengthHint>Share of the map's current raid points a wild bastle's traits are read from.</BF_Settings_WildStrengthHint>
+  <BF_Settings_ConvertedStrength>Converted event strength</BF_Settings_ConvertedStrength>
+  <BF_Settings_ConvertedStrengthHint>Share of an animal event's or group's points read from the curve.</BF_Settings_ConvertedStrengthHint>
+  <BF_Settings_OfferedStrength>Trader stock strength</BF_Settings_OfferedStrength>
+  <BF_Settings_OfferedStrengthHint>Share of the raid points where the animal is sold: the map a trader visits, or all your colonies together for settlements.</BF_Settings_OfferedStrengthHint>
+  <BF_Settings_WorldConversion>Animals the game already makes</BF_Settings_WorldConversion>
+  <BF_Settings_WorldHiddenHint>Their traits are hidden, except some of those a trader sells.</BF_Settings_WorldHiddenHint>
+  <BF_Settings_Wild>Wild animals</BF_Settings_Wild>
+  <BF_Settings_WildHint>On a new map and for every animal that wanders in later.</BF_Settings_WildHint>
+  <BF_Settings_AnimalEvents>Animal events</BF_Settings_AnimalEvents>
+  <BF_Settings_AnimalEventsHint>Manhunter ambushes, herd migrations, thrumbo passes, farm animals wandering in, alphabeavers and frenzied animals.</BF_Settings_AnimalEventsHint>
+  <BF_Settings_GroupAnimals>Animals with raiders and caravans</BF_Settings_GroupAnimals>
+  <BF_Settings_GroupAnimalsHint>Pack animals and fighting animals in raids, caravans and settlement defences.</BF_Settings_GroupAnimalsHint>
+  <BF_Settings_TraderAnimals>Animals for sale</BF_Settings_TraderAnimals>
+  <BF_Settings_TraderAnimalsHint>The trader knows some of each one's traits (none to all, at random).</BF_Settings_TraderAnimalsHint>
+  <BF_Settings_WorldOverridden>Set for this game by another mod. Change it there; this setting applies to new games.</BF_Settings_WorldOverridden>
+  <BF_Settings_WorldOverriddenBy>Set for this game. Change it in {0}; this setting applies to new games.</BF_Settings_WorldOverriddenBy>
+  <BF_Settings_ChancePerAnimal>Chance per animal</BF_Settings_ChancePerAnimal>
+  <BF_Settings_ChancePerEvent>Chance per event</BF_Settings_ChancePerEvent>
+  <BF_Settings_ChancePerGroup>Chance per group</BF_Settings_ChancePerGroup>
+  <BF_Settings_MostPerGroup>Most per group</BF_Settings_MostPerGroup>
+  <BF_Settings_WorldEvents>Bastle events</BF_Settings_WorldEvents>
+  <BF_Settings_WorldEventsHint>How often each happens against its base chance. 0 is never.</BF_Settings_WorldEventsHint>
+  <BF_Settings_Frequency>Frequency</BF_Settings_Frequency>
+  <BF_Settings_Sighting>Bastle sighting</BF_Settings_Sighting>
+  <BF_Settings_SightingHint>One strong wild bastle passes through, to hunt or tame. It leaves if you let it be. Strength is the share of the map's raid points its traits are read from.</BF_Settings_SightingHint>
+  <BF_Settings_EventStrength>Strength</BF_Settings_EventStrength>
+  <BF_Settings_Pack>Bastle pack</BF_Settings_Pack>
+  <BF_Settings_PackHint>A manhunter pack of one bastle kind that shares what you learn about it. Points spent on traits leave the pack's size: it is that much smaller than a vanilla pack of the same threat, and every animal's traits are read from the event's full points.</BF_Settings_PackHint>
+  <BF_Settings_PackTraitShare>Points spent on traits</BF_Settings_PackTraitShare>
+  <BF_Settings_Rampage>Rampage</BF_Settings_Rampage>
+  <BF_Settings_RampageHint>A single manhunting bastle wanders in, its traits all rare or better, with a pack's threat in its traits. Strength is the share of the event's points its traits are read from.</BF_Settings_RampageHint>
+  <BF_Settings_HuntQuest>Hunt quests</BF_Settings_HuntQuest>
+  <BF_Settings_HuntQuestHint>A faction asks you to kill a bastle and the manhunting pack it leads at a site nearby, for vanilla rewards. The bastle's traits are all rare or better, and the quest names one of them. Strength is the share of the site's threat points its traits are read from; the points spent on the bastle leave the pack's size.</BF_Settings_HuntQuestHint>
+  <BF_Settings_HuntAlphaShare>Points spent on the bastle</BF_Settings_HuntAlphaShare>
+
+  <BF_Settings_QuestsSection>Quests</BF_Settings_QuestsSection>
+  <BF_Settings_QuestsHint>Quests also need "Bastles appear in the world" on the World tab. Frequency scales how often the storyteller offers each against its base chance; 0 is never.</BF_Settings_QuestsHint>
+  <BF_Settings_Never>never</BF_Settings_Never>
+  <BF_Settings_OutbreakQuest>Outbreak quests</BF_Settings_OutbreakQuest>
+  <BF_Settings_OutbreakQuestHint>A fast-breeding bastle strain has taken hold at a site in the region. A faction near it asks you to wipe it out, and sends fighters who arrive with you, sometimes with a second faction's, which may be a hostile one under a truce. Every animal of the strain carries the same traits and shares what you learn about them; one to three alphas carry more traits, and the quest may name one of an alpha's. The outbreak grows each day until you get there. Each faction's goodwill depends on how many of its fighters survive. If you fail, the asker thinks less of you and the strain gets loose for a while, and packs of it can reach your colony.</BF_Settings_OutbreakQuestHint>
+  <BF_Settings_OutbreakSection>The outbreak</BF_Settings_OutbreakSection>
+  <BF_Settings_OutbreakSize>Size</BF_Settings_OutbreakSize>
+  <BF_Settings_OutbreakStrength>Strain strength</BF_Settings_OutbreakStrength>
+  <BF_Settings_OutbreakAlphaStrength>Alpha strength</BF_Settings_OutbreakAlphaStrength>
+  <BF_Settings_OutbreakGrowth>Growth per day</BF_Settings_OutbreakGrowth>
+  <BF_Settings_OutbreakGrowthCap>Most growth</BF_Settings_OutbreakGrowthCap>
+  <BF_Settings_OutbreakSiteDistance>Site distance (tiles)</BF_Settings_OutbreakSiteDistance>
+  <BF_Settings_OutbreakSiteDistanceHint>How far from your colony the outbreak site can be, picked evenly in this range. Vanilla sites use 7 to 27 tiles. The quest's time limit does not grow with distance.</BF_Settings_OutbreakSiteDistanceHint>
+  <BF_Settings_OutbreakAlliesSection>Other factions</BF_Settings_OutbreakAlliesSection>
+  <BF_Settings_OutbreakAllyShare>Fighters each faction brings</BF_Settings_OutbreakAllyShare>
+  <BF_Settings_OutbreakSecondFaction>Chance of a second faction</BF_Settings_OutbreakSecondFaction>
+  <BF_Settings_OutbreakHostileFactions>Hostile factions can join</BF_Settings_OutbreakHostileFactions>
+  <BF_Settings_OutbreakHostileFactionsHint>The second faction may be one hostile to you (never a permanent enemy such as pirates). It fights under a truce that holds on the site only. Attacking one of its fighters on purpose, or taking one prisoner, breaks the truce and its goodwill. The asker is never hostile.</BF_Settings_OutbreakHostileFactionsHint>
+  <BF_Settings_OutbreakFactionHalfDistance>Prefer nearby factions</BF_Settings_OutbreakFactionHalfDistance>
+  <BF_Settings_OutbreakFactionHalfDistanceHint>Factions with a settlement near the site are more likely to ask and to join. A faction this many tiles farther from the site than another, counting its closest settlement, is half as likely to be picked. Off: distance does not matter.</BF_Settings_OutbreakFactionHalfDistanceHint>
+  <BF_Settings_NoPreference>off</BF_Settings_NoPreference>
+  <BF_Settings_Tiles>{0} tiles</BF_Settings_Tiles>
+  <BF_Settings_OutbreakAllyGoodwill>Goodwill if all survive</BF_Settings_OutbreakAllyGoodwill>
+  <BF_Settings_OutbreakFailSection>Failure</BF_Settings_OutbreakFailSection>
+  <BF_Settings_OutbreakFailGoodwill>Goodwill lost with the asker</BF_Settings_OutbreakFailGoodwill>
+  <BF_Settings_OutbreakUncontainedDays>Uncontained for (days)</BF_Settings_OutbreakUncontainedDays>
+  <BF_Settings_OutbreakSpread>Spread frequency</BF_Settings_OutbreakSpread>
+
   <BF_Rarity_Common>common</BF_Rarity_Common>
   <BF_Rarity_Uncommon>uncommon</BF_Rarity_Uncommon>
   <BF_Rarity_Rare>rare</BF_Rarity_Rare>
@@ -109,5 +206,48 @@
   <BF_LightsickActive>Weakened by the light.</BF_LightsickActive>
   <BF_PartRegrown>{PAWN_labelShort} has regrown its {1}.</BF_PartRegrown>
   <BF_HydraSplit>{PAWN_labelShort} split as it died. {1} young ones sprang from its body.</BF_HydraSplit>
+
+  <!-- Outbreak quest -->
+  <BF_OutbreakAlliesArrivedLabel>Fighters arrived</BF_OutbreakAlliesArrivedLabel>
+  <!-- {0}: the factions' names joined with "and". {1}: the strain's kind, plural. -->
+  <BF_OutbreakAlliesArrivedText>Fighters from {0} have arrived to fight the {1} beside you.
+
+They will hunt the outbreak until it is gone, then leave. Each faction will think better of you the more of its people survive. A faction whose fighters you attack on purpose, or take prisoner, before they have left the map gets no goodwill for it, and loses any it was already given.</BF_OutbreakAlliesArrivedText>
+  <!-- {0}: the faction's people, plural and capitalised. {1}: faction name. -->
+  <BF_OutbreakFightersLeaving>{0} from {1} are leaving the outbreak site.</BF_OutbreakFightersLeaving>
+  <!-- {0}: the hostile factions' names joined with "and". -->
+  <BF_OutbreakTruceArrivedText>{0} are hostile to you, but have agreed to a truce on this map: nobody here will attack anyone else from the factions at the outbreak. Attacking their fighters on purpose, or taking one of them prisoner, breaks the truce.</BF_OutbreakTruceArrivedText>
+  <BF_OutbreakContainedLabel>Outbreak contained</BF_OutbreakContainedLabel>
+  <!-- {0}: the strain's kind, plural. -->
+  <BF_OutbreakContainedText>The {0} are dead, and the outbreak is over. The factions who fought beside you remember how many of their people came home. Attacking their fighters before they leave takes the goodwill back.</BF_OutbreakContainedText>
+  <!-- {0}: faction name. {1}: survivors. {2}: fighters sent. {3}: goodwill change with sign. -->
+  <BF_OutbreakSurvivorsLine>{0}: {1} of {2} survived, goodwill {3}</BF_OutbreakSurvivorsLine>
+  <!-- {0}: faction name. -->
+  <BF_OutbreakBetrayedLine>{0}: you broke the truce, no goodwill</BF_OutbreakBetrayedLine>
+
+  <!-- Truce. {0}: faction name. -->
+  <BF_TruceBrokenLabel>Truce broken: {0}</BF_TruceBrokenLabel>
+  <BF_TruceBrokenAttackedHostile>Your people attacked fighters from {0} on purpose, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people.</BF_TruceBrokenAttackedHostile>
+  <BF_TruceBrokenAttacked>Your people attacked fighters from {0} on purpose, and the truce with them is over.</BF_TruceBrokenAttacked>
+  <BF_TruceBrokenCapturedHostile>Your people took one of the fighters from {0} prisoner, and the truce with them is over. They are hostile to the colony, and on this map they will now fight your people.</BF_TruceBrokenCapturedHostile>
+  <BF_TruceBrokenCaptured>Your people took one of the fighters from {0} prisoner, and the truce with them is over.</BF_TruceBrokenCaptured>
+  <!-- Appended to a truce broken letter while the outbreak is still being fought. -->
+  <BF_TruceBrokenNoGoodwill>They will not be paid goodwill for the outbreak.</BF_TruceBrokenNoGoodwill>
+  <!-- Appended to a truce broken letter after the outbreak paid them. {0}: the goodwill lost. -->
+  <BF_TruceBrokenGoodwillLost>You lose {0} goodwill with them for breaking the truce after the fight.</BF_TruceBrokenGoodwillLost>
+  <!-- Appended when losing that goodwill ended an alliance (vanilla's relations letter is not sent). -->
+  <BF_TruceBrokenNoLongerAllies>They are no longer your allies.</BF_TruceBrokenNoLongerAllies>
+  <!-- {0}: the strain's kind. -->
+  <BF_OutbreakEscapedLabel>Outbreak uncontained: {0}</BF_OutbreakEscapedLabel>
+  <!-- {0}: the strain's kind, plural. -->
+  <BF_OutbreakEscapedText>The bastle {0} were not stopped, and the strain has spread beyond the site.
+
+Until other factions bring it under control, packs of these {0} may reach your colony. They carry the same traits as the ones at the site, and anything you learned about those is still known.</BF_OutbreakEscapedText>
+  <!-- {0}: the strain's kind. -->
+  <BF_OutbreakConditionLabel>uncontained outbreak ({0})</BF_OutbreakConditionLabel>
+  <!-- {0}: the strain's kind, plural. -->
+  <BF_OutbreakConditionDesc>A strain of bastle {0} is loose in the region. Manhunting packs of it may reach your colony until other factions bring it under control.</BF_OutbreakConditionDesc>
+  <!-- {0}: the strain's kind. -->
+  <BF_OutbreakCleanedUp>Other factions have cleaned up the {0} outbreak.</BF_OutbreakCleanedUp>
 
 </LanguageData>

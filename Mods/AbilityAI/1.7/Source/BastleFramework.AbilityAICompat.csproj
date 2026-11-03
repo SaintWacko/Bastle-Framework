@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!--
+        RimWorld 1.7 build of Bastle's Ability AI compat assembly. Same shared C# as 1.6 (Mods/AbilityAI/Source),
+        compiled with RW17 defined. Output goes to Mods/AbilityAI/1.7/Assemblies, which LoadFolders.xml loads only on
+        1.7 and only when Ability AI (saintwacko.AbilityAI) is active.
+
+        net10.0 as the main 1.7 project (see the note there). Ability AI's 1.7 DLL is net472, which a net10.0 project
+        can reference. Neither BastleFramework.dll nor AbilityAI.dll is copied to
+        the output. Nothing here patches, so there is no Harmony reference.
+    -->
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <!-- A mod DLL is loaded by the game, not run as an app: no .deps.json beside it -->
+        <GenerateDependencyFile>false</GenerateDependencyFile>
+        <RootNamespace>BastleFramework.AbilityAICompat</RootNamespace>
+        <AssemblyName>BastleFramework.AbilityAICompat</AssemblyName>
+        <LangVersion>latest</LangVersion>
+        <Deterministic>true</Deterministic>
+        <OutputPath>..\Assemblies\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <DefineConstants>$(DefineConstants);RW17</DefineConstants>
+        <Version>1.0.0</Version>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <FileVersion>1.0.0.0</FileVersion>
+        <Product>Bastle Framework</Product>
+        <Authors>SaintWacko</Authors>
+        <!-- Ability AI's workspace folder; build it first, its DLLs are read from there. Override with
+             /p:AbilityAIDir=... on a checkout where it lives elsewhere. -->
+        <AbilityAIDir Condition="'$(AbilityAIDir)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\..\4b7a8f666d21\</AbilityAIDir>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <Optimize>true</Optimize>
+        <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <Optimize>false</Optimize>
+        <DebugType>portable</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\Source\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Pinned: the 1.7 reference packages are prereleases, and a new one can change the API -->
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.4979-alpha">
+            <PrivateAssets>all</PrivateAssets>
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\1.7\Source\BastleFramework.csproj">
+            <Private>false</Private>
+        </ProjectReference>
+        <Reference Include="AbilityAI">
+            <HintPath>$(AbilityAIDir)1.7\Assemblies\AbilityAI.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+</Project>

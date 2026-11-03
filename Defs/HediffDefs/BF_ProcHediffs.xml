@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Hediffs procs and the new auras give, to the bastle itself or to the pawns it reaches.
+       These show in the health tab: they're what the player sees happen. -->
+
+  <HediffDef Name="BF_ProcHediffBase" Abstract="True">
+    <hediffClass>HediffWithComps</hediffClass>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+  </HediffDef>
+
+  <!-- Frostburst. A proc sets the time left (hediffSeconds); this is only the fallback. -->
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_Chilled</defName>
+    <label>chilled</label>
+    <description>Frost clings to this creature's limbs, slowing every movement.</description>
+    <defaultLabelColor>(0.6, 0.85, 1)</defaultLabelColor>
+    <isBad>true</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>1200~1200</disappearsAfterTicks>
+        <showRemainingTime>true</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <statFactors>
+          <MoveSpeed>0.5</MoveSpeed>
+          <MeleeCooldownFactor>1.3</MeleeCooldownFactor>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_Burdened</defName>
+    <label>burdened</label>
+    <description>Every step feels as heavy as lead after a blow from a burdening creature.</description>
+    <defaultLabelColor>(0.55, 0.65, 1)</defaultLabelColor>
+    <isBad>true</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>900~900</disappearsAfterTicks>
+        <showRemainingTime>true</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <statFactors>
+          <MoveSpeed>0.6</MoveSpeed>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_AdrenalRush</defName>
+    <label>adrenal rush</label>
+    <description>Pain has flooded this creature with adrenaline. It moves and strikes faster and feels less pain, for a short while.</description>
+    <defaultLabelColor>(1, 0.6, 0.45)</defaultLabelColor>
+    <isBad>false</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>900~900</disappearsAfterTicks>
+        <showRemainingTime>true</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <painFactor>0.8</painFactor>
+        <statFactors>
+          <MoveSpeed>1.2</MoveSpeed>
+          <MeleeCooldownFactor>0.9</MeleeCooldownFactor>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_LastStand</defName>
+    <label>last stand</label>
+    <description>Refusing to go down. It barely feels its wounds, for half a minute.</description>
+    <defaultLabelColor>(1, 0.8, 0.35)</defaultLabelColor>
+    <isBad>false</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>1800~1800</disappearsAfterTicks>
+        <showRemainingTime>true</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <painFactor>0.1</painFactor>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <!-- Fading: vanilla's invisibility comp, as the invisibility psycast uses. -->
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_Faded</defName>
+    <label>faded</label>
+    <description>The eye slides off this creature. Others can't see it to target it until this wears off.</description>
+    <isBad>false</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Invisibility">
+        <visibleToPlayer>true</visibleToPlayer>
+      </li>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>1200~1200</disappearsAfterTicks>
+        <showRemainingTime>true</showRemainingTime>
+      </li>
+      <li Class="HediffCompProperties_DisappearsOnDeath"/>
+    </comps>
+  </HediffDef>
+
+  <!-- Aura hediffs: refreshed while in range (every second), gone soon after. -->
+
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_Warded</defName>
+    <label>warded</label>
+    <description>Shielded by a nearby warding creature. Every hit does less damage.</description>
+    <defaultLabelColor>(0.6, 0.8, 1)</defaultLabelColor>
+    <isBad>false</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>400</disappearsAfterTicks>
+        <showRemainingTime>false</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <statFactors>
+          <IncomingDamageFactor>0.85</IncomingDamageFactor>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_Mended</defName>
+    <label>mending</label>
+    <description>Close to a creature whose presence helps wounds close. Injuries heal faster.</description>
+    <defaultLabelColor>(0.5, 1, 0.6)</defaultLabelColor>
+    <isBad>false</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>400</disappearsAfterTicks>
+        <showRemainingTime>false</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <statFactors>
+          <InjuryHealingFactor>1.75</InjuryHealingFactor>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_Snared</defName>
+    <label>snared</label>
+    <description>Something about a nearby creature drags at the legs. Movement is slower.</description>
+    <defaultLabelColor>(0.75, 0.65, 0.45)</defaultLabelColor>
+    <isBad>true</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>400</disappearsAfterTicks>
+        <showRemainingTime>false</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <statFactors>
+          <MoveSpeed>0.75</MoveSpeed>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="BF_ProcHediffBase">
+    <defName>BF_Disturbed</defName>
+    <label>disturbed sleep</label>
+    <description>A noisy creature nearby keeps waking this one. Sleep does less good.</description>
+    <isBad>true</isBad>
+    <comps>
+      <li Class="HediffCompProperties_Disappears">
+        <disappearsAfterTicks>400</disappearsAfterTicks>
+        <showRemainingTime>false</showRemainingTime>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <statFactors>
+          <RestRateMultiplier>0.7</RestRateMultiplier>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+</Defs>

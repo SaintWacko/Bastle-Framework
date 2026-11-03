@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ability AI rules for the abilities in Defs/AbilityDefs/BF_Abilities.xml. This folder loads only when Ability AI
+     (saintwacko.AbilityAI) is active (LoadFolders.xml), so the AbilityAI.* class names here always resolve.
+     Without it, JobGiver_BastleAbilities and vanilla cast these through aiCanUse in the base defs; Ability AI stands
+     both down for every ability it handles, so the two never both cast one.
+     BF_Leap's BF_LeapAtTarget think tree is the fallback without Ability AI; with this rule it stands down for every
+     pawn Ability AI decides the leap for (BastleAbilityTraining.TreeHandedOff), since vanilla's jump job giver
+     ignores AICanTargetNow. gapCloseJobTarget covers what the tree leapt at besides enemies and prey: a melee
+     attack's door, turret, or downed or non-hostile pawn.
+     The DLC abilities are wrapped in PatchOperationConditional on the def itself: the def is MayRequire, and a bare
+     xpath that finds nothing logs a patch failure.
+     The workers and their fields are described in Ability AI's AbilityAIWorkers.cs and AbilityAIWorkersTargeted.cs.
+     One top-level operation per ability, so a renamed ability loses only its own rules. -->
+<Patch>
+  <!-- Gap-close only, as the tree: next to the enemy, the prey during a hunt, or whatever a melee attack is aimed at.
+       minGapDistance is the leap's minRange, as the tree uses. -->
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/AbilityDef[defName="BF_Leap"]</xpath>
+    <value>
+      <li Class="AbilityAI.AbilityAIExtension">
+        <workerClass>AbilityAI.AbilityAIWorker_Movement</workerClass>
+        <modes>GapClose</modes>
+        <minGapDistance>3.5</minGapDistance>
+        <whileHunting>true</whileHunting>
+        <gapCloseJobTarget>true</gapCloseJobTarget>
+      </li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/AbilityDef[defName="BF_QuillVolley"]</xpath>
+    <value>
+      <li Class="AbilityAI.AbilityAIExtension">
+        <workerClass>AbilityAI.AbilityAIWorker_TargetHostile</workerClass>
+      </li>
+    </value>
+  </Operation>
+
+  <!-- Biotech. 9 cells of acid: the target and the 8 around it (vanilla's SprayLiquid below 10 cells), so a circle
+       and not a line. No ally of the caster within 2 tiles of it, and none of its side's buildings. -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/AbilityDef[defName="BF_AcidSpit"]</xpath>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/AbilityDef[defName="BF_AcidSpit"]</xpath>
+      <value>
+        <li Class="AbilityAI.AbilityAIExtension">
+          <workerClass>AbilityAI.AbilityAIWorker_AoEHostile</workerClass>
+          <radius>1.9</radius>
+          <avoidAllies>true</avoidAllies>
+          <avoidBuildings>true</avoidBuildings>
+        </li>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- Biotech. A cone 7.9 long and 3 wide at its end, read from the FireSpew comp. Any ally inside it drops the aim;
+       with avoidAllies the radius also keeps it off a target an ally is fighting, who may step in before the fire
+       is out. avoidBuildings: not over its own side's buildings. -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/AbilityDef[defName="BF_FireBreath"]</xpath>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/AbilityDef[defName="BF_FireBreath"]</xpath>
+      <value>
+        <li Class="AbilityAI.AbilityAIExtension">
+          <workerClass>AbilityAI.AbilityAIWorker_ConeHostile</workerClass>
+          <radius>1.5</radius>
+          <avoidAllies>true</avoidAllies>
+          <avoidBuildings>true</avoidBuildings>
+        </li>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- Odyssey. Cast at the caster, so the howl's 23.9 radius is centred on it (vanilla's AI casts it at an enemy,
+       reaching up to twice as far). It only affects hostiles, so no avoidAllies. -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/AbilityDef[defName="BF_DreadHowl"]</xpath>
+    <match Class="PatchOperationAddModExtension">
+      <xpath>Defs/AbilityDef[defName="BF_DreadHowl"]</xpath>
+      <value>
+        <li Class="AbilityAI.AbilityAIExtension">
+          <workerClass>AbilityAI.AbilityAIWorker_AoEHostileSelf</workerClass>
+          <minTargets>2</minTargets>
+        </li>
+      </value>
+    </match>
+  </Operation>
+</Patch>
