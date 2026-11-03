@@ -1,8 +1,8 @@
 # Writing bastle traits
 
-This covers what most content mods need: stat traits, attacks, abilities, diets, combat effects, looks, auras, drawbacks, materials and exclusivity. Nearly all of it is XML. Traits with behaviour of their own (rising from death, splitting, blinking) need a small C# class; that is covered at the end, along with the API for making bastles from your own code.
+This covers what most content mods need: stat traits, attacks, abilities, diets, combat effects, procs, looks, auras, drawbacks, materials and exclusivity. Nearly all of it is XML. Traits with behaviour of their own (rising from death, splitting, blinking) need a small C# class; that is covered at the end, along with the API for making bastles from your own code.
 
-`Defs/Traits/` in Bastle Framework is the best reference: every shape below is used by at least one of its 61 traits.
+`Defs/Traits/` in Bastle Framework is the best reference: every shape below is used by at least one of its 87 traits. `docs/bastle-traits.csv` lists them with their numbers.
 
 ## Setup
 
@@ -87,7 +87,7 @@ Generation gives each creature a point target and adds traits until it reaches i
 
 The roller picks a rarity by its weight, then a trait at that rarity by commonality. A trait much cheaper than the target per remaining slot is made less likely, so a big target buys rarer traits instead of filling the trait cap with Commons. A trait that would leave the target out of reach of the slots left is skipped. A trait that would overshoot is held back in proportion to how far over it goes. The target is a minimum, so the last trait may go over.
 
-With `scalesWithRarity`, rolled higher, the trait's stage numbers are scaled by the rarity strength table in the settings (by default 1, 1.25, 1.5, 2, 3 from Common to Legendary), relative to its own rarity, and its points follow the points table the same way. Offsets are multiplied; factors move further from 1 in the direction they already point (x0.8 becomes x0.6 at double strength). `healthScaleFactor`, `drawSizeFactor`, `retaliation`, `lifesteal`, `deflect` and scaled attacks follow too. A rarity is skipped once a factor would fall below 0.05, so a strong trait may top out before Legendary. Without `scalesWithRarity`, the trait only rolls at its own rarity.
+With `scalesWithRarity`, rolled higher, the trait's stage numbers are scaled by the rarity strength table in the settings (by default 1, 1.25, 1.5, 2, 3 from Common to Legendary), relative to its own rarity, and its points follow the points table the same way. Offsets are multiplied; factors move further from 1 in the direction they already point (x0.8 becomes x0.6 at double strength). `healthScaleFactor`, `drawSizeFactor`, `retaliation`, `lifesteal`, `deflect`, scaled attacks and proc amounts follow too. A rarity is skipped once a factor would fall below 0.05, so a strong trait may top out before Legendary. Without `scalesWithRarity`, the trait only rolls at its own rarity.
 
 ### Rarity overrides
 
@@ -106,7 +106,7 @@ With `scalesWithRarity`, rolled higher, the trait's stage numbers are scaled by 
 
 From `minRarity` up, every field the override sets replaces the trait's own; the rest stay. Lists are replaced whole, so list every ability, not only the new one. With several overrides, the highest one that applies wins. An override's stage is scaled from its own `minRarity`, so write it with the numbers it should have at exactly that rarity.
 
-An override can set `label`, `description`, `namePrefix`, `nameSuffix`, `rumor`, `stage`, `hediffs`, `abilities`, `aiThinkTree`, `diet`, `overlays`, `effecters`, `flames`, `glow`, `healthScaleFactor`, `drawSizeFactor`, `retaliation`, `lifesteal`, `products`, `deflect`, `marketValuePercent` and `marketValueOffset`. It needs `scalesWithRarity`, and its `minRarity` must be above the trait's own.
+An override can set `label`, `description`, `namePrefix`, `nameSuffix`, `rumor`, `stage`, `hediffs`, `abilities`, `aiThinkTree`, `diet`, `overlays`, `effecters`, `flames`, `surfaces`, `glow`, `afterimages`, `eventVisuals`, `procs`, `healthScaleFactor`, `drawSizeFactor`, `retaliation`, `lifesteal`, `products`, `deflect`, `marketValuePercent` and `marketValueOffset`. Stormborn's "thunderclap" override adds a proc, more arcs and a brighter light at Legendary. It needs `scalesWithRarity`, and its `minRarity` must be above the trait's own.
 
 Overrides also fill gaps: Flaming's fire resistance can't scale past Uncommon, so it rolls at Uncommon or, through its "infernal" override, at Legendary.
 
@@ -134,9 +134,11 @@ A bastle's traits start hidden. The player sees "???" on the card, the trait's e
 | `JoinsColony` | joins the player: tamed, bought, recruited or rescued |
 | `Manual` | never on its own: your code calls `Discover()` |
 
-Every trigger but `JoinsColony` only counts while the player can see the creature. A trait with a `diet` and no `discoverWhen` gets `EatsAddedFood` and `StarvesNearRefusedFood`. A trait that is not visible and has no trigger logs a config error, unless it lists `Manual`.
+Every trigger but `JoinsColony` only counts while the player can see the creature. A trait with a `diet` and no `discoverWhen` gets `EatsAddedFood` and `StarvesNearRefusedFood`. A trait that is not visible and has no trigger logs a config error, unless it lists `Manual` or one of its procs discovers.
 
-`visible` true makes the trait known from the start. Use it when the trait can be seen anyway: a glow, a bigger body, a sheen. `discoveryMessage` false skips the message when it is found.
+Some effects reveal their trait the first time the player sees them, with no trigger listed: a proc going off (see Procs), a shot turned aside by `deflect`, and an aura affecting someone. Proc traits usually list only `Dies` as a fallback.
+
+`visible` true makes the trait known from the start. Use it only when seeing the trait is knowing it: a light that is all the trait does (luminous), a body far bigger than its kind's (colossal). A look that only hints (flames could be flaming or infernal) is better left hidden; see Looks and light. `discoveryMessage` false skips the message when it is found.
 
 The framework also reveals traits on its own: bastles in a pack share what the player learns, newborns and Hydra young know what their parent's pack knows, humanlike colonists know their ability traits, and traders sometimes sell a bastle with some traits already known. None of that needs anything from the trait.
 
@@ -260,7 +262,82 @@ With Ability AI active, Ability AI decides when trait abilities are cast. To tun
 | `lifesteal` | `fraction` (0.25), `meleeOnly` (true), `fleshOnly` (true) | Heals the creature by part of the damage it deals. |
 | `deflect` | `chance` (0.25, capped at 0.9), `rangedOnly` (true), `reflectChance` (0.4) | The hit does nothing. A deflected shot flies back at the shooter at `reflectChance` (not scaled), and otherwise glances off in a random direction and can hit whatever is in its path. |
 
-The retaliation `amount`, lifesteal `fraction` and deflect `chance` scale with rarity. Retaliation and other extra damage never trigger more retaliation, so two thorned creatures can fight.
+The retaliation `amount`, lifesteal `fraction` and deflect `chance` scale with rarity. Retaliation and other extra damage never trigger more retaliation, so two thorned creatures can fight. A deflection the player sees reveals the trait.
+
+## Procs
+
+A proc is "when this happens, do that": a stun on a hit, a frost blast when struck, a heal when downed.
+
+```xml
+<procs>
+  <li>
+    <on>Hit</on>
+    <attack>Melee</attack>
+    <chance>0.08</chance>
+    <rarityScales>Chance</rarityScales>
+    <adaptSeconds>12</adaptSeconds>
+    <adaptFactor>0.5</adaptFactor>
+    <toOther>true</toOther>
+    <stunSeconds>2</stunSeconds>
+    <text>staggered</text>
+  </li>
+</procs>
+```
+
+The checks run when the event happens; the effects run on the next tick, since the event arrives in the middle of vanilla's damage and hediff code. A proc going off where the player can see it reveals its trait (`discovers`, on by default). `Defs/Traits/BF_Traits_Procs.xml` has fourteen examples.
+
+| `on` | Goes off when the creature | The other pawn |
+|---|---|---|
+| `Hit` | deals damage that gets through to a pawn | the pawn hit |
+| `TakeDamage` | takes damage that gets through (armor stopping all of it doesn't count) | the attacker |
+| `Kill` | kills a pawn | where the pawn fell (it is a corpse by the time the effects run) |
+| `Downed` | is downed | none |
+| `Eat` | finishes eating something | none |
+
+When it goes off:
+
+| Field | Default | |
+|---|---|---|
+| `attack` | `Any` | `Hit` and `TakeDamage`: `Melee` (from an adjacent cell, not a shot or a blast) or `Ranged` (everything else). |
+| `hostileOnly` | true | The other pawn (for `TakeDamage`, the attacker) is hostile to the creature. Off: anyone, a hunted animal or a tamer included. |
+| `healthBelow` | 0 | `TakeDamage`: only under this fraction of health after the hit. |
+| `minDistance` | 0 | The other pawn is at least this many tiles away. |
+| `chance` | 1 | |
+| `cooldownSeconds`, `cooldownHours` | none | A range (`15~20`); set one. Saved with the creature. |
+| `rarityScales` | `None` | What a higher rarity does besides the amounts: `Chance` multiplies the chance by the rarity strength (for offensive procs), `Cooldown` divides the wait by it (for defensive ones and lifesavers). |
+| `adaptSeconds`, `adaptFactor` | 0 | With `toOther`: a repeat on the same pawn within `adaptSeconds` of the last is `adaptFactor` as strong, and once that would fall under a quarter the pawn is immune until the time runs out. `adaptFactor` 0 makes it immune at once. Keeps a stun on every bite from pinning an attacker for good. |
+
+Who it reaches: the creature itself by default. `toOther` sends the effects to the other pawn instead. A `radius` sends them to every pawn `targets` picks within that many tiles of `center` (`Self` or `Other`), behind no wall if `blockedByWalls` (on). `targets` is `Enemies` by default and takes a list such as `Self, Allies`; allies are the creature's own faction and its allies, and for a wild creature, wild creatures of its kind. `toOther` doesn't go with a radius, and a `Kill` proc can't use `toOther` (centre a radius on `Other` instead). Damage, fire, mental states, pushes and skips need `toOther` or a radius: on the creature itself they would be a drawback.
+
+| Effect | |
+|---|---|
+| `hediff`, `severity`, `hediffSeconds` | Adds the hediff, or refreshes it. `severity` below 0 keeps the hediff's own. `hediffSeconds` sets how long it lasts and needs a `HediffComp_Disappears`. |
+| `heal` | Hit points healed, worst injuries first. |
+| `food` | Fraction of the food need filled. |
+| `stunSeconds` | |
+| `damageDef`, `damage`, `armorPenetration` | Extra damage. |
+| `mechanoidDamageDef`, `mechanoidDamage` | Extra damage to mechanoids only, such as EMP. |
+| `igniteChance` | Sets the pawn on fire. |
+| `mentalState`, `animalMentalState`, `mentalStateChance`, `psychic` | Starts a mental state (the animal one on animals, when set). `psychic` multiplies the chance by the pawn's psychic sensitivity. Never on mechanoids, entities, the downed or a pawn already in one. |
+| `pushDistance`, `pushMaxBodySize` (2) | Throws the pawn straight away from the centre, stunned 1 to 3 seconds where it lands. Not the downed or anyone carrying someone. |
+| `skipDistance`, `skipMaxBodySize` (3.5) | Skips the pawn to a random spot this many tiles away, as a chaos skip. |
+| `smokeRadius` | A cloud of blinding smoke at the centre. |
+| `casts` | Abilities, see below. |
+| `fleck`, `fleckScale`, `sound` | Played at the centre. `fleckScale` below 0 is sized from the radius. |
+| `text` | Floating text over each pawn reached ("staggered"). |
+| `visuals` | Event visuals (below) played when it goes off. Their `on` is ignored, and the spot `Affected` means each pawn reached. They show whether the trait is known or not. |
+
+Amounts are written for the trait's own rarity and multiplied by its rarity strength and the Procs strength setting: hediff severity and seconds, heal, food, stun, both damages and the mental state chance. Ignite chance, push and skip distance and the smoke radius don't scale. If nobody is reached and nothing else happens, the cooldown isn't spent. Damage a proc deals never sets off another proc, thorns or lifesteal, kills included.
+
+```xml
+<casts>
+  <li><ability>MyMod_FrostNova</ability><target>Self</target></li>
+</casts>
+```
+
+A cast fires the ability at once, with no job, warmup, range or cost, through a throwaway copy that is never added to the creature, so its own abilities and cooldowns are untouched. Only the ability's effect comps run, never its verb, so no projectile and no jump. `target` is `Self`, `Other` or `OtherCell` (a `Kill` proc needs `OtherCell`). An ability with a cooldown group is refused, casts don't go with a radius, and a `Hit` or `TakeDamage` proc with casts needs a chance below 1 or a cooldown.
+
+The Procs settings on the Traits tab turn procs off and scale every chance (0 to 300%), cooldown (25 to 400%) and strength (25 to 300%).
 
 ## Diet
 
@@ -311,8 +388,61 @@ Diets merge across traits and the creature's material. A refused food is never p
 - `effecters` are EffecterDefs kept running on the creature. `scaleEffectersWithBodySize` (on) sizes them to the body.
 - `flames` draws flickering fire sprites over the body: `count`, `size`, `color`, `texFolder` (vanilla fire by default).
 - `glow` is real light on the map, as a lamp's, that follows the creature. The colour is a ColorInt like a lamp's `glowColor`. A creature with several glowing traits casts the largest light.
+- `surfaces` are moving effects drawn on the body, masked to its outline (below).
+- `afterimages` leaves faded copies of the creature behind as it runs: `intervalTicks` (5), `lifeTicks` (22), `color`. Swift's Epic override uses it.
+- `eventVisuals` play once when something happens to the creature (below).
 
-A trait's looks (overlays, flames, surfaces, effecters, afterimages, event visuals, an aura's glow) show before the trait is known, as a hint, while the setting "Looks hint at unknown traits" is on (the default). Showing them reveals nothing: the trait stays "???" until it is discovered the usual way. `visualsBeforeIdentified` on the def overrides the setting for all its looks (`false` keeps them secret until discovery, `true` shows them whatever the setting), and `beforeIdentified` on a single surface or event visual overrides both for that entry. The older `showVisualsWhenHidden` still works as `visualsBeforeIdentified` true, but its `false` can't opt out: use `visualsBeforeIdentified` false for that. Proc visuals always show, since a proc that goes off in view identifies its trait. Auras are the exception: their glow is the aura's reach drawn on the ground, so it waits until the aura is known (by default the first time the player sees it affect something); only an explicit `true` on the def or entry shows it earlier. A light always shows. Make a trait `visible` only when seeing it is knowing it (a creature that glows, one twice its kind's size); for one whose look only hints at it (flames: flaming or infernal?), leave it hidden and let the look be the hint.
+A trait's looks (overlays, flames, surfaces, effecters, afterimages, event visuals) show before the trait is known, as a hint, while the setting "Looks hint at unknown traits" is on (the default). Showing them reveals nothing: the trait stays "???" until it is discovered the usual way. `visualsBeforeIdentified` on the def overrides the setting for all its looks (`false` keeps them secret until discovery, `true` shows them whatever the setting), and `beforeIdentified` on a single surface or event visual overrides both for that entry. The older `showVisualsWhenHidden` still works as `visualsBeforeIdentified` true, but its `false` can't opt out: use `visualsBeforeIdentified` false for that. Proc visuals always show, since a proc that goes off in view identifies its trait. Auras are the exception: their glow is the aura's reach drawn on the ground, so every look of an aura trait waits until the aura is known (by default the first time the player sees it affect something); only an explicit `true` on the def or entry shows it earlier. A light always shows. Make a trait `visible` only when seeing it is knowing it (a creature that glows, one twice its kind's size); for one whose look only hints at it (flames: flaming or infernal?), leave it hidden and let the look be the hint.
+
+### Surfaces
+
+```xml
+<surfaces>
+  <li Class="BastleFramework.BastleSurface_Flow">
+    <color>(1, 0.45, 0.08, 0.5)</color>
+    <threshold>0.5</threshold>
+    <coreThreshold>0.78</coreThreshold>
+    <riseAbove>0.1</riseAbove>
+  </li>
+</surfaces>
+```
+
+A surface is made at runtime from whatever texture the body shows, so it needs no art and fits modded animals, flying frames and swimming sprites. Each one is built once per texture the first time it shows. Surfaces aren't drawn on portraits, on invisible creatures, or on zoomed-out humanlikes (which the game draws as a cached image). The setting "Moving body effects" turns them all off.
+
+Every surface takes `layer` (relative to the body), `includeHead` (on: humanlikes get it on the head too) and `beforeIdentified`.
+
+| Class | Fields (defaults) | |
+|---|---|---|
+| `BastleSurface_Flow` | `color`, `coreColor`, `threshold` (0.5), `coreThreshold` (0.78), `cellsAcross` (7), `cellsUp` (4), `evolveCells` (3), `loopTicks` (360), `scrolls` (2), `frames` (32), `pulseSpeed`, `pulseMin` (1), `additive` (true), `riseAbove` (0) | Patches of colour crawling up the body: flames, frost, smoke. Noise above `threshold` shows, and above `coreThreshold` turns to `coreColor`. More cells across than up makes taller patches. Keep `frames` at least 16 x `scrolls`, or the cross-fade shows double images. `additive` false blends instead of adding light, which is what frost and smoke need to show on a white coat. `riseAbove` (a fraction of the texture height, up to 0.5) lets the patches lick above the outline. |
+| `BastleSurface_Sheen` | `color`, `periodTicks` (240~420), `sweepTicks` (45), `width` (0.16), `angle` (30), `frames` (16) | A bright band sweeping across the body, for polished scales or metal. Additive, so it barely shows on a white coat. |
+| `BastleSurface_Glints` | `color`, `count` (2), `periodTicks` (90~200), `glintTicks` (24), `size` (0.13~0.21), `texPath` | Short star-shaped twinkles at random spots on the body. |
+| `BastleSurface_Arcs` | `color`, `count` (2), `intervalTicks` (30), `chance` (0.6), `arcTicks` (5), `width` (0.14), `minLength` (0.15), `maxLength` (0.5), `texFolder` | Lightning crackling between points on the body. Lengths and width are fractions of the body's height, so a rat's sparks fit a rat. |
+
+### Event visuals
+
+```xml
+<eventVisuals>
+  <li Class="BastleFramework.BastleVisual_Flecks">
+    <on>Heal</on>
+    <fleck>BF_Fleck_HealGlow</fleck>
+    <scale>0.9~1.2</scale>
+    <minIntervalTicks>180</minIntervalTicks>
+  </li>
+</eventVisuals>
+```
+
+`on` is `Hit` (its damage got through to a pawn), `Struck` (it took damage from someone), `Heal` (one of its injuries healed), `Dodge` (it dodged a melee blow) or `Deflect` (it turned a hit aside). Each entry also takes `at` (`Self` or `Other`: the pawn hit, the attacker or the shooter), `chance` (1), `minIntervalTicks` (0, at most once per that many ticks per creature), `attack` (`Hit` and `Struck` only), `otherFleshOnly` and `beforeIdentified`. They only play on the map the player is looking at, at spots that aren't fogged. The setting "Event effects" turns them off, along with running afterimages; procs still work.
+
+| Class | Fields (defaults) | |
+|---|---|---|
+| `BastleVisual_Flecks` | `fleck`, `count` (1), `scale` (0.5~0.7), `angle` (0~360), `speed` (0), `rotationRate`, `rotation`, `spread` (0), `color` | A burst of flecks at the spot. |
+| `BastleVisual_Effecter` | `effecter`, `toward` (`Other`) | A vanilla effecter, triggered once. `toward` aims sprays. |
+| `BastleVisual_Arcs` | `count` (2~3), `reach` (0.4~0.9), `width` (0.18), `arcTicks` (6), `arcColor`, `to`, `segments` (3), `jag` (0.3), `fleck`, `fleckScale`, `texFolder` | Lightning zaps around the spot, or with `to`, a jagged bolt from the spot to each `to` spot. |
+| `BastleVisual_Stream` | `fleck`, `from` (`Other`), `to` (`Self`), `count` (10~14), `scale`, `color`, `lead` (0.5), `spread` (0.2), `speed` (7~9) | Flecks flowing from one spot to the other. |
+| `BastleVisual_Afterimage` | `count` (3), `distance` (0.8~1.1), `lifeTicks` (30), `color`, `horizontal` (true) | Faded copies of the pawn at the spot sliding away from the other spot. |
+| `BastleVisual_Ribbons` | `from` (`Self`), `to` (`Other`), `color`, `strands` (3), `bulge` (0.14), `maxBulge` (0.8), `turns`, `spin`, `chaos`, `width` (0.32), `coreWidth`, `coreWhiten`, `speed` (14), `minTravel`, `tail` (0.3), `stagger` | Glowing strands writhing along the line between two spots: life drawn out of a victim, madness poured into one. |
+
+Stream and Ribbons use `from` and `to` in place of `at`. Put the visuals of a proc in the proc's own `visuals`, not in `eventVisuals`.
 
 ## Products
 
@@ -349,14 +479,17 @@ Every second (`intervalTicks` 60) the creature gives the hediff to everyone in r
 | `affectsMechanoids`, `affectsEntities` | false | |
 | `targetSameRace` | false | Only its own race. |
 | `targetTraits` | | Only bastles with one of these traits. |
+| `targetsAsleepOnly` | false | Only pawns asleep (the drawback Noisy). |
 | `whileDowned` | false | |
 | `whileAsleep` | true | |
 | `onlyInCombat` | false | Only while drafted, in an aggressive mental state, holding an enemy target, or within 20 seconds of a fight. |
 | `blockedByWalls` | true | |
 | `discoverOnEffect` | true | Reveals the trait when it affects someone the player can see. |
-| `ringColor` | white | The range ring, shown while selected. |
-| `showGlow`, `glowColor`, `showLinks`, `linkColor` | on, ring, off, ring | With Ideology: a ground glow sized to the radius, and lines to each pawn it affects. |
-| `pulseFleck`, `pulseIntervalTicks` | none, 150 | A fleck on the creature while active. |
+| `showRing`, `ringColor` | on, white | The range ring, shown while selected. |
+| `showGlow`, `glowColor`, `glowStrength`, `showLinks`, `linkColor` | on, ring, 0.125, off, ring | With Ideology: a ground glow sized to the radius, and lines to each pawn it affects. |
+| `pulseFleck`, `pulseIntervalTicks`, `pulseScale` | none, 150, from the radius | A fleck on the creature while active. |
+
+An aura's looks wait until the trait is known, whatever the hint setting says, since the glow is its reach drawn on the ground. An aura with a negative `pointCost` is a drawback like any other; Noisy is one, with `showGlow` off.
 
 ## Drawbacks
 
@@ -380,7 +513,7 @@ Tag a trait `Utility` when it is worth something mainly once the creature is tam
 
 ## Exclusivity
 
-`exclusionTags`: two traits sharing any tag never share a creature. The framework's own tags are `BF_Element`, `BF_FireAffinity`, `BF_Speed`, `BF_Toughness`, `BF_Healing`, `BF_Hunger`, `BF_Rest`, `BF_Size`, `BF_Sight` and `BF_Death`. Reuse them when your trait overlaps one of the framework's (a second fire body should take `BF_Element` and `BF_FireAffinity`), and make your own prefix for the rest.
+`exclusionTags`: two traits sharing any tag never share a creature. The framework's own tags are `BF_Element`, `BF_FireAffinity`, `BF_Speed`, `BF_Toughness`, `BF_Healing`, `BF_Hunger`, `BF_Rest`, `BF_Size`, `BF_Sight`, `BF_Death`, `BF_Stun` (one stunning blow), `BF_MeleeAnswer` (one answer to being struck in melee), `BF_Blood` (bleeding faster or slower), `BF_HeatTolerance` and `BF_ColdTolerance` (the comfortable temperature range). Reuse them when your trait overlaps one of the framework's (a second fire body should take `BF_Element` and `BF_FireAffinity`), and make your own prefix for the rest.
 
 A trait that only grants abilities isn't added where another trait already grants all of them.
 
@@ -437,17 +570,17 @@ Put `MayRequire="Ludeon.RimWorld.Biotech"` (or the mod's packageId) on any trait
 
 ## Translation
 
-`label`, `description`, `namePrefix`, `nameSuffix` and `rumor`, and the same fields in `rarityOverrides`, are injected like any def's, under `Languages/<Language>/DefInjected/BastleTraitDef/`.
+`label`, `description`, `namePrefix`, `nameSuffix` and `rumor`, the same fields in `rarityOverrides`, and each proc's `text`, are injected like any def's, under `Languages/<Language>/DefInjected/BastleTraitDef/`.
 
 ## Testing
 
-Load errors name the trait: a hidden hediff that shows in the health tab, an override that can never apply, a rumor in the wrong form, a diet that hunts without corpses. Fix every one; most mean the trait would never roll, would give itself away, or would do nothing.
+Load errors name the trait: a hidden hediff that shows in the health tab, an override that can never apply, a rumor in the wrong form, a diet that hunts without corpses, a proc with no effect or a field its event doesn't have. Fix every one; most mean the trait would never roll, would give itself away, or would do nothing.
 
-In dev mode, the Bastle Framework category of the debug actions has "Add trait..." (variable traits ask for a rarity), "Roll traits..." (pick a point target), "Set material...", "Discover all traits", "Spawn linked pack (3 copies)", "Log discovery group" and "Clear bastle". The bastle events fire from the vanilla incident menu (`BF_BastleSighting`, `BF_BastlePack`, `BF_BastleRampage`) and the quests from the dev quest generator (`BF_BastleHunt`, `BF_BastleOutbreak`).
+In dev mode, the Bastle Framework category of the debug actions has "Add trait..." (variable traits ask for a rarity), "Roll traits..." (pick a point target), "Spawn bastle..." (an animal of a kind you pick or a random one, rolled at a point target, wild or manhunter, with its traits known), "Set material...", "Discover all traits", "Spawn linked pack (3 copies)", "Log discovery group" and "Clear bastle". The bastle events fire from the vanilla incident menu (`BF_BastleSighting`, `BF_BastlePack`, `BF_BastleRampage`) and the quests from the dev quest generator (`BF_BastleHunt`, `BF_BastleOutbreak`).
 
 ## Traits with code
 
-For behaviour XML can't describe, subclass `BastleFramework.BastleTrait` and name it in `traitClass`. Put tuning numbers in a `DefModExtension` on the trait def so other mods can reuse your class with their own numbers; the framework's classes do this (`UndyingParams`, `PhasingParams`, `HydraParams` and others in `Source/BastleTraitClasses.cs`).
+For behaviour XML can't describe, subclass `BastleFramework.BastleTrait` and name it in `traitClass`. Put tuning numbers in a `DefModExtension` on the trait def so other mods can reuse your class with their own numbers; the framework's classes do this (`UndyingParams`, `PhasingParams`, `HydraParams` and others in `Source/BastleTraitClasses.cs`). Two of them need no code to reuse: `BastleTrait_Shedding` with `SheddingParams` (`filth`, a filth ThingDef, hair by default; `intervalTicks`, 5000~10000) and `BastleTrait_Sweltering` with `SwelteringParams` (`heatPerSecond` 6, where a heater is 21; `maxTemperature` 35). Sweltering heats rooms only, never from a doorway.
 
 | Virtual | Called |
 |---|---|
@@ -462,6 +595,7 @@ For behaviour XML can't describe, subclass `BastleFramework.BastleTrait` and nam
 | `Notify_PawnDied(dinfo)` | After death. |
 | `TipStringExtra` | Extra lines on the card once known. |
 | `ExposeData()` | Save your state; call the base. |
+| `ShowsVisual(entryBeforeIdentified)` | Whether a look shows now. Override to change when looks show before discovery (auras do). |
 
 Use `Discover()` to reveal the trait yourself, after checking `BastleUtility.PlayerCanObserve(pawn)`. Changing a def's `traitClass` later is safe for saves.
 
