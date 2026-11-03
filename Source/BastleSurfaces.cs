@@ -251,6 +251,11 @@ namespace BastleFramework
         /// <summary>Added light (fire, sparks), or blended colour (frost, smoke, anything that
         /// has to show on a white coat).</summary>
         public bool additive = true;
+        /// <summary>How far the patches reach above the creature's outline, as a fraction of
+        /// the texture's height: flames rising off it. Past the outline they fade with
+        /// height and thin out. 0 keeps them on the body. Only reaches the texture's top
+        /// edge, which most sprites leave room below.</summary>
+        public float riseAbove;
 
         private readonly Dictionary<BastleShape, Material[]> frameCache = new Dictionary<BastleShape, Material[]>();
 
@@ -262,6 +267,30 @@ namespace BastleFramework
             if (scrolls < 0) yield return "surface flow scrolls must not be negative";
             if (threshold < 0f || threshold >= 1f) yield return "surface flow threshold must be from 0 to below 1";
             if (coreThreshold > 1f) yield return "surface flow coreThreshold must be at most 1 (1 = no core)";
+            if (riseAbove < 0f || riseAbove > 0.5f) yield return "surface flow riseAbove must be from 0 to 0.5";
+        }
+
+        // The mask stretched upwards by up to reach rows: above the outline a pixel takes the
+        // strongest body pixel below it, weakened by the distance, and records how far above
+        // the outline it sits (0 on the body, towards 1 at the reach) so tongues can thin out.
+        private static float[] RisenMask(float[] mask, int n, int reach, out float[] above)
+        {
+            var risen = new float[n * n];
+            above = new float[n * n];
+            for (int x = 0; x < n; x++)
+                for (int y = 0; y < n; y++)
+                {
+                    float own = mask[y * n + x];
+                    float best = own, height = 0f;
+                    for (int d = 1; d <= reach && y - d >= 0; d++)
+                    {
+                        float below = mask[(y - d) * n + x] * (1f - d / (reach + 1f));
+                        if (below > best) { best = below; height = d / (float)reach; }
+                    }
+                    risen[y * n + x] = best;
+                    above[y * n + x] = height;
+                }
+            return risen;
         }
 
         public override void Draw(BastleSurfaceDraw d)
@@ -294,7 +323,9 @@ namespace BastleFramework
             if (shape.mask != null && frames >= 2)
             {
                 const int n = BastleShape.Size;
-                float[] mask = shape.mask;
+                float[] mask = shape.mask, above = null;
+                int reach = Mathf.RoundToInt(riseAbove * n);
+                if (reach > 0) mask = RisenMask(mask, n, reach, out above);
                 mats = new Material[frames];
                 var colors = new Color32[n * n];
                 Shader shader = additive ? ShaderDatabase.MoteGlow : ShaderDatabase.Transparent;
@@ -312,7 +343,9 @@ namespace BastleFramework
                             // whole cells, and the two octaves shouldn't pause on the same beat.
                             float value = 0.65f * Noise(u * cellsAcross, rise * cellsUp, t * evolveCells, cellsAcross, cellsUp, evolveCells, 17)
                                 + 0.35f * Noise(u * cellsAcross * 2, rise * cellsUp * 2, t * evolveCells * 2 + 0.5f, cellsAcross * 2, cellsUp * 2, evolveCells * 2, 91);
-                            float show = Mathf.Clamp01((value - threshold) / (1f - threshold));
+                            // Higher up a tongue only the strongest noise still shows, so it narrows to a tip.
+                            float th = above == null ? threshold : threshold + (1f - threshold) * 0.45f * above[y * n + x];
+                            float show = Mathf.Clamp01((value - th) / (1f - th));
                             show = show * show * (3f - 2f * show);
                             float core = coreThreshold < 1f ? Mathf.Clamp01((value - coreThreshold) / (1f - coreThreshold)) : 0f;
                             Color c = Color.Lerp(color, coreColor, core);

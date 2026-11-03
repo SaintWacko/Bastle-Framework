@@ -34,7 +34,8 @@
       <li>BF_HeatTolerance</li>
     </exclusionTags>
     <tags><li>Fire</li></tags>
-    <!-- A steady orange glow over the whole body, with flames crawling up it on top. -->
+    <!-- A steady orange glow over the whole body, with flames crawling up it on top and
+         licking a little above its outline (riseAbove, a fraction of the texture height). -->
     <overlays>
       <li>
         <color>(1.0, 0.4, 0.05, 0.25)</color>
@@ -51,6 +52,7 @@
         <coreThreshold>0.78</coreThreshold>
         <loopTicks>360</loopTicks>
         <frames>32</frames>
+        <riseAbove>0.1</riseAbove>
       </li>
     </surfaces>
     <effecters>
@@ -102,6 +104,7 @@
             <evolveCells>4</evolveCells>
             <pulseSpeed>0.7</pulseSpeed>
             <pulseMin>0.75</pulseMin>
+            <riseAbove>0.16</riseAbove>
           </li>
         </surfaces>
         <retaliation>
