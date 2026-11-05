@@ -882,6 +882,22 @@ namespace BastleFramework
             }
         }
 
+        // One line in the pawn's inspect pane, as Entad Framework shows an entad's traits:
+        // known traits by name, then a single "???" while any are still hidden.
+        public override string GetInspectString()
+        {
+            if (traits.Count == 0) return null;
+            var names = new List<string>(traits.Count);
+            bool anyHidden = false;
+            foreach (var t in traits)
+            {
+                if (t.discovered) names.Add(t.BaseLabelCap);
+                else anyHidden = true;
+            }
+            if (anyHidden) names.Add("BF_UnknownTrait".Translate());
+            return "BF_InspectTraits".Translate(string.Join(", ", names));
+        }
+
         public override string TipStringExtra
         {
             get
@@ -898,12 +914,15 @@ namespace BastleFramework
                         if (e.ShouldDisplay())
                             sb.AppendLine("  - " + e.LabelCap + ": " + e.ValueString);
                 }
+                bool anyHidden = false;
                 foreach (var t in traits)
                 {
+                    // Hidden traits share one row at the end, so the tooltip doesn't give
+                    // away how many are left to find.
+                    if (!t.discovered) { anyHidden = true; continue; }
                     if (sb.Length > 0) sb.AppendLine();
-                    sb.AppendLine(t.Label.Colorize(t.discovered ? ColoredText.TipSectionTitleColor : ColoredText.SubtleGrayColor));
+                    sb.AppendLine(t.Label.Colorize(ColoredText.TipSectionTitleColor));
                     if (!t.Description.NullOrEmpty()) sb.AppendLine("  " + t.Description);
-                    if (!t.discovered) continue;
                     if (t.Stage != null)
                         foreach (StatDrawEntry e in HediffStatsUtility.SpecialDisplayStats(t.Stage, null))
                             if (e.ShouldDisplay())
@@ -914,6 +933,12 @@ namespace BastleFramework
                         sb.AppendLine("  - " + line);
                     string extra = t.TipStringExtra;
                     if (!extra.NullOrEmpty()) sb.AppendLine("  " + extra);
+                }
+                if (anyHidden)
+                {
+                    if (sb.Length > 0) sb.AppendLine();
+                    sb.AppendLine("BF_UnknownTrait".Translate().ToString().Colorize(ColoredText.SubtleGrayColor));
+                    sb.AppendLine("  " + "BF_UnknownTraitDesc".Translate());
                 }
                 string health = BastleHealth.DescribeTotal(traits);
                 if (health != null) sb.AppendLine().AppendLine(health);

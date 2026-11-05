@@ -7,8 +7,8 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Warding</defName>
     <label>warding</label>
-    <description>In a fight, something about it turns blows aside from its pack. It and friendly people and animals within 6 tiles that it can see take 15% less damage.</description>
-    <rumor>shields those who fight beside it</rumor>
+    <description>In a fight, something about it turns blows aside from its pack.</description>
+    <rumor>wards those who fight beside it</rumor>
     <namePrefix>warding</namePrefix>
     <rarity>Epic</rarity>
     <traitClass>BastleFramework.BastleTrait_Aura</traitClass>
@@ -28,7 +28,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_MendingPresence</defName>
     <label>mending presence</label>
-    <description>Wounds close faster near it. It and friendly people and animals within 5 tiles that it can see heal 75% faster, downed or not.</description>
+    <description>Wounds close faster near it.</description>
     <rumor>makes the wounds of those around it close by themselves</rumor>
     <namePrefix>mending</namePrefix>
     <rarity>Rare</rarity>
@@ -53,7 +53,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Snaring</defName>
     <label>snaring</label>
-    <description>Something about it drags at the legs of its enemies. Living enemies within 5 tiles that it can see move 25% slower.</description>
+    <description>The ground near it slows those who try to run from it.</description>
     <rumor>slows anyone who tries to run from it</rumor>
     <namePrefix>snaring</namePrefix>
     <rarity>Rare</rarity>

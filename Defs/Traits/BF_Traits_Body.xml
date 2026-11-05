@@ -15,7 +15,7 @@
     <defName>BF_Flaming</defName>
     <label>flaming</label>
     <description>Its body burns without being consumed. Fire barely hurts it and it shrugs off the cold.</description>
-    <rumor>burns like a torch and never burns out</rumor>
+    <rumor>is covered in flames that don't consume it</rumor>
     <!-- Hidden: its looks hint at it (setting Looks hint at unknown traits) and leave which trait, and how strong, to discovery. -->
     <discoverWhen>
       <li>TakesDamage</li>
@@ -146,7 +146,7 @@
     <rarityOverrides>
       <li>
         <minRarity>Epic</minRarity>
-        <description>It moves much faster than others of its kind, and can leap up to 10 tiles to land beside its prey.</description>
+        <description>It moves much faster than others of its kind, and can leap up onto its prey from a distance.</description>
         <rumor>runs down anything that flees, and leaps on its prey from far off</rumor>
         <abilities><li>BF_Leap</li></abilities>
         <aiThinkTree>BF_LeapAtTarget</aiThinkTree>
@@ -164,7 +164,7 @@
     <defName>BF_Regenerating</defName>
     <label>regenerating</label>
     <description>Its wounds close with unnatural speed.</description>
-    <rumor>shrugs off wounds that close while it fights</rumor>
+    <rumor>heals as soon as it is wounded</rumor>
     <namePrefix>regenerating</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <!-- Regrows lost parts from Legendary up (RegrowthParams.minRarity). -->
@@ -172,7 +172,7 @@
     <rarityOverrides>
       <li>
         <minRarity>Legendary</minRarity>
-        <description>Its wounds close with unnatural speed, and lost limbs grow back, one every few hours.</description>
+        <description>Its wounds close with unnatural speed, and lost limbs grow back.</description>
         <rumor>regrows the limbs it loses</rumor>
       </li>
     </rarityOverrides>
@@ -372,8 +372,8 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Hardy</defName>
     <label>hardy</label>
-    <description>It is tougher than it looks and takes more killing than others of its kind.</description>
-    <rumor>takes more killing than any other of its kind</rumor>
+    <description>It is tougher than it looks and takes more to kill it than others of its kind.</description>
+    <rumor>takes more to kill it than any other of its kind</rumor>
     <namePrefix>hardy</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <healthScaleFactor>1.12</healthScaleFactor>

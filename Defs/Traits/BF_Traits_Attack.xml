@@ -36,7 +36,7 @@
     <defName>BF_Firebreather</defName>
     <label>firebreather</label>
     <description>It can spit a stream of burning bile at anything that threatens it.</description>
-    <rumor>spits streams of burning bile</rumor>
+    <rumor>breathes fire</rumor>
     <nameSuffix>the firebreather</nameSuffix>
     <rarity>Rare</rarity>
     <requiresFlesh>true</requiresFlesh>
@@ -103,7 +103,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Stormborn</defName>
     <label>stormborn</label>
-    <description>Static crackles across its body. Its strikes carry an electric shock that stuns machines.</description>
+    <description>Static crackles across its body. Its strikes carry an electric shock that interferes with technology.</description>
     <rumor>crackles with a shock that stops machines dead</rumor>
     <namePrefix>stormborn</namePrefix>
     <rarity>Rare</rarity>
@@ -142,7 +142,7 @@
         <minRarity>Legendary</minRarity>
         <label>thunderclap</label>
         <namePrefix>thunderclap</namePrefix>
-        <description>Lightning crawls all over its body. Its strikes carry an electric shock that stuns machines, and every so often a blow lands with a thunderclap that stuns every enemy within 3 tiles of its victim for two seconds and jolts machines among them. Every 8 to 12 seconds at most.</description>
+        <description>Lightning crawls all over its body. Its strikes carry an electric shock that interferes with technology, and every so often a blow lands with a thunderclap that stuns its enemies nearby.</description>
         <rumor>strikes with a thunderclap that knocks everyone around its victim senseless</rumor>
         <surfaces>
           <li Class="BastleFramework.BastleSurface_Arcs">
@@ -184,7 +184,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Quilled</defName>
     <label>quilled</label>
-    <description>It can flick a volley of barbed quills at enemies up to 15 tiles away.</description>
+    <description>It can flick a volley of barbed quills at its enemies.</description>
     <rumor>flings barbed quills from well out of reach</rumor>
     <namePrefix>quilled</namePrefix>
     <rarity>Rare</rarity>
@@ -238,8 +238,8 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Leaping</defName>
     <label>leaping</label>
-    <description>Its powerful legs let it leap up to 10 tiles to land beside its prey.</description>
-    <rumor>leaps from far off to land beside its prey</rumor>
+    <description>Its powerful legs let it leap onto its prey from a distance.</description>
+    <rumor>leaps from far off to land on its prey</rumor>
     <namePrefix>leaping</namePrefix>
     <rarity>Uncommon</rarity>
     <discoverWhen>
@@ -254,7 +254,7 @@
     <defName>BF_Vampiric</defName>
     <label>vampiric</label>
     <description>Its wounds close as it feeds. Part of the damage it deals in melee to living flesh heals it.</description>
-    <rumor>heals as it feeds on those it wounds</rumor>
+    <rumor>heals with every wound it inflicts</rumor>
     <namePrefix>vampiric</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <requiresFlesh>true</requiresFlesh>
@@ -281,11 +281,11 @@
 
   <!-- Cheap stat traits for the Common pool. -->
   <BastleFramework.BastleTraitDef>
-    <defName>BF_Reckless</defName>
-    <label>reckless</label>
+    <defName>BF_HeavyHanded</defName>
+    <label>heavy-handed</label>
     <description>It throws its whole weight behind every blow. It hits harder, but takes longer between attacks.</description>
     <rumor>throws its whole weight behind every blow</rumor>
-    <namePrefix>reckless</namePrefix>
+    <namePrefix>heavy-handed</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
     <stage>

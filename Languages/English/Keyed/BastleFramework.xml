@@ -3,6 +3,8 @@
 
   <BF_UnknownTrait>???</BF_UnknownTrait>
   <BF_UnknownTraitDesc>What could this creature be capable of?</BF_UnknownTraitDesc>
+  <!-- Inspect pane line. {0}: known trait names, then ??? while any are hidden. -->
+  <BF_InspectTraits>Bastle traits: {0}</BF_InspectTraits>
 
   <!-- {0}: the creature's label before the discovery. {1}: the trait's label. -->
   <BF_TraitDiscovered>{0} has revealed a hidden trait: {1}.</BF_TraitDiscovered>
