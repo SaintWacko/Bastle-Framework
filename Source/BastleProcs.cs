@@ -501,7 +501,11 @@ namespace BastleFramework
                 BastleCombatUtility.DealExtraDamage(a, new DamageInfo(p.mechanoidDamageDef, p.mechanoidDamage * power, -1f, -1f, source));
                 landed = true;
             }
-            if (p.igniteChance > 0f && a.Spawned && !a.Dead && Rand.Chance(p.igniteChance)) { a.TryAttachFire(Rand.Range(0.2f, 0.4f), source); landed = true; }
+            if (p.igniteChance > 0f && a.Spawned && !a.Dead && a.CanEverAttachFire() && !a.HasAttachment(ThingDefOf.Fire) && Rand.Chance(p.igniteChance))
+            {
+                a.TryAttachFire(Rand.Range(0.2f, 0.4f), source);
+                landed = true;
+            }
             if (p.mentalState != null && !a.Dead) landed |= TryMentalState(a, source, p, power);
             if (p.skipDistance.max > 0f && !a.Dead && a.Spawned) landed |= TrySkip(a, p);
             if (p.pushDistance > 0f && !a.Dead && a.Spawned) landed |= TryPush(a, center, p);

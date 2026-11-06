@@ -886,7 +886,8 @@ namespace BastleFramework
         // known traits by name, then a single "???" while any are still hidden.
         public override string GetInspectString()
         {
-            if (traits.Count == 0) return null;
+            string own = base.GetInspectString();
+            if (traits.Count == 0) return own;
             var names = new List<string>(traits.Count);
             bool anyHidden = false;
             foreach (var t in traits)
@@ -895,7 +896,8 @@ namespace BastleFramework
                 else anyHidden = true;
             }
             if (anyHidden) names.Add("BF_UnknownTrait".Translate());
-            return "BF_InspectTraits".Translate(string.Join(", ", names));
+            string line = "BF_InspectTraits".Translate(string.Join(", ", names));
+            return own.NullOrEmpty() ? line : own + "\n" + line;
         }
 
         public override string TipStringExtra
