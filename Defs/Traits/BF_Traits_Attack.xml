@@ -305,7 +305,8 @@
     <scalesWithRarity>true</scalesWithRarity>
     <discoverWhen><li>Attacks</li></discoverWhen>
     <!-- MeleeHitChance is in skill levels before its curve (an animal's base is 4), so an
-         offset is what moves it: +4 is about 62% to 80% for an animal. -->
+         offset is what moves it: the curve runs 50% at 0 to 80% at 10, so +4 takes an
+         animal from about 62% to about 74%. -->
     <stage>
       <statOffsets>
         <MeleeHitChance>4</MeleeHitChance>

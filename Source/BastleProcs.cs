@@ -555,7 +555,9 @@ namespace BastleFramework
             a.Position = to;
             a.Notify_Teleported();
             FleckMaker.Static(to, map, FleckDefOf.PsycastSkipInnerExit);
-            SoundDefOf.Psycast_Skip_Exit.PlayOneShot(new TargetInfo(to, map));
+            // Psycast_Skip_Exit is a Royalty def; without Royalty its DefOf field is null and
+            // PlayOneShot logs an error on every skip. The entry sound is Core.
+            (ModsConfig.RoyaltyActive ? SoundDefOf.Psycast_Skip_Exit : SoundDefOf.Psycast_Skip_Entry).PlayOneShot(new TargetInfo(to, map));
             return true;
         }
 

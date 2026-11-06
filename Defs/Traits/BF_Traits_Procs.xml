@@ -198,6 +198,8 @@
         <radius>3.9</radius>
         <targets>Enemies</targets>
         <pushDistance>3</pushDistance>
+        <!-- A horse or a muffalo (2.4) still flies, as the description says. -->
+        <pushMaxBodySize>2.4</pushMaxBodySize>
         <fleck>PsycastAreaEffect</fleck>
         <fleckScale>3.9</fleckScale>
         <sound>Explosion_Stun</sound>

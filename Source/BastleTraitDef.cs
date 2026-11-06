@@ -559,6 +559,13 @@ namespace BastleFramework
                         yield return $"diet extraFoods {f.thing.defName} is not food, so it needs a nutrition above 0";
                 }
             if (retaliation != null && retaliation.damageDef == null) yield return "retaliation has no damageDef";
+            // A ghost with no life is dropped the tick it is added, so the trait would show nothing.
+            if (afterimages != null && (afterimages.lifeTicks < 1 || afterimages.intervalTicks < 1))
+                yield return "afterimages lifeTicks and intervalTicks must be at least 1";
+            if (rarityOverrides != null)
+                foreach (var o in rarityOverrides)
+                    if (o.afterimages != null && (o.afterimages.lifeTicks < 1 || o.afterimages.intervalTicks < 1))
+                        yield return $"rarityOverride at {o.minRarity}: afterimages lifeTicks and intervalTicks must be at least 1";
             foreach (var e in ProcErrors(procs, eventVisuals, "")) yield return e;
             if (rarityOverrides != null)
                 foreach (var o in rarityOverrides)

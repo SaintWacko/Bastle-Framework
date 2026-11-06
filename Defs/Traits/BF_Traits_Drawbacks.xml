@@ -255,7 +255,9 @@
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
     <allowMechanoids>false</allowMechanoids>
-    <exclusionTags><li>BF_HeatTolerance</li></exclusionTags>
+    <!-- Humans are comfortable over only 10 degrees, so -15 would turn the range inside out. -->
+    <allowHumanlikes>false</allowHumanlikes>
+    <exclusionTags><li>BF_HeatTolerance</li><li>BF_TempDrawback</li></exclusionTags>
     <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>JoinsColony</li>
@@ -276,7 +278,8 @@
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
     <allowMechanoids>false</allowMechanoids>
-    <exclusionTags><li>BF_ColdTolerance</li></exclusionTags>
+    <allowHumanlikes>false</allowHumanlikes>
+    <exclusionTags><li>BF_ColdTolerance</li><li>BF_TempDrawback</li></exclusionTags>
     <tags><li>Utility</li></tags>
     <discoverWhen>
       <li>JoinsColony</li>
