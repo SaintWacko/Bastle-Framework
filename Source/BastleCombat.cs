@@ -108,7 +108,7 @@ namespace BastleFramework
                 // Discovered first, so a deflection the player sees plays its effects even
                 // with looks of unknown traits turned off.
                 if (!t.discovered && BastleUtility.PlayerCanObserve(pawn)) t.Discover();
-                if (pawn.Spawned) BastleEventVisuals.Play(bastle, BastleVisualEvent.Deflect, dinfo.Instigator, dinfo);
+                if (pawn.Spawned) BastleEventVisuals.Play(bastle, BastleVisualEvent.Deflect, dinfo.Instigator, dinfo, t);
                 return true;
             }
             return false;

@@ -487,8 +487,9 @@ namespace BastleFramework
             return false;
         }
 
-        /// <summary>An event on the creature: every trait's visuals for it that show now (ShowsVisual).</summary>
-        internal static void Play(Hediff_Bastle bastle, BastleVisualEvent ev, Thing other, DamageInfo? dinfo = null)
+        /// <summary>An event on the creature: every trait's visuals for it that show now (ShowsVisual),
+        /// or only <paramref name="only"/>'s when one trait caused the event (a deflection).</summary>
+        internal static void Play(Hediff_Bastle bastle, BastleVisualEvent ev, Thing other, DamageInfo? dinfo = null, BastleTrait only = null)
         {
             if (!On) return;
             var pawn = bastle.pawn;
@@ -497,6 +498,7 @@ namespace BastleFramework
             for (int i = 0; i < traits.Count; i++)
             {
                 var t = traits[i];
+                if (only != null && t != only) continue;
                 var list = t.EventVisuals;
                 if (list == null) continue;
                 for (int j = 0; j < list.Count; j++)

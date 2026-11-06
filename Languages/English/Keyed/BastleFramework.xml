@@ -11,9 +11,10 @@
   <!-- As above, when packmates carrying the same trait learned it too. {2}: how many living packmates were newly identified. -->
   <BF_TraitDiscoveredPack>{0} has revealed a hidden trait: {1}. It is now known on {2} of its packmates as well.</BF_TraitDiscoveredPack>
 
-  <!-- Shown after the hediff label in the health tab. {0}: known count. {1}: unknown count. -->
+  <!-- Shown after the hediff label in the health tab. {0}: known count. The unknown variant
+       deliberately gives no count, so the player can't tell how many are left to find. -->
   <BF_HediffBrackets>{0} known</BF_HediffBrackets>
-  <BF_HediffBracketsUnknown>{0} known, {1} unknown</BF_HediffBracketsUnknown>
+  <BF_HediffBracketsUnknown>{0} known, more unknown</BF_HediffBracketsUnknown>
 
   <BF_MaterialTipTitle>Made of {0}</BF_MaterialTipTitle>
   <BF_MaterialValue>Made of {0} {1}</BF_MaterialValue>

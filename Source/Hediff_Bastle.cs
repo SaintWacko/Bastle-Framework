@@ -877,7 +877,7 @@ namespace BastleFramework
                 string known = (traits.Count - unknown).ToString();
                 if (traits.Count == 0) return material?.label;
                 return unknown > 0
-                    ? "BF_HediffBracketsUnknown".Translate(known, unknown).ToString()
+                    ? "BF_HediffBracketsUnknown".Translate(known).ToString()
                     : "BF_HediffBrackets".Translate(known).ToString();
             }
         }
