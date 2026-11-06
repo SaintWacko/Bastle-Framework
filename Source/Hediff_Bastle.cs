@@ -1058,8 +1058,9 @@ namespace BastleFramework
         public override void Notify_KilledPawn(Pawn victim, DamageInfo? dinfo)
         {
             base.Notify_KilledPawn(victim, dinfo);
-            // A kill made by a proc's own damage doesn't set off another proc: a Kill proc with
-            // area damage would otherwise chain through a crowd.
+            // A kill made by extra damage (procs, thorns, trait bonus damage) doesn't set off a
+            // proc, as with Hit and TakeDamage: a Kill proc with area damage would otherwise
+            // chain through a crowd.
             if (victim == pawn || BastleCombatUtility.InExtraDamage) return;
             // Guarded: a throw here would stop Pawn.Kill halfway, leaving a dead pawn without a corpse.
             try { BastleProcs.OnEvent(this, BastleProcEvent.Kill, victim); }

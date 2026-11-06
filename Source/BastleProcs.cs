@@ -226,8 +226,9 @@ namespace BastleFramework
         public BastleProcAbility(Pawn pawn, AbilityDef def) : base(pawn, def) { }
     }
 
-    /// <summary>Fires procs. Entry points are called from the bastle hediff's notifications
-    /// and from the kill hook, so a pawn that isn't a bastle never gets here.</summary>
+    /// <summary>Fires procs. Entry points are called only from the bastle hediff's notifications,
+    /// so a pawn that isn't a bastle never gets here. Damage dealt inside
+    /// BastleCombatUtility.InExtraDamage (procs, thorns, trait bonus damage) sets off no proc.</summary>
     public static class BastleProcs
     {
         private class Firing
