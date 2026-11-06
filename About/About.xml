@@ -3,7 +3,7 @@
   <name>Bastle Framework</name>
   <packageId>saintwacko.BastleFramework</packageId>
   <author>saintwacko</author>
-  <description>A framework for creatures with randomly rolled traits. Traits change stats, add attacks and abilities, and stay hidden until the creature shows them, at which point they appear in its name. Creatures can also be made of a material, such as a steel wolf or a jade bear, taking their armor, damage, color and butcher products from it. Works on any pawn. Content mods supply the traits.</description>
+  <description>A framework for creatures with randomly rolled traits. Traits change stats, add attacks and abilities, and stay hidden until the creature shows them. Based on the works of Alexander Wales.</description>
   <supportedVersions>
     <li>1.6</li>
     <li>1.7</li>
@@ -20,4 +20,5 @@
     <li>brrainz.harmony</li>
     <li>saintwacko.AbilityAI</li>
   </loadAfter>
+  <modVersion>1.0.0</modVersion>
 </ModMetaData>

@@ -54,7 +54,7 @@ Traits work on any pawn: animals, humanlikes, mechanoids and anything else, unle
 
 | Field | Default | What it does |
 |---|---|---|
-| `label` | | The trait's name, in lower case ("razorclawed"). The card shows it with its rarity once known, and "???" before. |
+| `label` | | The trait's name, in lower case ("razorclawed"). The card shows it with its rarity once known; before that it is part of the creature's single "???" entry. |
 | `description` | | Shown on the card once the trait is known. |
 | `rarity` | `Common` | `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`. With `scalesWithRarity` it is the lowest rarity the trait rolls at. |
 | `scalesWithRarity` | false | The trait can also roll at higher rarities, with its numbers scaled up (see below). |
@@ -112,7 +112,7 @@ Overrides also fill gaps: Flaming's fire resistance can't scale past Uncommon, s
 
 ## Discovery
 
-A bastle's traits start hidden. The player sees "???" on the card, the trait's effects still apply, and the creature's name doesn't mention it.
+A bastle's traits start hidden. The trait's effects still apply, and the creature's name doesn't mention it. The card, the hediff tooltip and the inspect pane list the known traits followed by a single "???" while any are hidden, and the health tab reads "N known, more unknown", so the player never learns how many are left to find.
 
 ```xml
 <discoverWhen>
@@ -513,7 +513,7 @@ Tag a trait `Utility` when it is worth something mainly once the creature is tam
 
 ## Exclusivity
 
-`exclusionTags`: two traits sharing any tag never share a creature. The framework's own tags are `BF_Element`, `BF_FireAffinity`, `BF_Speed`, `BF_Toughness`, `BF_Healing`, `BF_Hunger`, `BF_Rest`, `BF_Size`, `BF_Sight`, `BF_Death`, `BF_Stun` (one stunning blow), `BF_MeleeAnswer` (one answer to being struck in melee), `BF_Blood` (bleeding faster or slower), `BF_HeatTolerance` and `BF_ColdTolerance` (the comfortable temperature range). Reuse them when your trait overlaps one of the framework's (a second fire body should take `BF_Element` and `BF_FireAffinity`), and make your own prefix for the rest.
+`exclusionTags`: two traits sharing any tag never share a creature. The framework's own tags are `BF_Element`, `BF_FireAffinity`, `BF_Speed`, `BF_Toughness`, `BF_Healing`, `BF_Hunger`, `BF_Rest`, `BF_Size`, `BF_Sight`, `BF_Death`, `BF_Stun` (one stunning blow), `BF_MeleeAnswer` (one answer to being struck in melee), `BF_Blood` (bleeding faster or slower), `BF_HeatTolerance` and `BF_ColdTolerance` (the comfortable temperature range), and `BF_TempDrawback` (at most one temperature drawback). Reuse them when your trait overlaps one of the framework's (a second fire body should take `BF_Element` and `BF_FireAffinity`), and make your own prefix for the rest.
 
 A trait that only grants abilities isn't added where another trait already grants all of them.
 
@@ -574,7 +574,7 @@ Put `MayRequire="Ludeon.RimWorld.Biotech"` (or the mod's packageId) on any trait
 
 ## Testing
 
-Load errors name the trait: a hidden hediff that shows in the health tab, an override that can never apply, a rumor in the wrong form, a diet that hunts without corpses, a proc with no effect or a field its event doesn't have. Fix every one; most mean the trait would never roll, would give itself away, or would do nothing.
+Load errors name the trait: a hidden hediff that shows in the health tab, an override that can never apply, a rumor in the wrong form, a diet that hunts without corpses, a proc with no effect or a field its event doesn't have, afterimages with a `lifeTicks` or `intervalTicks` below 1. Fix every one; most mean the trait would never roll, would give itself away, or would do nothing.
 
 In dev mode, the Bastle Framework category of the debug actions has "Add trait..." (variable traits ask for a rarity), "Roll traits..." (pick a point target), "Spawn bastle..." (an animal of a kind you pick or a random one, rolled at a point target, wild or manhunter, with its traits known), "Set material...", "Discover all traits", "Spawn linked pack (3 copies)", "Log discovery group" and "Clear bastle". The bastle events fire from the vanilla incident menu (`BF_BastleSighting`, `BF_BastlePack`, `BF_BastleRampage`) and the quests from the dev quest generator (`BF_BastleHunt`, `BF_BastleOutbreak`).
 
