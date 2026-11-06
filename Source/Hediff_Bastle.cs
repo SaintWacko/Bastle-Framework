@@ -1052,6 +1052,20 @@ namespace BastleFramework
             BastleProcs.OnEvent(this, BastleProcEvent.Downed);
         }
 
+        // Kill procs. Pawn.Kill calls this on the killer's hediffs while the victim is still
+        // spawned, and only when the instigator is a pawn. Vanilla is looping over the killer's
+        // hediffs here, which is safe because OnEvent only queues the effects for the next tick.
+        public override void Notify_KilledPawn(Pawn victim, DamageInfo? dinfo)
+        {
+            base.Notify_KilledPawn(victim, dinfo);
+            // A kill made by a proc's own damage doesn't set off another proc: a Kill proc with
+            // area damage would otherwise chain through a crowd.
+            if (victim == pawn || BastleCombatUtility.InExtraDamage) return;
+            // Guarded: a throw here would stop Pawn.Kill halfway, leaving a dead pawn without a corpse.
+            try { BastleProcs.OnEvent(this, BastleProcEvent.Kill, victim); }
+            catch (Exception e) { Log.ErrorOnce($"[Bastle Framework] kill proc check failed: {e}", 0x9A0F); }
+        }
+
         /// <summary>True when an undiscovered trait grants this ability.</summary>
         internal bool HasHiddenTraitGranting(AbilityDef abilityDef)
         {

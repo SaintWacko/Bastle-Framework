@@ -251,35 +251,6 @@ namespace BastleFramework
 
         private static BastleSettings S => BastleFrameworkMod.Settings;
 
-        private static bool? anyKill;
-
-        /// <summary>Some trait anywhere has a Kill proc; otherwise the kill hook leaves at once.</summary>
-        internal static bool AnyKillProcs
-        {
-            get
-            {
-                if (anyKill == null)
-                {
-                    anyKill = false;
-                    foreach (var d in DefDatabase<BastleTraitDef>.AllDefsListForReading)
-                    {
-                        if (HasKill(d.procs)) anyKill = true;
-                        if (d.rarityOverrides != null)
-                            foreach (var o in d.rarityOverrides)
-                                if (HasKill(o.procs)) anyKill = true;
-                    }
-                }
-                return anyKill.Value;
-            }
-        }
-
-        private static bool HasKill(List<BastleProc> procs)
-        {
-            if (procs == null) return false;
-            foreach (var p in procs) if (p.on == BastleProcEvent.Kill) return true;
-            return false;
-        }
-
         internal static void OnHit(Hediff_Bastle bastle, Thing victim, DamageInfo dinfo, DamageWorker.DamageResult result)
         {
             if (!S.procsEnabled || BastleCombatUtility.InExtraDamage || !(victim is Pawn) || result == null || result.totalDamageDealt <= 0f) return;
@@ -634,21 +605,4 @@ namespace BastleFramework
         }
     }
 
-    /// <summary>Kill procs. Called from Pawn.Kill while the victim is still spawned.</summary>
-    [HarmonyLib.HarmonyPatch(typeof(RecordsUtility), nameof(RecordsUtility.Notify_PawnKilled))]
-    public static class Patch_RecordsUtility_Notify_PawnKilled
-    {
-        public static void Postfix(Pawn killed, Pawn killer)
-        {
-            // A kill made by a proc's own damage doesn't set off another proc: a Kill proc with
-            // area damage would otherwise chain through a crowd.
-            if (killer == null || killer == killed || BastleCombatUtility.InExtraDamage || !BastleProcs.AnyKillProcs) return;
-            try
-            {
-                var bastle = BastleUtility.PeekBastle(killer);
-                if (bastle != null) BastleProcs.OnEvent(bastle, BastleProcEvent.Kill, killed);
-            }
-            catch (Exception e) { Log.ErrorOnce($"[Bastle Framework] kill proc check failed: {e}", 0x9A0F); }
-        }
-    }
 }
