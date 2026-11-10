@@ -7,7 +7,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Brittle</defName>
     <label>brittle</label>
-    <description>Something about it is fragile. It takes more damage from every hit.</description>
+    <description>Something about it is fragile.</description>
     <namePrefix>brittle</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -25,7 +25,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Tinderhide</defName>
     <label>tinderhide</label>
-    <description>Its body catches fire easily. It takes double damage from flames.</description>
+    <description>Its body catches fire easily.</description>
     <namePrefix>tinderhide</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -81,7 +81,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Sickly</defName>
     <label>sickly</label>
-    <description>Its body fights off disease slowly.</description>
+    <description>Even mild disease hits it harder.</description>
     <namePrefix>sickly</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -102,7 +102,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_CloudedEyes</defName>
     <label>clouded eyes</label>
-    <description>A milky film covers its eyes. It sees poorly.</description>
+    <description>A milky film covers its eyes.</description>
     <namePrefix>cloudy-eyed</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -125,7 +125,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Lame</defName>
     <label>lame</label>
-    <description>An old injury that never healed right. It limps.</description>
+    <description>It moves stiffly.</description>
     <namePrefix>lame</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -148,7 +148,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Bleeder</defName>
     <label>bleeder</label>
-    <description>Its blood doesn't clot well. Wounds bleed twice as fast.</description>
+    <description>Its blood doesn't clot well.</description>
     <namePrefix>thin-blooded</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -164,7 +164,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Restless</defName>
     <label>restless</label>
-    <description>It sleeps badly and tires quickly.</description>
+    <description>It tires quickly.</description>
     <namePrefix>restless</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -184,7 +184,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Lightsick</defName>
     <label>lightsick</label>
-    <description>It is a creature of the dark. In bright light it squints, stumbles and fights poorly.</description>
+    <description>It is a creature of the dark. In bright light it squints and stumbles.</description>
     <namePrefix>lightsick</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -250,7 +250,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_HeatIntolerant</defName>
     <label>heat-intolerant</label>
-    <description>It suffers in the heat. Its comfortable temperature range tops out 15 degrees lower than its kind's.</description>
+    <description>It suffers in the heat.</description>
     <namePrefix>heat-sick</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -273,7 +273,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_ChillProne</defName>
     <label>chill-prone</label>
-    <description>It feels the cold badly. Its comfortable temperature range starts 15 degrees higher than its kind's.</description>
+    <description>It suffers in the cold.</description>
     <namePrefix>shivering</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -296,7 +296,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Noisy</defName>
     <label>noisy</label>
-    <description>It grunts, scratches and paces through the night. Anyone asleep within 6 tiles of it rests 30% less well, unless a wall is in the way.</description>
+    <description>It grunts, scratches and paces through the night, keeping everyone near it awake.</description>
     <namePrefix>noisy</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-1</pointCost>
@@ -344,7 +344,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Sweltering</defName>
     <label>sweltering</label>
-    <description>Heat pours off its body. Indoors it warms the room like a small heater, up to 35 degrees: welcome in winter, stifling in summer.</description>
+    <description>Heat pours off its body.</description>
     <namePrefix>sweltering</namePrefix>
     <nameOrder>-10</nameOrder>
     <pointCost>-0.5</pointCost>

@@ -4,11 +4,11 @@
   <SitePartDef>
     <defName>BF_BastleOutbreakSite</defName>
     <label>bastle outbreak</label>
-    <description>A fast-breeding bastle strain, growing every day it is left alone.</description>
+    <description>An aggressive, fast-breeding bastle strain, growing every day it is left alone.</description>
     <workerClass>BastleFramework.SitePartWorker_BastleOutbreak</workerClass>
     <siteTexture>World/WorldObjects/Sites/GenericSite</siteTexture>
     <expandingIconTexture>World/WorldObjects/Expanding/Sites/Manhunters</expandingIconTexture>
-    <arrivedLetter>The outbreak is here. Every animal of the strain is driven mad by scaria and will attack anyone it sees, your allies included.</arrivedLetter>
+    <arrivedLetter>The outbreak is here. Eliminate it before it spreads.</arrivedLetter>
     <arrivedLetterDef>NegativeEvent</arrivedLetterDef>
     <wantsThreatPoints>true</wantsThreatPoints>
     <tags>
@@ -56,7 +56,7 @@
     <minRefireDays>8</minRefireDays>
     <pointsScaleable>true</pointsScaleable>
     <letterLabel>Outbreak spreads: {KIND}</letterLabel>
-    <letterText>The {KIND} outbreak you failed to stop has reached you. A pack of manhunting {KINDPLURAL} has arrived, driven mad by scaria.\n\nThey all carry the strain's traits, and whatever you learned about it is still known. They will attack any human they see, and leave in a day or two.</letterText>
+    <letterText>The {KIND} outbreak you failed to stop has reached you. A pack of manhunting {KINDPLURAL} has arrived, driven mad by scaria.\n\n. They will attack any human they see, and leave in a day or two.</letterText>
     <letterDef>ThreatBig</letterDef>
     <letterHyperlinkHediffDefs>
       <li>Scaria</li>
@@ -79,7 +79,6 @@
         <li>outbreak->Plague</li>
         <li>outbreak->Swarm</li>
         <li>outbreak->Brood</li>
-        <li>strainAdj->Breeding</li>
         <li>strainAdj->Spreading</li>
         <li>strainAdj->Teeming</li>
         <li>strainAdj->Endless</li>

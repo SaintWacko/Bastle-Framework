@@ -18,7 +18,7 @@
   <HediffDef>
     <defName>BF_Rallied</defName>
     <label>rallied</label>
-    <description>Steadied by a nearby rallying creature. It fades soon after the creature is out of range or the fight ends.</description>
+    <description>Steadied by a nearby rallying creature.</description>
     <hediffClass>HediffWithComps</hediffClass>
     <defaultLabelColor>(1.0, 0.8, 0.35)</defaultLabelColor>
     <isBad>false</isBad>
@@ -164,7 +164,7 @@
   <HediffDef>
     <defName>BF_DreadStruck</defName>
     <label>dread</label>
-    <description>Gripped by dread from a nearby creature. It fades soon after the creature is out of range.</description>
+    <description>Gripped by dread from a nearby creature.</description>
     <hediffClass>HediffWithComps</hediffClass>
     <defaultLabelColor>(0.6, 0.4, 0.7)</defaultLabelColor>
     <isBad>true</isBad>

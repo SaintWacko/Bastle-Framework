@@ -28,7 +28,7 @@
     <minRefireDays>20</minRefireDays>
     <pointsScaleable>true</pointsScaleable>
     <letterLabel>Bastle pack</letterLabel>
-    <letterText>A pack of manhunting {KINDPLURAL} has arrived, driven mad by scaria. They are all one kind of bastle: fewer than an ordinary pack, but each one carries the same unknown traits, and whatever you learn about one of them, you learn about all of them.\n\nThey will attack any human they see, and leave in a day or two.</letterText>
+    <letterText>A pack of manhunting {KINDPLURAL} has arrived, driven mad by scaria.\n\nThey will attack any human they see, and leave in a day or two.</letterText>
     <letterDef>ThreatBig</letterDef>
     <letterHyperlinkHediffDefs>
       <li>Scaria</li>
@@ -47,7 +47,7 @@
     <minRefireDays>25</minRefireDays>
     <pointsScaleable>true</pointsScaleable>
     <letterLabel>Rampaging bastle: {KIND}</letterLabel>
-    <letterText>A lone {KIND} has wandered in on a rampage, driven mad by scaria. It is a powerful bastle: every trait it carries is rare or better, and none of them is known yet.\n\nIt will attack any human it sees, and leave in a day or two.</letterText>
+    <letterText>A powerful bastle {KIND} has wandered in on a rampage, driven mad by scaria.\n\nIt will attack any human it sees, and leave in a day or two.</letterText>
     <letterDef>ThreatBig</letterDef>
     <letterHyperlinkHediffDefs>
       <li>Scaria</li>

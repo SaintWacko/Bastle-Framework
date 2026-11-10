@@ -76,7 +76,7 @@
         <minRarity>Legendary</minRarity>
         <label>infernal</label>
         <namePrefix>infernal</namePrefix>
-        <description>Its body is a living blaze. Fire can't hurt it, and anything that strikes it in melee is burned and may catch fire.</description>
+        <description>Its body is a living blaze. Fire can't hurt it, and its flames leap to those who hit it.</description>
         <rumor>is a living blaze that sets alight whatever strikes it</rumor>
         <glow>
           <radius>8</radius>
@@ -372,7 +372,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Hardy</defName>
     <label>hardy</label>
-    <description>It is tougher than it looks and takes more to kill it than others of its kind.</description>
+    <description>It is tougher than it looks and keeps fighting when others of its kind have fallen.</description>
     <rumor>takes more to kill it than any other of its kind</rumor>
     <namePrefix>hardy</namePrefix>
     <scalesWithRarity>true</scalesWithRarity>

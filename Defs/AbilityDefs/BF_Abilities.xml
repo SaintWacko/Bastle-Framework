@@ -7,7 +7,7 @@
   <AbilityDef MayRequire="Ludeon.RimWorld.Biotech">
     <defName>BF_FireBreath</defName>
     <label>fire breath</label>
-    <description>Spit a stream of burning bile up to 8 tiles. It sets fire to anything it hits and leaves flaming pools on the ground.</description>
+    <description>Spit a stream of burning bile. It sets fire to anything it hits and leaves flaming pools on the ground.</description>
     <iconPath>UI/Abilities/FireSpew</iconPath>
     <cooldownTicksRange>2500</cooldownTicksRange>
     <aiCanUse>true</aiCanUse>
@@ -37,7 +37,7 @@
   <AbilityDef>
     <defName>BF_QuillVolley</defName>
     <label>quill volley</label>
-    <description>Flick a barbed quill at a target up to 15 tiles away.</description>
+    <description>Flick a barbed quill at a target.</description>
     <iconPath>Things/Projectile/Arrow_Small</iconPath>
     <cooldownTicksRange>300</cooldownTicksRange>
     <aiCanUse>true</aiCanUse>
@@ -76,7 +76,7 @@
   <AbilityDef>
     <defName>BF_Leap</defName>
     <label>leap</label>
-    <description>Leap up to 10 tiles to a spot in sight.</description>
+    <description>Leap to a spot in sight.</description>
     <iconPath>UI/Abilities/BF_Leap</iconPath>
     <cooldownTicksRange>600</cooldownTicksRange>
     <hostile>false</hostile>

@@ -9,7 +9,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Irradiated</defName>
     <label>irradiated</label>
-    <description>Its uranium body poisons everything living within 3 tiles, friend or foe, with toxic buildup.</description>
+    <description>Its uranium body poisons everything nearby.</description>
     <namePrefix>irradiated</namePrefix>
     <visible>true</visible>
     <commonality>0</commonality>
@@ -88,7 +88,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Unyielding</defName>
     <label>unyielding</label>
-    <description>Its plasteel body can't be staggered, and every hit does less damage.</description>
+    <description>Its plasteel body absorbs impacts.</description>
     <visible>true</visible>
     <commonality>0</commonality>
     <pointCost>0</pointCost>
@@ -105,7 +105,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_Argent</defName>
     <label>argent</label>
-    <description>Silver wards off the unnatural. Psychic effects touch it half as much, and its melee strikes deal 50% extra damage to entities, shamblers and ghouls.</description>
+    <description>Silver wards off the unnatural and burns it on touch.</description>
     <visible>true</visible>
     <commonality>0</commonality>
     <pointCost>0</pointCost>
@@ -128,7 +128,7 @@
     <defName>BF_Kindling</defName>
     <label>kindling</label>
     <!-- The wood material itself already makes it weak to fire (Materials settings). -->
-    <description>Its wooden body burns easily, and while it burns, its melee strikes can set whatever they hit alight.</description>
+    <description>Its wooden body burns easily, and while it burns, embers may land on whatever it hits.</description>
     <visible>true</visible>
     <commonality>0</commonality>
     <pointCost>0</pointCost>
@@ -159,7 +159,7 @@
   <BastleFramework.BastleTraitDef MayRequire="Ludeon.RimWorld.Anomaly">
     <defName>BF_VoidTouched</defName>
     <label>void-touched</label>
-    <description>Something dark moves under the surface of its bioferrite body. It is deaf to psychic effects.</description>
+    <description>Something dark moves under the surface of its bioferrite body.</description>
     <namePrefix>void-touched</namePrefix>
     <visible>true</visible>
     <commonality>0</commonality>

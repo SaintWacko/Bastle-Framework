@@ -129,7 +129,7 @@
   <BastleFramework.BastleTraitDef>
     <defName>BF_GoldenFleeced</defName>
     <label>golden-fleeced</label>
-    <description>Its fleece grows as fine gold thread. Shearing it gives gold instead of wool, about half as many units.</description>
+    <description>Its fleece grows as fine gold thread. Shearing it gives gold instead of wool.</description>
     <rumor>grows a fleece of gold thread</rumor>
     <namePrefix>golden-fleeced</namePrefix>
     <rarity>Rare</rarity>

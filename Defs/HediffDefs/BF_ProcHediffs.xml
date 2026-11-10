@@ -36,7 +36,7 @@
   <HediffDef ParentName="BF_ProcHediffBase">
     <defName>BF_Burdened</defName>
     <label>burdened</label>
-    <description>Every step feels as heavy as lead after a blow from a burdening creature.</description>
+    <description>Every step feels as heavy as lead.</description>
     <defaultLabelColor>(0.55, 0.65, 1)</defaultLabelColor>
     <isBad>true</isBad>
     <comps>
@@ -80,7 +80,7 @@
   <HediffDef ParentName="BF_ProcHediffBase">
     <defName>BF_LastStand</defName>
     <label>last stand</label>
-    <description>Refusing to go down. It barely feels its wounds, for half a minute.</description>
+    <description>Refusing to go down. It barely feels its wounds.</description>
     <defaultLabelColor>(1, 0.8, 0.35)</defaultLabelColor>
     <isBad>false</isBad>
     <comps>
@@ -100,7 +100,7 @@
   <HediffDef ParentName="BF_ProcHediffBase">
     <defName>BF_Faded</defName>
     <label>faded</label>
-    <description>The eye slides off this creature. Others can't see it to target it until this wears off.</description>
+    <description>The eye slides off this creature.</description>
     <isBad>false</isBad>
     <comps>
       <li Class="HediffCompProperties_Invisibility">
